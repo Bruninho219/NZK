@@ -11,338 +11,351 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="js/config.js"></script>
     <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
     <script src="js/dashboard.js"></script>
 </head>
 <body>
 
-<div class="container">
-    <div id="selector">
-        <h1>✨ Meus Servidores Ativos</h1>
-        <div class="server-grid" id="serverList">
-            <div class="server-card"><p>Carregando servidores do banco...</p></div>
-        </div>
-    </div>
+<!-- TELA DE LOGIN -->
+<div id="loginScreen" style="display:none; min-height:100vh; flex-direction:column; align-items:center; justify-content:center; gap:20px; text-align:center;">
+    <div style="font-size:48px;">🔥</div>
+    <h1 style="margin:0;">NZK Admin Dashboard</h1>
+    <p style="color:var(--text-muted); max-width:340px;">Entre com sua conta do Discord para gerenciar os servidores em que você é administrador.</p>
+    <button id="btnLoginDiscord" style="background:#5865F2; padding:14px 28px; font-size:15px;">
+        Entrar com Discord
+    </button>
+    <div id="loginError" style="display:none; color:var(--danger); font-size:12px;"></div>
+</div>
 
-    <div id="editor" style="display: none;">
-        <div class="editor-header">
-            <div style="display: flex; gap: 10px;">
-                <button class="secondary" onclick="app.closeEditor()">⬅ Voltar</button>
-                <button class="secondary" onclick="app.refreshData()">🔄 Atualizar</button>
+<!-- APP (só aparece autenticado) -->
+<div id="appScreen" style="display:none;">
+    <div class="container" style="padding-top:0;">
+        <div style="display:flex; justify-content:flex-end; align-items:center; gap:15px; padding:15px 0;">
+            <span id="userBadge" style="font-size:13px; color:var(--text-muted);"></span>
+            <button id="btnLogout" class="secondary" style="padding:8px 16px; font-size:12px;">Sair</button>
+        </div>
+
+        <div id="selector">
+            <h1>✨ Meus Servidores Ativos</h1>
+            <div class="server-grid" id="serverList">
+                <div class="server-card"><p>Carregando servidores do banco...</p></div>
             </div>
-            <h2 id="serverTitle">🏰 Painel</h2>
         </div>
 
-        <div class="tab-container">
-            <button class="tab-btn active" onclick="app.switchTab(event, 'tab-config')">⚙️ Configurações</button>
-            <button class="tab-btn" onclick="app.switchTab(event, 'tab-ranking')">🏆 Top 20 Membros</button>
-            <button class="tab-btn" onclick="app.switchTab(event, 'tab-historico')">📈 Histórico</button>
-            <button class="tab-btn" onclick="app.switchTab(event, 'tab-admin')">⚠️ Admin</button>
-            <button class="tab-btn" onclick="app.switchTab(event, 'tab-youtube')">▶️ YouTube</button>
-        </div>
-
-        <!-- ABA CONFIGURAÇÕES -->
-        <div id="tab-config" class="tab-content">
-            <div class="section-title">⚙️ Configurações Gerais</div>
-            <div class="form-row">
-                <div class="field">
-                    <label>📢 CANAL DE AVISOS (LEVEL UP)</label>
-                    <select id="channelSelect"><option>Carregando canais...</option></select>
-                    <button class="success" onclick="app.handleSaveChannel()" style="margin-top: 8px; width: 100%;">Sincronizar Canal</button>
+        <div id="editor" style="display: none;">
+            <div class="editor-header">
+                <div style="display: flex; gap: 10px;">
+                    <button class="secondary" onclick="app.closeEditor()">⬅ Voltar</button>
+                    <button class="secondary" onclick="app.refreshData()">🔄 Atualizar</button>
                 </div>
-                <div class="field">
-                    <label>🏆 CARGO ESPECIAL (TOP 1 GLOBAL)</label>
-                    <select id="top1Select"><option>Carregando cargos...</option></select>
-                    <button class="success" onclick="app.handleSaveTop1()" style="margin-top: 8px; width: 100%; background: var(--accent);">Definir Cargo Líder</button>
-                </div>
+                <h2 id="serverTitle">🏰 Painel</h2>
             </div>
 
-            <div id="statusSection">
-                <div class="section-title" style="margin-top: 30px;">🤖 Status do Bot</div>
+            <div class="tab-container">
+                <button class="tab-btn active" onclick="app.switchTab(event, 'tab-config')">⚙️ Configurações</button>
+                <button class="tab-btn" onclick="app.switchTab(event, 'tab-ranking')">🏆 Top 20 Membros</button>
+                <button class="tab-btn" onclick="app.switchTab(event, 'tab-historico')">📈 Histórico</button>
+                <button class="tab-btn" onclick="app.switchTab(event, 'tab-admin')">⚠️ Admin</button>
+                <button class="tab-btn" onclick="app.switchTab(event, 'tab-youtube')">▶️ YouTube</button>
+            </div>
+
+            <!-- ABA CONFIGURAÇÕES -->
+            <div id="tab-config" class="tab-content">
+                <div class="section-title">⚙️ Configurações Gerais</div>
                 <div class="form-row">
-                    <div class="field" style="flex-grow: 1;">
-                        <label>TIPO DE ATIVIDADE</label>
-                        <select id="statusType">
-                            <option value="0">Jogando</option>
-                            <option value="2">Ouvindo</option>
-                            <option value="3">Assistindo</option>
-                            <option value="4">Balãozinho</option>
-                            <option value="5">Competindo</option>
-                        </select>
+                    <div class="field">
+                        <label>📢 CANAL DE AVISOS (LEVEL UP)</label>
+                        <select id="channelSelect"><option>Carregando canais...</option></select>
+                        <button class="success" onclick="app.handleSaveChannel()" style="margin-top: 8px; width: 100%;">Sincronizar Canal</button>
                     </div>
-                    <div class="field" style="flex-grow: 3;">
-                        <label>TEXTO DO STATUS</label>
-                        <div style="display: flex; gap: 10px;">
-                            <input type="text" id="statusInput" placeholder="Ex: 🛡️ Protegendo Nazarick" style="flex-grow: 1;">
-                            <button class="success" onclick="app.handleSalvarStatus()" style="width: 150px; background: #5865F2;">Salvar Status</button>
+                    <div class="field">
+                        <label>🏆 CARGO ESPECIAL (TOP 1 GLOBAL)</label>
+                        <select id="top1Select"><option>Carregando cargos...</option></select>
+                        <button class="success" onclick="app.handleSaveTop1()" style="margin-top: 8px; width: 100%; background: var(--accent);">Definir Cargo Líder</button>
+                    </div>
+                </div>
+
+                <div id="statusSection">
+                    <div class="section-title" style="margin-top: 30px;">🤖 Status do Bot</div>
+                    <div class="form-row">
+                        <div class="field" style="flex-grow: 1;">
+                            <label>TIPO DE ATIVIDADE</label>
+                            <select id="statusType">
+                                <option value="0">Jogando</option>
+                                <option value="2">Ouvindo</option>
+                                <option value="3">Assistindo</option>
+                                <option value="4">Balãozinho</option>
+                                <option value="5">Competindo</option>
+                            </select>
+                        </div>
+                        <div class="field" style="flex-grow: 3;">
+                            <label>TEXTO DO STATUS</label>
+                            <div style="display: flex; gap: 10px;">
+                                <input type="text" id="statusInput" placeholder="Ex: 🛡️ Protegendo Nazarick" style="flex-grow: 1;">
+                                <button class="success" onclick="app.handleSalvarStatus()" style="width: 150px; background: #5865F2;">Salvar Status</button>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
+                <div class="section-title" style="margin-top: 30px;">⬆️ Mensagem de Level Up</div>
+                <div class="form-row">
+                    <div class="field">
+                        <label>💬 MENSAGEM (deixe vazio para usar o padrão)</label>
+                        <input type="text" id="levelupMensagem" placeholder="{usuario} >> **{nivel}**" style="width: 100%; box-sizing: border-box;">
+                        <span style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">
+                            Variáveis: <code>{usuario}</code> menção &nbsp;|&nbsp; <code>{nivel}</code> nível atingido &nbsp;|&nbsp; <code>{servidor}</code> nome do servidor
+                        </span>
+                    </div>
+                    <button class="success" style="width: auto; align-self: flex-end;" onclick="app.handleSalvarLevelupMensagem()">Salvar</button>
+                </div>
+                <div class="section-title" style="margin-top: 30px;">👋 Boas-vindas</div>
+                <div class="form-row">
+                    <div class="field">
+                        <label>📢 CANAL DE BOAS-VINDAS</label>
+                        <select id="boasVindasChannel"><option value="">-- Nenhum --</option></select>
+                    </div>
+                    <div class="field">
+                        <label>🎭 CARGOS AO ENTRAR (até 10 — segure Ctrl para selecionar vários)</label>
+                        <select id="cargoEntrada" multiple style="height: 120px;"></select>
+                    </div>
+                    <button class="success" style="width: auto; align-self: flex-end;" onclick="app.handleSalvarBoasVindasCanal()">Salvar Canal e Cargo</button>
+                </div>
+                <div class="form-row">
+                    <div class="field">
+                        <label>💬 MENSAGEM DE BOAS-VINDAS (deixe vazio para desativar)</label>
+                        <input type="text" id="boasVindasMensagem" placeholder="Bem-vindo(a) ao {servidor}, {usuario}!" style="width: 100%; box-sizing: border-box;">
+                        <span style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">
+                            Variáveis: <code>{usuario}</code> menção &nbsp;|&nbsp; <code>{servidor}</code> nome do servidor &nbsp;|&nbsp; <code>{membros}</code> total de membros
+                        </span>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 8px; align-self: flex-end;">
+                        <button class="success" style="width: auto;" onclick="app.handleSalvarBoasVindasMensagem()">Salvar Mensagem</button>
+                        <button class="secondary" style="width: auto;" onclick="app.handleTestarBoasVindas()">🧪 Testar Prévia</button>
+                    </div>
+                </div>
+                <div id="boasVindasPreview"></div>
+                <div class="section-title" style="margin-top: 30px;">💜 Impulso (Boost)</div>
+                <div class="form-row">
+                    <div class="field">
+                        <label>📢 CANAL DE ANÚNCIO DE BOOST</label>
+                        <select id="boostChannel"><option value="">-- Nenhum --</option></select>
+                    </div>
+                    <div class="field" style="flex-grow: 0;">
+                        <label>🎁 XP BÔNUS AO BOOSTAR (0 = desativado)</label>
+                        <input type="number" id="boostXp" min="0" value="0" style="width: 120px;">
+                    </div>
+                    <button class="success" style="width: auto; align-self: flex-end;" onclick="app.handleSalvarBoostCanal()">Salvar Canal e XP</button>
+                </div>
+                <div class="form-row">
+                    <div class="field">
+                        <label>💬 MENSAGEM DO ANÚNCIO (deixe vazio para desativar)</label>
+                        <input type="text" id="boostMensagem" placeholder="{usuario} acabou de impulsionar o servidor! Obrigado pelo apoio!" style="width: 100%; box-sizing: border-box;">
+                        <span style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">
+                            Variáveis: <code>{usuario}</code> menção &nbsp;|&nbsp; <code>{servidor}</code> nome do servidor &nbsp;|&nbsp; <code>{xp}</code> XP bônus
+                        </span>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 8px; align-self: flex-end;">
+                        <button class="success" style="width: auto;" onclick="app.handleSalvarBoostMensagem()">Salvar Mensagem</button>
+                        <button class="secondary" style="width: auto;" onclick="app.handleTestarBoost()">🧪 Testar Prévia</button>
+                    </div>
+                </div>
+                <div id="boostPreview"></div>
+                <div class="section-title" style="margin-top: 30px;">🎯 Bônus de XP</div>
+                <div class="form-row">
+                    <div class="field">
+                        <label>🚀 BÔNUS BOOSTER (%)</label>
+                        <input type="number" id="bonusBooster" min="0" max="100" value="0" style="width: 100px;">
+                    </div>
+                    <div class="field">
+                        <label>🔧 BÔNUS ADMIN (%)</label>
+                        <input type="number" id="bonusAdmin" min="0" max="100" value="0" style="width: 100px;">
+                    </div>
+                    <div class="field">
+                        <label>📊 QUANDO OS DOIS</label>
+                        <select id="bonusStack">
+                            <option value="sim">Somar os dois</option>
+                            <option value="nao">Usar o maior</option>
+                        </select>
+                    </div>
+                    <button class="success" onclick="app.handleSalvarBonus()" style="height: 46px;">Salvar Bônus</button>
+                </div>
+                <div class="section-title" style="margin-top: 30px;">🛡️ Configuração de Patentes</div>
+                <div class="form-row">
+                    <div class="field" style="flex-grow: 0;">
+                        <label>NÍVEL</label>
+                        <input type="number" id="lvl" placeholder="Ex: 5" style="width: 100px;">
+                    </div>
+                    <div class="field">
+                        <label>CARGO DO DISCORD</label>
+                        <select id="roleSelect"><option>Carregando cargos...</option></select>
+                    </div>
+                    <button onclick="app.handleSave()">+ Adicionar Patente</button>
+                </div>
 
-
-
-
-            <div class="section-title" style="margin-top: 30px;">⬆️ Mensagem de Level Up</div>
-            <div class="form-row">
-                <div class="field">
-                    <label>💬 MENSAGEM (deixe vazio para usar o padrão)</label>
-                    <input type="text" id="levelupMensagem" placeholder="{usuario} >> **{nivel}**" style="width: 100%; box-sizing: border-box;">
-                    <span style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">
-                        Variáveis: <code>{usuario}</code> menção &nbsp;|&nbsp; <code>{nivel}</code> nível atingido &nbsp;|&nbsp; <code>{servidor}</code> nome do servidor
-                    </span>
-                </div>
-                <button class="success" style="width: auto; align-self: flex-end;" onclick="app.handleSalvarLevelupMensagem()">Salvar</button>
-            </div>
-            <div class="section-title" style="margin-top: 30px;">👋 Boas-vindas</div>
-            <div class="form-row">
-                <div class="field">
-                    <label>📢 CANAL DE BOAS-VINDAS</label>
-                    <select id="boasVindasChannel"><option value="">-- Nenhum --</option></select>
-                </div>
-                <div class="field">
-                    <label>🎭 CARGOS AO ENTRAR (até 10 — segure Ctrl para selecionar vários)</label>
-                    <select id="cargoEntrada" multiple style="height: 120px;"></select>
-                </div>
-                <button class="success" style="width: auto; align-self: flex-end;" onclick="app.handleSalvarBoasVindasCanal()">Salvar Canal e Cargo</button>
-            </div>
-            <div class="form-row">
-                <div class="field">
-                    <label>💬 MENSAGEM DE BOAS-VINDAS (deixe vazio para desativar)</label>
-                    <input type="text" id="boasVindasMensagem" placeholder="Bem-vindo(a) ao {servidor}, {usuario}!" style="width: 100%; box-sizing: border-box;">
-                    <span style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">
-                        Variáveis: <code>{usuario}</code> menção &nbsp;|&nbsp; <code>{servidor}</code> nome do servidor &nbsp;|&nbsp; <code>{membros}</code> total de membros
-                    </span>
-                </div>
-                <div style="display: flex; flex-direction: column; gap: 8px; align-self: flex-end;">
-                    <button class="success" style="width: auto;" onclick="app.handleSalvarBoasVindasMensagem()">Salvar Mensagem</button>
-                    <button class="secondary" style="width: auto;" onclick="app.handleTestarBoasVindas()">🧪 Testar Prévia</button>
-                </div>
-            </div>
-            <div id="boasVindasPreview"></div>
-            <div class="section-title" style="margin-top: 30px;">💜 Impulso (Boost)</div>
-            <div class="form-row">
-                <div class="field">
-                    <label>📢 CANAL DE ANÚNCIO DE BOOST</label>
-                    <select id="boostChannel"><option value="">-- Nenhum --</option></select>
-                </div>
-                <div class="field" style="flex-grow: 0;">
-                    <label>🎁 XP BÔNUS AO BOOSTAR (0 = desativado)</label>
-                    <input type="number" id="boostXp" min="0" value="0" style="width: 120px;">
-                </div>
-                <button class="success" style="width: auto; align-self: flex-end;" onclick="app.handleSalvarBoostCanal()">Salvar Canal e XP</button>
-            </div>
-            <div class="form-row">
-                <div class="field">
-                    <label>💬 MENSAGEM DO ANÚNCIO (deixe vazio para desativar)</label>
-                    <input type="text" id="boostMensagem" placeholder="{usuario} acabou de impulsionar o servidor! Obrigado pelo apoio!" style="width: 100%; box-sizing: border-box;">
-                    <span style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">
-                        Variáveis: <code>{usuario}</code> menção &nbsp;|&nbsp; <code>{servidor}</code> nome do servidor &nbsp;|&nbsp; <code>{xp}</code> XP bônus
-                    </span>
-                </div>
-                <div style="display: flex; flex-direction: column; gap: 8px; align-self: flex-end;">
-                    <button class="success" style="width: auto;" onclick="app.handleSalvarBoostMensagem()">Salvar Mensagem</button>
-                    <button class="secondary" style="width: auto;" onclick="app.handleTestarBoost()">🧪 Testar Prévia</button>
-                </div>
-            </div>
-            <div id="boostPreview"></div>
-            <div class="section-title" style="margin-top: 30px;">🎯 Bônus de XP</div>
-            <div class="form-row">
-                <div class="field">
-                    <label>🚀 BÔNUS BOOSTER (%)</label>
-                    <input type="number" id="bonusBooster" min="0" max="100" value="0" style="width: 100px;">
-                </div>
-                <div class="field">
-                    <label>🔧 BÔNUS ADMIN (%)</label>
-                    <input type="number" id="bonusAdmin" min="0" max="100" value="0" style="width: 100px;">
-                </div>
-                <div class="field">
-                    <label>📊 QUANDO OS DOIS</label>
-                    <select id="bonusStack">
-                        <option value="sim">Somar os dois</option>
-                        <option value="nao">Usar o maior</option>
-                    </select>
-                </div>
-                <button class="success" onclick="app.handleSalvarBonus()" style="height: 46px;">Salvar Bônus</button>
-            </div>
-            <div class="section-title" style="margin-top: 30px;">🛡️ Configuração de Patentes</div>
-            <div class="form-row">
-                <div class="field" style="flex-grow: 0;">
-                    <label>NÍVEL</label>
-                    <input type="number" id="lvl" placeholder="Ex: 5" style="width: 100px;">
-                </div>
-                <div class="field">
-                    <label>CARGO DO DISCORD</label>
-                    <select id="roleSelect"><option>Carregando cargos...</option></select>
-                </div>
-                <button onclick="app.handleSave()">+ Adicionar Patente</button>
-            </div>
-
-            <div class="table-wrapper">
-                <table>
-                    <thead>
-                        <tr>
-                            <th></th>
-                            <th>Nível Necessário</th>
-                            <th>Cargo Atribuído</th>
-                            <th>ID do Cargo</th>
-                            <th>Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody id="patenteBody"></tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- ABA RANKING -->
-        <div id="tab-ranking" class="tab-content" style="display: none;">
-
-            <!-- ESTATÍSTICAS GERAIS -->
-            <div class="section-title">📊 Estatísticas Gerais</div>
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <span class="stat-label">💬 Total de Mensagens</span>
-                    <span class="stat-value" id="stat-mensagens">—</span>
-                </div>
-                <div class="stat-card">
-                    <span class="stat-label">🎙️ Total em Voz</span>
-                    <span class="stat-value" id="stat-voz">—</span>
-                </div>
-                <div class="stat-card">
-                    <span class="stat-label">⭐ Nível Máximo</span>
-                    <span class="stat-value" id="stat-maxlevel">—</span>
-                </div>
-                <div class="stat-card">
-                    <span class="stat-label">🏅 Mais Ativo</span>
-                    <span class="stat-value" id="stat-ativo">—</span>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th>Nível Necessário</th>
+                                <th>Cargo Atribuído</th>
+                                <th>ID do Cargo</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="patenteBody"></tbody>
+                    </table>
                 </div>
             </div>
 
-            <div class="section-title" style="margin-top: 30px;">🏆 Ranking Global</div>
+            <!-- ABA RANKING -->
+            <div id="tab-ranking" class="tab-content" style="display: none;">
 
-            <!-- BUSCA -->
-            <div style="margin-bottom: 15px;">
-                <input type="text" id="searchLeaderboard" placeholder="🔍 Buscar membro..." style="width: 100%; box-sizing: border-box;"
-                    oninput="app.renderLeaderboard(app._lastLeaderboard || [])">
+                <div class="section-title">📊 Estatísticas Gerais</div>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <span class="stat-label">💬 Total de Mensagens</span>
+                        <span class="stat-value" id="stat-mensagens">—</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-label">🎙️ Total em Voz</span>
+                        <span class="stat-value" id="stat-voz">—</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-label">⭐ Nível Máximo</span>
+                        <span class="stat-value" id="stat-maxlevel">—</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-label">🏅 Mais Ativo</span>
+                        <span class="stat-value" id="stat-ativo">—</span>
+                    </div>
+                </div>
+
+                <div class="section-title" style="margin-top: 30px;">🏆 Ranking Global</div>
+
+                <div style="margin-bottom: 15px;">
+                    <input type="text" id="searchLeaderboard" placeholder="🔍 Buscar membro..." style="width: 100%; box-sizing: border-box;"
+                        oninput="app.renderLeaderboard(app._lastLeaderboard || [])">
+                </div>
+
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Posição</th>
+                                <th>Usuário</th>
+                                <th class="th-sort" onclick="app.sortLeaderboard('level')">Lvl ↕</th>
+                                <th class="th-sort" onclick="app.sortLeaderboard('xp')">Progresso ↕</th>
+                                <th class="th-sort" onclick="app.sortLeaderboard('msg')">Mensagens ↕</th>
+                                <th class="th-sort" onclick="app.sortLeaderboard('voz')">Voz ↕</th>
+                            </tr>
+                        </thead>
+                        <tbody id="leaderboardBody"></tbody>
+                    </table>
+                </div>
             </div>
 
-            <div class="table-wrapper">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Posição</th>
-                            <th>Usuário</th>
-                            <th class="th-sort" onclick="app.sortLeaderboard('level')">Lvl ↕</th>
-                            <th class="th-sort" onclick="app.sortLeaderboard('xp')">Progresso ↕</th>
-                            <th class="th-sort" onclick="app.sortLeaderboard('msg')">Mensagens ↕</th>
-                            <th class="th-sort" onclick="app.sortLeaderboard('voz')">Voz ↕</th>
-                        </tr>
-                    </thead>
-                    <tbody id="leaderboardBody"></tbody>
-                </table>
-            </div>
-        </div>
+            <!-- ABA ADMIN -->
+            <div id="tab-admin" class="tab-content" style="display: none;">
 
+                <div class="section-title">⚠️ Reset de Níveis</div>
+                <div class="form-row">
+                    <div class="field">
+                        <label>👤 RESET INDIVIDUAL</label>
+                        <select id="resetUsuario"><option value="">-- Selecionar membro --</option></select>
+                    </div>
+                    <button class="danger" style="width: auto; align-self: flex-end;" onclick="app.handleResetarUsuario()">🗑️ Resetar Usuário</button>
+                </div>
+                <div class="form-row">
+                    <div class="field">
+                        <label>🌐 RESET TOTAL DO SERVIDOR</label>
+                        <span style="font-size: 12px; color: var(--text-muted);">Zera o nível e XP de <b>todos</b> os membros. Ação irreversível.</span>
+                    </div>
+                    <button class="danger" style="width: auto; align-self: flex-end;" onclick="app.handleResetarServidor()">💥 Resetar Todos</button>
+                </div>
 
-        <!-- ABA ADMIN -->
-        <div id="tab-admin" class="tab-content" style="display: none;">
-
-            <div class="section-title">⚠️ Reset de Níveis</div>
-            <div class="form-row">
-                <div class="field">
-                    <label>👤 RESET INDIVIDUAL</label>
-                    <select id="resetUsuario"><option value="">-- Selecionar membro --</option></select>
+                <div class="section-title" style="margin-top: 30px;">✏️ Editar Usuário</div>
+                <div class="form-row">
+                    <div class="field">
+                        <label>👤 MEMBRO</label>
+                        <select id="editUsuario"><option value="">-- Selecionar membro --</option></select>
+                    </div>
+                    <div class="field" style="flex-grow: 0;">
+                        <label>📈 NÍVEL</label>
+                        <input type="number" id="editLevel" min="0" value="0" style="width: 80px;">
+                    </div>
+                    <div class="field" style="flex-grow: 0;">
+                        <label>⭐ XP</label>
+                        <input type="number" id="editXP" min="0" value="0" style="width: 80px;">
+                    </div>
+                    <button class="success" style="width: auto; align-self: flex-end;" onclick="app.handleEditarUsuario()">✅ Salvar</button>
                 </div>
-                <button class="danger" style="width: auto; align-self: flex-end;" onclick="app.handleResetarUsuario()">🗑️ Resetar Usuário</button>
-            </div>
-            <div class="form-row">
-                <div class="field">
-                    <label>🌐 RESET TOTAL DO SERVIDOR</label>
-                    <span style="font-size: 12px; color: var(--text-muted);">Zera o nível e XP de <b>todos</b> os membros. Ação irreversível.</span>
-                </div>
-                <button class="danger" style="width: auto; align-self: flex-end;" onclick="app.handleResetarServidor()">💥 Resetar Todos</button>
-            </div>
-
-            <div class="section-title" style="margin-top: 30px;">✏️ Editar Usuário</div>
-            <div class="form-row">
-                <div class="field">
-                    <label>👤 MEMBRO</label>
-                    <select id="editUsuario"><option value="">-- Selecionar membro --</option></select>
-                </div>
-                <div class="field" style="flex-grow: 0;">
-                    <label>📈 NÍVEL</label>
-                    <input type="number" id="editLevel" min="0" value="0" style="width: 80px;">
-                </div>
-                <div class="field" style="flex-grow: 0;">
-                    <label>⭐ XP</label>
-                    <input type="number" id="editXP" min="0" value="0" style="width: 80px;">
-                </div>
-                <button class="success" style="width: auto; align-self: flex-end;" onclick="app.handleEditarUsuario()">✅ Salvar</button>
-            </div>
-        </div>
-
-        <!-- ABA YOUTUBE -->
-        <div id="tab-youtube" class="tab-content" style="display: none;">
-            <div class="section-title">▶️ Monitorar Canais do YouTube</div>
-            <div class="form-row">
-                <div class="field" style="flex-grow: 0;">
-                    <label>ID DO CANAL YOUTUBE</label>
-                    <input type="text" id="youtubeChannelId" placeholder="@handle, UCxxxx ou URL" style="width: 220px;">
-                </div>
-                <div class="field" style="flex-grow: 0;">
-                    <label>NOME DO CANAL (opcional)</label>
-                    <input type="text" id="youtubeChannelName" placeholder="Ex: Nazarick TV" style="width: 180px;">
-                </div>
-                <div class="field">
-                    <label>CANAL DO DISCORD PARA ANUNCIAR</label>
-                    <select id="youtubeDiscordChannel"><option value="">-- Selecionar canal --</option></select>
-                </div>
-                <button class="success" style="width: auto; align-self: flex-end;" onclick="app.handleAdicionarYoutube()">+ Adicionar</button>
-            </div>
-            <span style="font-size: 11px; color: var(--text-muted); margin-bottom: 15px; display:block;">
-                💡 Aceita <b>@handle</b>, URL completa ou ID <b>UCxxxx</b> — máximo 3 canais por servidor.
-            </span>
-            <div class="table-wrapper">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Canal</th>
-                            <th>ID YouTube</th>
-                            <th>Canal Discord</th>
-                            <th>Status</th>
-                            <th>Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody id="youtubeBody"></tbody>
-                </table>
-            </div>
-        </div>
-        <!-- ABA HISTÓRICO -->
-        <div id="tab-historico" class="tab-content" style="display: none;">
-            <div class="section-title">📈 Histórico de XP</div>
-            <div class="form-row" style="align-items: flex-end;">
-                <div class="field">
-                    <label>MEMBRO</label>
-                    <select id="historicoSelect"><option value="">-- Selecionar membro --</option></select>
-                </div>
-                <button onclick="app.loadHistorico()" style="height: 46px;">Ver Histórico</button>
             </div>
 
-            <div id="historicoGrafico" style="background: rgba(0,0,0,0.2); border-radius: 12px; padding: 20px; min-height: 100px; margin-bottom: 20px;">
-                <p style="color:var(--text-muted); text-align:center; padding:20px;">Selecione um membro para ver o histórico.</p>
+            <!-- ABA YOUTUBE -->
+            <div id="tab-youtube" class="tab-content" style="display: none;">
+                <div class="section-title">▶️ Monitorar Canais do YouTube</div>
+                <div class="form-row">
+                    <div class="field" style="flex-grow: 0;">
+                        <label>ID DO CANAL YOUTUBE</label>
+                        <input type="text" id="youtubeChannelId" placeholder="@handle, UCxxxx ou URL" style="width: 220px;">
+                    </div>
+                    <div class="field" style="flex-grow: 0;">
+                        <label>NOME DO CANAL (opcional)</label>
+                        <input type="text" id="youtubeChannelName" placeholder="Ex: Nazarick TV" style="width: 180px;">
+                    </div>
+                    <div class="field">
+                        <label>CANAL DO DISCORD PARA ANUNCIAR</label>
+                        <select id="youtubeDiscordChannel"><option value="">-- Selecionar canal --</option></select>
+                    </div>
+                    <button class="success" style="width: auto; align-self: flex-end;" onclick="app.handleAdicionarYoutube()">+ Adicionar</button>
+                </div>
+                <span style="font-size: 11px; color: var(--text-muted); margin-bottom: 15px; display:block;">
+                    💡 Aceita <b>@handle</b>, URL completa ou ID <b>UCxxxx</b> — máximo 3 canais por servidor.
+                </span>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Canal</th>
+                                <th>ID YouTube</th>
+                                <th>Canal Discord</th>
+                                <th>Status</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="youtubeBody"></tbody>
+                    </table>
+                </div>
             </div>
+            <!-- ABA HISTÓRICO -->
+            <div id="tab-historico" class="tab-content" style="display: none;">
+                <div class="section-title">📈 Histórico de XP</div>
+                <div class="form-row" style="align-items: flex-end;">
+                    <div class="field">
+                        <label>MEMBRO</label>
+                        <select id="historicoSelect"><option value="">-- Selecionar membro --</option></select>
+                    </div>
+                    <button onclick="app.loadHistorico()" style="height: 46px;">Ver Histórico</button>
+                </div>
 
-            <div class="table-wrapper">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Data</th>
-                            <th>XP Total</th>
-                            <th>Variação</th>
-                        </tr>
-                    </thead>
-                    <tbody id="historicoTabela"></tbody>
-                </table>
+                <div id="historicoGrafico" style="background: rgba(0,0,0,0.2); border-radius: 12px; padding: 20px; min-height: 100px; margin-bottom: 20px;">
+                    <p style="color:var(--text-muted); text-align:center; padding:20px;">Selecione um membro para ver o histórico.</p>
+                </div>
+
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>XP Total</th>
+                                <th>Variação</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historicoTabela"></tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>

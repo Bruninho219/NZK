@@ -10,12 +10,13 @@ class Sync(commands.Cog):
     @commands.command(name="nSync")
     @commands.has_permissions(administrator=True)
     async def nSync(self, ctx):
-        """Sincroniza a lista mestre de cargos e canais respeitando as tabelas com FK"""
+        """Sincroniza a lista mestre de cargos, canais e admins respeitando as tabelas com FK"""
         guild = ctx.guild
         gid = str(guild.id)
-        
+
         cargos_data = []
         canais_data = []
+        admins_data = []
 
         for role in guild.roles:
             if not role.is_default() and not role.managed:
@@ -32,6 +33,16 @@ class Sync(commands.Cog):
                 "channel_name": channel.name
             })
 
+        # 🔐 Lista de administradores do servidor (usada pelo login do dashboard)
+        for member in guild.members:
+            if member.bot:
+                continue
+            if member.guild_permissions.administrator:
+                admins_data.append({
+                    "guild_id": gid,
+                    "user_id": str(member.id)
+                })
+
         try:
             # 🔥 GARANTE A TABELA RAIZ DE SERVIDORES PRIMEIRO (Evita quebra de Foreign Keys)
             self.supabase.table("servidores").upsert({"guild_id": gid}).execute()
@@ -43,8 +54,16 @@ class Sync(commands.Cog):
             if canais_data:
                 self.supabase.table("servidor_canais").delete().eq("guild_id", gid).execute()
                 self.supabase.table("servidor_canais").insert(canais_data).execute()
-            
-            await ctx.send(f"✅ **nSync:** Lista mestre de {len(cargos_data)} cargos e {len(canais_data)} canais atualizada com sucesso no banco!")
+
+            # Sempre roda, mesmo que a lista fique vazia (ex: todo mundo perdeu admin)
+            self.supabase.table("servidor_admins").delete().eq("guild_id", gid).execute()
+            if admins_data:
+                self.supabase.table("servidor_admins").insert(admins_data).execute()
+
+            await ctx.send(
+                f"✅ **nSync:** {len(cargos_data)} cargos, {len(canais_data)} canais e "
+                f"{len(admins_data)} admins atualizados com sucesso no banco!"
+            )
         except Exception as e:
             await ctx.send(f"❌ Erro na integridade do nSync: {e}")
             log_erro("nSync", e)
@@ -56,7 +75,7 @@ class Sync(commands.Cog):
         gid = str(ctx.guild.id)
         try:
             res_cargos = self.supabase.table("servidor_cargos").select("role_id, role_name").eq("guild_id", gid).execute()
-            
+
             if not res_cargos.data:
                 return await ctx.send("⚠️ Use `!nSync` primeiro para popular a lista de cargos deste servidor.")
 
@@ -67,7 +86,7 @@ class Sync(commands.Cog):
                     .eq("guild_id", gid)\
                     .eq("role_id", cargo['role_id'])\
                     .execute()
-                
+
                 if update.data:
                     contador += 1
 
