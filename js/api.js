@@ -1,0 +1,360 @@
+// js/api.js
+var sb = supabase.createClient(CONFIG.URL, CONFIG.KEY);
+
+var NZKAPI = {
+
+    async getServidoresAtivos() {
+        try {
+            const { data, error } = await sb.from('servidores').select('guild_id, removido_em');
+            if (error) throw error;
+            return data.map(item => ({ id: item.guild_id, removido_em: item.removido_em }));
+        } catch (err) {
+            console.error("Erro ao buscar servidores:", err);
+            return [];
+        }
+    },
+
+    async getCargos(guildId) {
+        try {
+            const { data, error } = await sb.from('servidor_cargos').select('role_id, role_name').eq('guild_id', guildId);
+            if (error) throw error;
+            return data || [];
+        } catch (err) {
+            console.error("Erro ao buscar cargos:", err);
+            return [];
+        }
+    },
+
+    async getCanais(guildId) {
+        try {
+            const { data, error } = await sb.from('servidor_canais').select('channel_id, channel_name').eq('guild_id', guildId);
+            if (error) throw error;
+            return data || [];
+        } catch (err) {
+            console.error("Erro ao buscar canais:", err);
+            return [];
+        }
+    },
+
+    async getPatentes(guildId) {
+        try {
+            const { data, error } = await sb.from('patentes').select('*').eq('guild_id', guildId);
+            if (error) throw error;
+            return data || [];
+        } catch (err) {
+            console.error("Erro ao buscar patentes:", err);
+            return [];
+        }
+    },
+
+    async getLeaderboard(guildId) {
+        try {
+            const { data, error } = await sb.from('niveis')
+                .select('user_id, xp, level, msg_count, voice_minutes, reacoes, usuarios(username)')
+                .eq('guild_id', guildId)
+                .order('level', { ascending: false })
+                .order('xp', { ascending: false });
+            if (error) throw error;
+            return (data || []).map(u => ({
+                ...u,
+                username: u.usuarios?.username || 'Desconhecido'
+            }));
+        } catch (err) {
+            console.error("Erro ao buscar ranking:", err);
+            return [];
+        }
+    },
+
+    async getConfigs(guildId) {
+        try {
+            const { data, error } = await sb.from('servidor_configs').select('*').eq('guild_id', guildId).maybeSingle();
+            if (error) throw error;
+            return data;
+        } catch (err) {
+            console.error("Erro ao buscar configs:", err);
+            return null;
+        }
+    },
+
+    async salvarStatusBot(guildId, textoStatus, tipoAtividade) {
+        try {
+            const { error } = await sb.from('servidor_configs').upsert({
+                guild_id: guildId,
+                status_texto: textoStatus,
+                tipo_atividade: parseInt(tipoAtividade)
+            }, { onConflict: 'guild_id' });
+            if (error) throw error;
+            return { success: true };
+        } catch (err) {
+            console.error("Erro ao salvar status:", err);
+            return { success: false };
+        }
+    },
+
+    async salvarConfigCanal(guildId, channelId) {
+        try {
+            const { error } = await sb.from('servidor_configs').upsert({
+                guild_id: guildId, canal_avisos_id: channelId
+            }, { onConflict: 'guild_id' });
+            if (error) throw error;
+            return { success: true };
+        } catch (err) {
+            console.error("Erro ao salvar canal:", err);
+            return { success: false };
+        }
+    },
+
+    async salvarConfigTop1(guildId, roleId) {
+        try {
+            const { error } = await sb.from('servidor_configs').upsert({
+                guild_id: guildId, cargo_top1_id: roleId || null
+            }, { onConflict: 'guild_id' });
+            if (error) throw error;
+            return { success: true };
+        } catch (err) {
+            console.error("Erro ao salvar top1:", err);
+            return { success: false };
+        }
+    },
+
+    async salvarLevelupMensagem(guildId, mensagem) {
+        try {
+            const { error } = await sb.from('servidor_configs').upsert({
+                guild_id: guildId, levelup_mensagem: mensagem || null
+            }, { onConflict: 'guild_id' });
+            if (error) throw error;
+            return { success: true };
+        } catch (err) {
+            console.error("Erro ao salvar mensagem levelup:", err);
+            return { success: false };
+        }
+    },
+
+    async salvarBonus(guildId, bonusBooster, bonusAdmin, bonusStack) {
+        try {
+            const { error } = await sb.from('servidor_configs').upsert({
+                guild_id: guildId,
+                bonus_booster: parseInt(bonusBooster) || 0,
+                bonus_admin: parseInt(bonusAdmin) || 0,
+                bonus_stack: bonusStack
+            }, { onConflict: 'guild_id' });
+            if (error) throw error;
+            return { success: true };
+        } catch (err) {
+            console.error("Erro ao salvar bonus:", err);
+            return { success: false };
+        }
+    },
+
+    async salvarBoostCanal(guildId, canalBoostId, bonusBoostXp) {
+        try {
+            const { error } = await sb.from('servidor_configs').upsert({
+                guild_id: guildId,
+                canal_boost_id: canalBoostId || null,
+                bonus_boost_xp: parseInt(bonusBoostXp) || 0
+            }, { onConflict: 'guild_id' });
+            if (error) throw error;
+            return { success: true };
+        } catch (err) {
+            console.error("Erro ao salvar boost canal:", err);
+            return { success: false };
+        }
+    },
+
+    async salvarBoostMensagem(guildId, boostMensagem) {
+        try {
+            const { error } = await sb.from('servidor_configs').upsert({
+                guild_id: guildId, boost_mensagem: boostMensagem || null
+            }, { onConflict: 'guild_id' });
+            if (error) throw error;
+            return { success: true };
+        } catch (err) {
+            console.error("Erro ao salvar boost mensagem:", err);
+            return { success: false };
+        }
+    },
+
+    async salvarBoasVindasCanal(guildId, canalId, cargosEntradaIds) {
+        try {
+            const { error } = await sb.from('servidor_configs').upsert({
+                guild_id: guildId,
+                canal_boas_vindas_id: canalId || null,
+                cargos_entrada: cargosEntradaIds || []
+            }, { onConflict: 'guild_id' });
+            if (error) throw error;
+            return { success: true };
+        } catch (err) {
+            console.error("Erro ao salvar boas-vindas canal:", err);
+            return { success: false };
+        }
+    },
+
+    async salvarBoasVindasMensagem(guildId, mensagem) {
+        try {
+            const { error } = await sb.from('servidor_configs').upsert({
+                guild_id: guildId, boas_vindas_mensagem: mensagem || null
+            }, { onConflict: 'guild_id' });
+            if (error) throw error;
+            return { success: true };
+        } catch (err) {
+            console.error("Erro ao salvar boas-vindas mensagem:", err);
+            return { success: false };
+        }
+    },
+
+    async salvarPatente(payload) {
+        try {
+            const { error } = await sb.from('patentes').insert([payload]);
+            if (error) throw error;
+            return { success: true };
+        } catch (err) {
+            console.error("Erro ao salvar patente:", err);
+            return { success: false };
+        }
+    },
+
+    async deletarPatente(id) {
+        try {
+            const { error } = await sb.from('patentes').delete().eq('id', id);
+            if (error) throw error;
+            return { success: true };
+        } catch (err) {
+            console.error("Erro ao deletar patente:", err);
+            return { success: false };
+        }
+    },
+
+    async resetarServidor(guildId) {
+        try {
+            const { error } = await sb.from('niveis').update({
+                xp: 0, level: 0, msg_count: 0, voice_minutes: 0, reacoes: 0
+            }).eq('guild_id', guildId);
+            if (error) throw error;
+            return { success: true };
+        } catch (err) {
+            console.error("Erro ao resetar servidor:", err);
+            return { success: false };
+        }
+    },
+
+    async resetarUsuario(guildId, userId) {
+        try {
+            const { error } = await sb.from('niveis').update({
+                xp: 0, level: 0, msg_count: 0, voice_minutes: 0, reacoes: 0
+            }).eq('guild_id', guildId).eq('user_id', userId);
+            if (error) throw error;
+            return { success: true };
+        } catch (err) {
+            console.error("Erro ao resetar usuario:", err);
+            return { success: false };
+        }
+    },
+
+    async editarUsuario(guildId, userId, level, xp) {
+        try {
+            const { error } = await sb.from('niveis').update({
+                level: parseInt(level), xp: parseInt(xp)
+            }).eq('guild_id', guildId).eq('user_id', userId);
+            if (error) throw error;
+            return { success: true };
+        } catch (err) {
+            console.error("Erro ao editar usuario:", err);
+            return { success: false };
+        }
+    },
+
+    async getYoutubeMonitores(guildId) {
+        try {
+            const { data, error } = await sb.from('youtube_monitores')
+                .select('*').eq('guild_id', guildId).order('id', { ascending: true });
+            if (error) throw error;
+            return data || [];
+        } catch (err) {
+            console.error("Erro ao buscar monitores YouTube:", err);
+            return [];
+        }
+    },
+
+    async resolverYoutubeChannelId(entrada) {
+        try {
+            entrada = entrada.trim();
+            if (entrada.includes("youtube.com")) {
+                if (entrada.includes("/@")) {
+                    entrada = "@" + entrada.split("/@")[1].split("/")[0];
+                } else if (entrada.includes("/channel/")) {
+                    return { id: entrada.split("/channel/")[1].split("/")[0], nome: null };
+                } else if (entrada.includes("/user/")) {
+                    entrada = entrada.split("/user/")[1].split("/")[0];
+                }
+            }
+            if (entrada.startsWith("UC") && entrada.length > 20) {
+                return { id: entrada, nome: null };
+            }
+            const handle = entrada.replace(/^@/, "");
+            const rss = await fetch(`https://www.youtube.com/feeds/videos.xml?user=${handle}`);
+            if (rss.ok) {
+                const text = await rss.text();
+                const parser = new DOMParser();
+                const xml = parser.parseFromString(text, "text/xml");
+                const chId = xml.querySelector("channelId")?.textContent;
+                const chName = xml.querySelector("author name")?.textContent;
+                if (chId) return { id: chId, nome: chName };
+            }
+            return null;
+        } catch (err) {
+            console.error("Erro ao resolver canal YouTube:", err);
+            return null;
+        }
+    },
+
+    async salvarYoutubeMonitor(payload) {
+        try {
+            const { error } = await sb.from('youtube_monitores').upsert(payload, { onConflict: 'guild_id,youtube_channel_id' });
+            if (error) throw error;
+            return { success: true };
+        } catch (err) {
+            console.error("Erro ao salvar monitor YouTube:", err);
+            return { success: false };
+        }
+    },
+
+    async deletarYoutubeMonitor(id) {
+        try {
+            const { error } = await sb.from('youtube_monitores').delete().eq('id', id);
+            if (error) throw error;
+            return { success: true };
+        } catch (err) {
+            console.error("Erro ao deletar monitor YouTube:", err);
+            return { success: false };
+        }
+    },
+
+    async toggleYoutubeMonitor(id, ativo) {
+        try {
+            const { error } = await sb.from('youtube_monitores').update({ ativo }).eq('id', id);
+            if (error) throw error;
+            return { success: true };
+        } catch (err) {
+            console.error("Erro ao toggle monitor YouTube:", err);
+            return { success: false };
+        }
+    },
+
+    async getHistorico(guildId, userId) {
+        try {
+            const limite = new Date();
+            limite.setDate(limite.getDate() - 30);
+            const { data, error } = await sb.from('xp_historico')
+                .select('xp_total, registrado_em')
+                .eq('guild_id', guildId)
+                .eq('user_id', userId)
+                .gte('registrado_em', limite.toISOString())
+                .order('registrado_em', { ascending: true });
+            if (error) throw error;
+            return data || [];
+        } catch (err) {
+            console.error("Erro ao buscar historico:", err);
+            return [];
+        }
+    }
+};
