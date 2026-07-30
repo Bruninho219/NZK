@@ -724,7 +724,7 @@ const app = {
 
 window.addEventListener('DOMContentLoaded', () => {
     history.replaceState({ page: "home" }, "", "");
-    app.init();
+    // app.init() agora é chamado pelo auth.js, só depois do login confirmado
 });
 
 window.addEventListener("popstate", (event) => {
