@@ -8,6 +8,19 @@ class GeneralCommands(commands.Cog):
         self.bot = bot
         self.supabase = bot.supabase
 
+    def log_acao(self, gid, actor_id, actor_name, acao, target_id=None, detalhes=None):
+        try:
+            self.supabase.table("audit_log").insert({
+                "guild_id": gid,
+                "actor_id": actor_id,
+                "actor_name": actor_name,
+                "action": acao,
+                "target_id": target_id,
+                "detalhes": detalhes
+            }).execute()
+        except Exception as e:
+            log_erro("audit_log", e)
+
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error):
         if isinstance(error, commands.MissingPermissions):
@@ -457,6 +470,7 @@ class GeneralCommands(commands.Cog):
 
         if target is None:
             confirm = await ctx.send("⚠️ Isso vai resetar **todos** os níveis do servidor. Digite `CONFIRMAR` em 15 segundos para prosseguir.")
+            
             try:
                 msg = await self.bot.wait_for(
                     "message",
@@ -467,15 +481,19 @@ class GeneralCommands(commands.Cog):
                     "xp": 0, "level": 0, "msg_count": 0, "voice_minutes": 0, "reacoes": 0
                 }).eq("guild_id", gid).execute()
                 await ctx.send("✅ **Reset completo!** Todos os níveis foram zerados.")
+                self.log_acao(gid, str(ctx.author.id), str(ctx.author), "reset_server")
+
                 log_info("nReset", f"Reset total executado por {ctx.author} no servidor {ctx.guild.name}")
             except:
                 await ctx.send("❌ Reset cancelado — tempo esgotado.")
+                confirm = await ctx.send("⚠️ Isso vai resetar **todos** os níveis do servidor. Digite `CONFIRMAR` em 15 segundos para prosseguir.")
         else:
             uid = str(target.id)
             self.supabase.table("niveis").update({
                 "xp": 0, "level": 0, "msg_count": 0, "voice_minutes": 0, "reacoes": 0
             }).eq("guild_id", gid).eq("user_id", uid).execute()
             await ctx.send(f"✅ Nível de **{target.display_name}** resetado!")
+            self.log_acao(gid, str(ctx.author.id), str(ctx.author), "reset_user", target_id=uid)
             log_info("nReset", f"Reset de {target} executado por {ctx.author}")
 
     @commands.command(name="nSetXP")
@@ -495,6 +513,7 @@ class GeneralCommands(commands.Cog):
             return await ctx.send(f"❌ {target.display_name} não tem registros.")
 
         self.supabase.table("niveis").update({"xp": valor}).eq("guild_id", gid).eq("user_id", uid).execute()
+        self.log_acao(gid, str(ctx.author.id), str(ctx.author), "set_xp", target_id=uid, detalhes={"novo_xp": valor})
         await ctx.send(f"✅ XP de **{target.display_name}** definido para **{valor}**!")
         log_info("nSetXP", f"XP de {target} definido para {valor} por {ctx.author}")
 
@@ -513,7 +532,8 @@ class GeneralCommands(commands.Cog):
         res = self.supabase.table("niveis").select("*").eq("guild_id", gid).eq("user_id", uid).execute()
         if not res.data:
             return await ctx.send(f"❌ {target.display_name} não tem registros.")
-
+        
+        self.log_acao(gid, str(ctx.author.id), str(ctx.author), "set_level", target_id=uid, detalhes={"novo_level": valor})
         self.supabase.table("niveis").update({"level": valor, "xp": 0}).eq("guild_id", gid).eq("user_id", uid).execute()
         await ctx.send(f"✅ Nível de **{target.display_name}** definido para **{valor}** (XP zerado)!")
         log_info("nSetLevel", f"Nível de {target} definido para {valor} por {ctx.author}")
