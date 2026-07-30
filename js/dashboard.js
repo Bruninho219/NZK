@@ -144,6 +144,41 @@ const app = {
         });
         await this.loadSavedConfigs(guildId);
         await this.renderYoutubeMonitores(guildId);
+        await this.renderAuditLog(guildId);
+    },
+
+    async renderAuditLog(guildId) {
+        const body = document.getElementById('auditLogBody');
+        if (!body) return;
+
+        const acoesTraduzidas = {
+            reset_server: '💥 Reset total do servidor',
+            reset_user: '🗑️ Reset de usuário',
+            edit_user: '✏️ Edição de nível/XP',
+            set_xp: '⭐ XP definido manualmente',
+            set_level: '📈 Nível definido manualmente'
+        };
+
+        const data = await NZKAPI.getAuditLog(guildId);
+
+        if (!data.length) {
+            body.innerHTML = '<tr><td colspan="4" style="text-align:center; color:var(--text-muted); padding:20px;">Nenhuma ação registrada ainda.</td></tr>';
+            return;
+        }
+
+        body.innerHTML = data.map(log => {
+            const data_fmt = new Date(log.created_at).toLocaleString('pt-BR');
+            const acaoNome = acoesTraduzidas[log.action] || log.action;
+            const alvo = log.target_id ? `<code>${log.target_id}</code>` : '—';
+            return `
+                <tr>
+                    <td>${data_fmt}</td>
+                    <td>${log.actor_name || log.actor_id}</td>
+                    <td>${acaoNome}</td>
+                    <td>${alvo}</td>
+                </tr>
+            `;
+        }).join('');
     },
 
     async loadSavedConfigs(guildId) {
@@ -196,8 +231,10 @@ const app = {
         if (!confirm("⚠️ Isso vai zerar TODOS os níveis e XP do servidor. Tem certeza?")) return;
         if (!confirm("⚠️ Última confirmação — essa ação não pode ser desfeita!")) return;
         const res = await NZKAPI.resetarServidor(this.selectedGuild);
-        if (res.success) this.showToast("✅ Todos os níveis foram resetados!");
-        else this.showToast("❌ Erro ao resetar.", "error");
+        if (res.success) {
+            this.showToast("✅ Todos os níveis foram resetados!");
+            NZKAPI.logAcao(this.selectedGuild, "reset_server");
+        } else this.showToast("❌ Erro ao resetar.", "error");
     },
 
     async handleResetarUsuario() {
@@ -206,8 +243,10 @@ const app = {
         const nome = sel.options[sel.selectedIndex].text;
         if (!confirm(`⚠️ Resetar nível e XP de ${nome}?`)) return;
         const res = await NZKAPI.resetarUsuario(this.selectedGuild, sel.value);
-        if (res.success) this.showToast(`✅ ${nome} resetado!`);
-        else this.showToast("❌ Erro ao resetar.", "error");
+        if (res.success) {
+            this.showToast(`✅ ${nome} resetado!`);
+            NZKAPI.logAcao(this.selectedGuild, "reset_user", sel.value);
+        } else this.showToast("❌ Erro ao resetar.", "error");
     },
 
     async handleEditarUsuario() {
@@ -217,8 +256,10 @@ const app = {
         if (!sel.value) return this.showToast("Selecione um usuário.", "error");
         if (level === "" || xp === "") return this.showToast("Preencha nível e XP.", "error");
         const res = await NZKAPI.editarUsuario(this.selectedGuild, sel.value, level, xp);
-        if (res.success) this.showToast(`✅ ${sel.options[sel.selectedIndex].text} atualizado!`);
-        else this.showToast("❌ Erro ao editar.", "error");
+        if (res.success) {
+            this.showToast(`✅ ${sel.options[sel.selectedIndex].text} atualizado!`);
+            NZKAPI.logAcao(this.selectedGuild, "edit_user", sel.value, { level, xp });
+        } else this.showToast("❌ Erro ao editar.", "error");
     },
 
 
@@ -724,7 +765,6 @@ const app = {
 
 window.addEventListener('DOMContentLoaded', () => {
     history.replaceState({ page: "home" }, "", "");
-    // app.init() agora é chamado pelo auth.js, só depois do login confirmado
 });
 
 window.addEventListener("popstate", (event) => {
