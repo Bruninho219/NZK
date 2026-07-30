@@ -1,0 +1,24 @@
+# Bot Python — não faz sentido no deploy estático do dashboard
+*.py
+cogs/
+__pycache__/
+*.pyc
+
+# Configs e scripts específicos do bot / hospedagem do bot
+discloud.config
+requirements.txt
+requirements.bat
+start2.bat
+instalacao.txt
+
+# Segredos e logs (redundante com .gitignore, mas não custa garantir aqui também)
+.env
+logs/
+
+# Dado de usuário que não deveria estar público (resolver depois, mas já não sobe daqui em diante)
+bkp.txt
+
+# Arquivos de projeto locais
+.vscode/
+.git/
+.gitignore
