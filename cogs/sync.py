@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands
-from logger import log_erro
+from logger import log_info, log_erro
 
 class Sync(commands.Cog):
     def __init__(self, bot):
@@ -55,7 +55,6 @@ class Sync(commands.Cog):
                 self.supabase.table("servidor_canais").delete().eq("guild_id", gid).execute()
                 self.supabase.table("servidor_canais").insert(canais_data).execute()
 
-            # Sempre roda, mesmo que a lista fique vazia (ex: todo mundo perdeu admin)
             self.supabase.table("servidor_admins").delete().eq("guild_id", gid).execute()
             if admins_data:
                 self.supabase.table("servidor_admins").insert(admins_data).execute()
@@ -94,6 +93,36 @@ class Sync(commands.Cog):
         except Exception as e:
             await ctx.send(f"❌ Erro no nSync2: {e}")
             log_erro("nSync2", e)
+
+    @commands.Cog.listener()
+    async def on_member_update(self, before, after):
+        """Mantém servidor_admins sincronizado automaticamente quando alguém
+        ganha ou perde a permissão de administrador (sem precisar de !nSync)."""
+        if after.bot:
+            return
+
+        was_admin = before.guild_permissions.administrator
+        is_admin = after.guild_permissions.administrator
+
+        if was_admin == is_admin:
+            return  # nada mudou em relação a admin, ignora
+
+        gid = str(after.guild.id)
+        uid = str(after.id)
+
+        try:
+            if is_admin:
+                self.supabase.table("servidor_admins").upsert({
+                    "guild_id": gid,
+                    "user_id": uid
+                }).execute()
+                log_info("auto_sync_admin", f"{after} agora é admin em {after.guild.name} — liberado no dashboard")
+            else:
+                self.supabase.table("servidor_admins").delete()\
+                    .eq("guild_id", gid).eq("user_id", uid).execute()
+                log_info("auto_sync_admin", f"{after} perdeu admin em {after.guild.name} — removido do dashboard")
+        except Exception as e:
+            log_erro("auto_sync_admin", e)
 
 async def setup(bot):
     await bot.add_cog(Sync(bot))
