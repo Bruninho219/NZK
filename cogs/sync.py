@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands
-from logger import log_info, log_erro
+from logger import log_erro
 
 class Sync(commands.Cog):
     def __init__(self, bot):
@@ -44,7 +44,6 @@ class Sync(commands.Cog):
                 })
 
         try:
-            # 🔥 GARANTE A TABELA RAIZ DE SERVIDORES PRIMEIRO (Evita quebra de Foreign Keys)
             self.supabase.table("servidores").upsert({"guild_id": gid}).execute()
 
             if cargos_data:
@@ -93,6 +92,7 @@ class Sync(commands.Cog):
         except Exception as e:
             await ctx.send(f"❌ Erro no nSync2: {e}")
             log_erro("nSync2", e)
+
 
     @commands.Cog.listener()
     async def on_member_update(self, before, after):
