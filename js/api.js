@@ -63,7 +63,10 @@ var NZKAPI = {
 
     async getCanais(guildId) {
         try {
-            const { data, error } = await sb.from('servidor_canais').select('channel_id, channel_name').eq('guild_id', guildId);
+            const { data, error } = await sb.from('servidor_canais')
+                .select('channel_id, channel_name')
+                .eq('guild_id', guildId)
+                .order('posicao', { ascending: true });
             if (error) throw error;
             return data || [];
         } catch (err) {
