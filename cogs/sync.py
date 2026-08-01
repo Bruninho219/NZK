@@ -23,7 +23,8 @@ class Sync(commands.Cog):
                 cargos_data.append({
                     "guild_id": gid,
                     "role_id": str(role.id),
-                    "role_name": role.name
+                    "role_name": role.name,
+                    "posicao": role.position
                 })
 
         for channel in guild.text_channels:

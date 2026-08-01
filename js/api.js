@@ -52,7 +52,10 @@ var NZKAPI = {
 
     async getCargos(guildId) {
         try {
-            const { data, error } = await sb.from('servidor_cargos').select('role_id, role_name').eq('guild_id', guildId);
+            const { data, error } = await sb.from('servidor_cargos')
+                .select('role_id, role_name')
+                .eq('guild_id', guildId)
+                .order('posicao', { ascending: false });
             if (error) throw error;
             return data || [];
         } catch (err) {
