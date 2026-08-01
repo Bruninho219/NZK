@@ -299,6 +299,51 @@ var NZKAPI = {
         }
     },
 
+    async getTwitchMonitores(guildId) {
+        try {
+            const { data, error } = await sb.from('twitch_monitores')
+                .select('*').eq('guild_id', guildId).order('id', { ascending: true });
+            if (error) throw error;
+            return data || [];
+        } catch (err) {
+            console.error("Erro ao buscar monitores Twitch:", err);
+            return [];
+        }
+    },
+
+    async salvarTwitchMonitor(payload) {
+        try {
+            const { error } = await sb.from('twitch_monitores').upsert(payload, { onConflict: 'guild_id,twitch_username' });
+            if (error) throw error;
+            return { success: true };
+        } catch (err) {
+            console.error("Erro ao salvar monitor Twitch:", err);
+            return { success: false };
+        }
+    },
+
+    async deletarTwitchMonitor(id) {
+        try {
+            const { error } = await sb.from('twitch_monitores').delete().eq('id', id);
+            if (error) throw error;
+            return { success: true };
+        } catch (err) {
+            console.error("Erro ao deletar monitor Twitch:", err);
+            return { success: false };
+        }
+    },
+
+    async toggleTwitchMonitor(id, ativo) {
+        try {
+            const { error } = await sb.from('twitch_monitores').update({ ativo }).eq('id', id);
+            if (error) throw error;
+            return { success: true };
+        } catch (err) {
+            console.error("Erro ao toggle monitor Twitch:", err);
+            return { success: false };
+        }
+    },
+
     async getYoutubeMonitores(guildId) {
         try {
             const { data, error } = await sb.from('youtube_monitores')

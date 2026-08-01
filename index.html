@@ -3,8 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8816082473901477"
-     crossorigin="anonymous"></script>
     <title>NZK | Admin Dashboard</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔥</text></svg>">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
@@ -38,10 +36,16 @@
 <!-- APP (só aparece autenticado) -->
 <div id="appScreen" style="display:none;">
     <div class="container" style="padding-top:0;">
-		<div style="display:flex; justify-content:flex-end; align-items:center; gap:15px; padding:15px 0;">
-			<span id="userBadge" style="font-size:13px; color:var(--text-muted); line-height:36px;"></span>
-			<button id="btnLogout" class="secondary" style="padding:8px 16px; font-size:12px;">Sair</button>
-		</div>
+        <div style="display:flex; justify-content:center; align-items:center; gap:15px; padding:15px 0;">
+            <span id="userBadge" style="font-size:13px; color:var(--text-muted);"></span>
+            <button id="btnLogout" class="secondary" style="padding:8px 16px; font-size:12px;">Sair</button>
+        </div>
+        <div style="text-align:center; margin-bottom:15px; font-size:11px; color:var(--text-muted);">
+            <a href="/privacidade.html" style="color:var(--text-muted);">Política de Privacidade</a>
+            &nbsp;·&nbsp;
+            <a href="/termos.html" style="color:var(--text-muted);">Termos de Serviço</a>
+        </div>
+
         <div id="selector">
             <h1>✨ Meus Servidores Ativos</h1>
             <div class="server-grid" id="serverList">
@@ -64,6 +68,7 @@
                 <button class="tab-btn" onclick="app.switchTab(event, 'tab-historico')">📈 Histórico</button>
                 <button class="tab-btn" onclick="app.switchTab(event, 'tab-admin')">⚠️ Admin</button>
                 <button class="tab-btn" onclick="app.switchTab(event, 'tab-youtube')">▶️ YouTube</button>
+                <button class="tab-btn" onclick="app.switchTab(event, 'tab-twitch')">💜 Twitch</button>
             </div>
 
             <!-- ABA CONFIGURAÇÕES -->
@@ -319,7 +324,7 @@
                     <button class="success" style="width: auto; align-self: flex-end;" onclick="app.handleAdicionarYoutube()">+ Adicionar</button>
                 </div>
                 <span id="youtubeLimiteHint" style="font-size: 11px; color: var(--text-muted); margin-bottom: 15px; display:block;">
-                    💡 Aceita <b>@handle</b>, URL completa ou ID <b>UCxxxx</b> — máximo 3 canais por servidor.
+                    💡 Aceita <b>@handle</b>, URL completa ou ID <b>UCxxxx</b> — máximo 5 canais por servidor.
                 </span>
                 <div class="table-wrapper">
                     <table>
@@ -333,6 +338,37 @@
                             </tr>
                         </thead>
                         <tbody id="youtubeBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ABA TWITCH -->
+            <div id="tab-twitch" class="tab-content" style="display: none;">
+                <div class="section-title">💜 Monitorar Streams da Twitch</div>
+                <div class="form-row">
+                    <div class="field" style="flex-grow: 0;">
+                        <label>USUÁRIO DA TWITCH</label>
+                        <input type="text" id="twitchUsername" placeholder="ex: nomeaqui" style="width: 220px;">
+                    </div>
+                    <div class="field">
+                        <label>CANAL DO DISCORD PARA ANUNCIAR</label>
+                        <select id="twitchDiscordChannel"><option value="">-- Selecionar canal --</option></select>
+                    </div>
+                    <button class="success" style="width: auto; align-self: flex-end;" onclick="app.handleAdicionarTwitch()">+ Adicionar</button>
+                </div>
+                <span style="font-size: 11px; color: var(--text-muted); margin-bottom: 15px; display:block;">
+                    💡 Informe só o nome de usuário da Twitch (sem @, sem URL) — máximo 5 canais por servidor.
+                </span>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Canal</th>
+                                <th>Canal Discord</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="twitchBody"></tbody>
                     </table>
                 </div>
             </div>
@@ -365,17 +401,8 @@
                 </div>
             </div>
         </div>
-		<br><br><br><br><br>
-		<br><br><br><br><br>
-		<br><br><br><br><br>
-		<div style="text-align:center; margin-bottom:15px; font-size:11px; color:var(--text-muted);">
-			<a href="/privacidade.html" style="color:var(--text-muted);">Política de Privacidade</a>
-			&nbsp;·&nbsp;
-			<a href="/termos.html" style="color:var(--text-muted);">Termos de Serviço</a>
-		</div>
     </div>
 </div>
-
 
 </body>
 </html>

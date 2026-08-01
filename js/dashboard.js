@@ -150,6 +150,7 @@ const app = {
         await this.loadSavedConfigs(guildId);
         await this.renderYoutubeMonitores(guildId);
         await this.renderAuditLog(guildId);
+        await this.renderTwitchMonitores(guildId);
     },
 
     async renderAuditLog(guildId) {
@@ -274,7 +275,7 @@ const app = {
         if (this.SEM_LIMITE_YOUTUBE.includes(this.selectedGuild)) {
             el.innerHTML = '💡 Aceita <b>@handle</b>, URL completa ou ID <b>UCxxxx</b> — sem limite de canais neste servidor. 👑';
         } else {
-            el.innerHTML = '💡 Aceita <b>@handle</b>, URL completa ou ID <b>UCxxxx</b> — máximo 3 canais por servidor.';
+            el.innerHTML = '💡 Aceita <b>@handle</b>, URL completa ou ID <b>UCxxxx</b> — máximo 5 canais por servidor.';
         }
     },
 
@@ -316,10 +317,10 @@ const app = {
         if (!entrada) return this.showToast("Informe o canal do YouTube.", "error");
         if (!discordCh) return this.showToast("Selecione o canal do Discord.", "error");
 
-        // Limite de 3 (exceto servidores na lista SEM_LIMITE_YOUTUBE)
+        // Limite de 5 (exceto servidores na lista SEM_LIMITE_YOUTUBE)
         if (!this.SEM_LIMITE_YOUTUBE.includes(this.selectedGuild)) {
             const atual = await NZKAPI.getYoutubeMonitores(this.selectedGuild);
-            if (atual.length >= 3) return this.showToast("Limite de 3 canais atingido.", "error");
+            if (atual.length >= 5) return this.showToast("Limite de 5 canais atingido.", "error");
         }
 
         this.showToast("🔄 Resolvendo canal...");
@@ -360,6 +361,80 @@ const app = {
         if (res.success) {
             this.showToast("🗑️ Monitor removido.", "error");
             this.renderYoutubeMonitores(this.selectedGuild);
+        }
+    },
+
+    async renderTwitchMonitores(guildId) {
+        const data = await NZKAPI.getTwitchMonitores(guildId);
+        const body = document.getElementById('twitchBody');
+        if (!body) return;
+
+        if (!data.length) {
+            body.innerHTML = '<tr><td colspan="3" style="text-align:center; color:var(--text-muted); padding:20px;">Nenhum canal monitorado.</td></tr>';
+            return;
+        }
+
+        body.innerHTML = data.map(m => `
+            <tr>
+                <td>
+                    <a href="https://twitch.tv/${m.twitch_username}" target="_blank" style="color:var(--text-main); text-decoration:none;">
+                        ${m.twitch_username}
+                    </a>
+                </td>
+                <td>#${m.discord_channel_id}</td>
+                <td style="display:flex; gap:8px;">
+                    <span style="color: ${m.ativo ? 'var(--success)' : 'var(--danger)'}; align-self:center;">
+                        ${m.ativo ? '✅ Ativo' : '⏸️ Pausado'}
+                    </span>
+                    <button class="btn-table-action secondary" onclick="app.toggleTwitch(${m.id}, ${!m.ativo})">
+                        ${m.ativo ? '⏸️ Pausar' : '▶️ Ativar'}
+                    </button>
+                    <button class="btn-table-action danger" onclick="app.deletarTwitch(${m.id})">Excluir</button>
+                </td>
+            </tr>
+        `).join('');
+    },
+
+    async handleAdicionarTwitch() {
+        const username = document.getElementById('twitchUsername').value.trim().replace(/^@/, '').toLowerCase();
+        const discordCh = document.getElementById('twitchDiscordChannel').value;
+
+        if (!username) return this.showToast("Informe o nome de usuário da Twitch.", "error");
+        if (!discordCh) return this.showToast("Selecione o canal do Discord.", "error");
+
+        const atual = await NZKAPI.getTwitchMonitores(this.selectedGuild);
+        if (atual.length >= 5) return this.showToast("Limite de 5 canais atingido.", "error");
+
+        const res = await NZKAPI.salvarTwitchMonitor({
+            guild_id: this.selectedGuild,
+            twitch_username: username,
+            discord_channel_id: discordCh,
+            ativo: true
+        });
+
+        if (res.success) {
+            this.showToast("💜 Canal da Twitch adicionado!");
+            document.getElementById('twitchUsername').value = '';
+            this.renderTwitchMonitores(this.selectedGuild);
+        } else {
+            this.showToast("❌ Erro ao adicionar.", "error");
+        }
+    },
+
+    async toggleTwitch(id, ativo) {
+        const res = await NZKAPI.toggleTwitchMonitor(id, ativo);
+        if (res.success) {
+            this.showToast(ativo ? "▶️ Monitor ativado!" : "⏸️ Monitor pausado!");
+            this.renderTwitchMonitores(this.selectedGuild);
+        }
+    },
+
+    async deletarTwitch(id) {
+        if (!confirm("Remover este canal monitorado?")) return;
+        const res = await NZKAPI.deletarTwitchMonitor(id);
+        if (res.success) {
+            this.showToast("🗑️ Monitor removido.", "error");
+            this.renderTwitchMonitores(this.selectedGuild);
         }
     },
 
@@ -487,6 +562,8 @@ const app = {
         document.getElementById('boasVindasChannel').innerHTML = `<option value="">-- Nenhum --</option>` + opts;
         const ytSel = document.getElementById('youtubeDiscordChannel');
         if (ytSel) ytSel.innerHTML = `<option value="">-- Selecionar canal --</option>` + opts;
+        const twSel = document.getElementById('twitchDiscordChannel');
+        if (twSel) twSel.innerHTML = `<option value="">-- Selecionar canal --</option>` + opts;
     },
 
     renderTable(patentes) {
