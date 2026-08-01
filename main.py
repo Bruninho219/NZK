@@ -27,7 +27,7 @@ class MoraxBot(commands.Bot):
     async def setup_hook(self):
         self.atualizar_status_db.start()
         
-        modulos = ['cogs.leveling', 'cogs.commands', 'cogs.sync']
+        modulos = ['cogs.leveling', 'cogs.commands', 'cogs.sync', 'cogs.youtube']
         for modulo in modulos:
             try:
                 await self.load_extension(modulo)

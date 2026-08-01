@@ -326,15 +326,20 @@ var NZKAPI = {
             if (entrada.startsWith("UC") && entrada.length > 20) {
                 return { id: entrada, nome: null };
             }
+
             const handle = entrada.replace(/^@/, "");
-            const rss = await fetch(`https://www.youtube.com/feeds/videos.xml?user=${handle}`);
-            if (rss.ok) {
-                const text = await rss.text();
-                const parser = new DOMParser();
-                const xml = parser.parseFromString(text, "text/xml");
-                const chId = xml.querySelector("channelId")?.textContent;
-                const chName = xml.querySelector("author name")?.textContent;
-                if (chId) return { id: chId, nome: chName };
+            const apiKey = CONFIG.YOUTUBE_API_KEY;
+            if (!apiKey) {
+                console.error("YOUTUBE_API_KEY não configurada em config.js");
+                return null;
+            }
+
+            const url = `https://www.googleapis.com/youtube/v3/channels?part=snippet&forHandle=${encodeURIComponent(handle)}&key=${apiKey}`;
+            const resp = await fetch(url);
+            const data = await resp.json();
+
+            if (data.items && data.items.length > 0) {
+                return { id: data.items[0].id, nome: data.items[0].snippet?.title || null };
             }
             return null;
         } catch (err) {
