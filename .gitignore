@@ -4,3 +4,4 @@ __pycache__/
 *.pyc.env
 teste_webhook.py
 .bat
+requirements.txt
