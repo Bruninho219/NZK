@@ -601,14 +601,15 @@ const app = {
         row.innerHTML = `
             <td colspan="4" style="padding: 10px 20px;">
                 <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
-                    <div>
-                        <label style="font-size:11px;">NÍVEL</label>
-                        <input type="number" id="edit-lvl-${id}" value="${levelAtual}" style="width:80px; margin-top:4px;">
-                    </div>
-                    <div style="flex-grow:1;">
-                        <label style="font-size:11px;">CARGO</label>
-                        <select id="edit-role-${id}" style="width:100%; margin-top:4px;">${opcoesRoles}</select>
-                    </div>
+					<div style="display: flex; flex-direction: column;">
+						<label style="font-size: 11px;">NÍVEL</label>
+						<input type="number" id="edit-lvl-${id}" value="${levelAtual}" style="width: 80px; margin-top: 4px;">
+					</div>
+
+					<div style="display: flex; flex-direction: column; flex-grow: 1;">
+						<label style="font-size: 11px;">CARGO</label>
+						<select id="edit-role-${id}" style="width: 100%; margin-top: 4px;">${opcoesRoles}</select>
+					</div>
                 </div>
             </td>
             <td style="display:flex; gap:8px; padding-top:22px;">
