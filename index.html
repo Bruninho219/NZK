@@ -105,8 +105,8 @@
                     </div>
                 </div>
 
-                <div class="section-title" style="margin-top: 30px;">⬆️ Mensagem de Level Up</div>
-				<div class="form-row">
+				<div class="section-title" style="margin-top: 30px;">⬆️ Mensagem de Level Up</div>
+				<div class="form-row" style="align-items: flex-start;">
 					<div class="field">
 						<label>💬 MENSAGEM (deixe vazio para usar o padrão)</label>
 						<input type="text" id="levelupMensagem" placeholder="{usuario} >> **{nivel}**" style="width: 100%; box-sizing: border-box;">
@@ -114,7 +114,10 @@
 							Variáveis: <code>{usuario}</code> menção &nbsp;|&nbsp; <code>{nivel}</code> nível atingido &nbsp;|&nbsp; <code>{servidor}</code> nome do servidor
 						</span>
 					</div>
-					<button class="success" style="width: auto; align-self: flex-end;" onclick="app.handleSalvarLevelupMensagem()">Salvar</button>
+					<div style="display:flex; flex-direction:column; gap:10px;">
+						<label style="visibility:hidden;">Salvar</label>
+						<button class="success" style="width: auto;" onclick="app.handleSalvarLevelupMensagem()">Salvar</button>
+					</div>
 				</div>
                 <div class="section-title" style="margin-top: 30px;">👋 Boas-vindas</div>
                 <div class="form-row" style="align-items: center;">
