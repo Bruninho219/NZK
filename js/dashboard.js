@@ -104,6 +104,8 @@ const app = {
         this.selectedGuild = guildId;
         this.selectedGuildName = guildName;
 
+        window.scrollTo({ top: 0, behavior: 'instant' });
+
         history.pushState({ page: "editor", guildId }, "", `#server-${guildId}`);
 
         document.getElementById('selector').style.display = 'none';
@@ -846,10 +848,12 @@ const app = {
     },
 
     closeEditor() {
+        window.scrollTo({ top: 0, behavior: 'instant' });
         history.back();
     },
 
     switchTab(e, id) {
+        window.scrollTo({ top: 0, behavior: 'instant' });
         document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         document.getElementById(id).style.display = 'block';
