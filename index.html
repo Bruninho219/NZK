@@ -38,16 +38,10 @@
 <!-- APP (só aparece autenticado) -->
 <div id="appScreen" style="display:none;">
     <div class="container" style="padding-top:0;">
-        <div style="display:flex; justify-content:right; align-items:center; gap:15px; padding:15px 0;">
-            <span id="userBadge" style="font-size:13px; color:var(--text-muted); line-height:36px;"></span>
-            <button id="btnLogout" class="secondary" style="padding:8px 16px; font-size:12px;">Sair</button>
-        </div>
-        <div style="text-align:center; margin-bottom:15px; font-size:11px; color:var(--text-muted);">
-            <a href="/privacidade.html" style="color:var(--text-muted);">Política de Privacidade</a>
-            &nbsp;·&nbsp;
-            <a href="/termos.html" style="color:var(--text-muted);">Termos de Serviço</a>
-        </div>
-
+        <div style="display:flex; justify-content:center; align-items:center; gap:15px; padding:15px 0;">
+			<span id="userBadge" style="font-size:13px; color:var(--text-muted); line-height:36px;"></span>
+			<button id="btnLogout" class="secondary" style="padding:8px 16px; font-size:12px;">Sair</button>
+		</div>
         <div id="selector">
             <h1>✨ Meus Servidores Ativos</h1>
             <div class="server-grid" id="serverList">
@@ -371,8 +365,14 @@
                 </div>
             </div>
         </div>
+		<div style="text-align:center; margin-bottom:15px; font-size:11px; color:var(--text-muted);">
+			<a href="/privacidade.html" style="color:var(--text-muted);">Política de Privacidade</a>
+			&nbsp;·&nbsp;
+			<a href="/termos.html" style="color:var(--text-muted);">Termos de Serviço</a>
+		</div>
     </div>
 </div>
+
 
 </body>
 </html>
