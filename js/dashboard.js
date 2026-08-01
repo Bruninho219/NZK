@@ -6,6 +6,9 @@ const app = {
     _lastLeaderboard: [],
     _sortLeaderboard: { col: null, asc: true },
 
+    // Servidores que não têm o limite de 3 canais do YouTube (ex: seu próprio servidor)
+    SEM_LIMITE_YOUTUBE: ["602623690206609418"],
+
     async init() {
         try {
             const servidores = await NZKAPI.getServidoresAtivos();
@@ -301,9 +304,11 @@ const app = {
         if (!entrada) return this.showToast("Informe o canal do YouTube.", "error");
         if (!discordCh) return this.showToast("Selecione o canal do Discord.", "error");
 
-        // Limite de 3
-        const atual = await NZKAPI.getYoutubeMonitores(this.selectedGuild);
-        if (atual.length >= 3) return this.showToast("Limite de 3 canais atingido.", "error");
+        // Limite de 3 (exceto servidores na lista SEM_LIMITE_YOUTUBE)
+        if (!this.SEM_LIMITE_YOUTUBE.includes(this.selectedGuild)) {
+            const atual = await NZKAPI.getYoutubeMonitores(this.selectedGuild);
+            if (atual.length >= 3) return this.showToast("Limite de 3 canais atingido.", "error");
+        }
 
         this.showToast("🔄 Resolvendo canal...");
 
