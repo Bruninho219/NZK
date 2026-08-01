@@ -3,5 +3,6 @@ logs/
 __pycache__/
 *.pyc.env
 teste_webhook.py
-.bat
+*.bat
 requirements.txt
+instalacao.txt
