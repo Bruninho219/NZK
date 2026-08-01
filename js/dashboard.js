@@ -113,6 +113,8 @@ const app = {
         const statusSection = document.getElementById('statusSection');
         statusSection.style.display = guildId === "602623690206609418" ? "block" : "none";
 
+        this.renderYoutubeLimiteHint();
+
         this.showLoading('patenteBody');
         this.showLoading('leaderboardBody');
 
@@ -265,6 +267,16 @@ const app = {
         } else this.showToast("❌ Erro ao editar.", "error");
     },
 
+
+    renderYoutubeLimiteHint() {
+        const el = document.getElementById('youtubeLimiteHint');
+        if (!el) return;
+        if (this.SEM_LIMITE_YOUTUBE.includes(this.selectedGuild)) {
+            el.innerHTML = '💡 Aceita <b>@handle</b>, URL completa ou ID <b>UCxxxx</b> — sem limite de canais neste servidor. 👑';
+        } else {
+            el.innerHTML = '💡 Aceita <b>@handle</b>, URL completa ou ID <b>UCxxxx</b> — máximo 3 canais por servidor.';
+        }
+    },
 
     async renderYoutubeMonitores(guildId) {
         const data = await NZKAPI.getYoutubeMonitores(guildId);
