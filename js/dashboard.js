@@ -207,6 +207,10 @@ const app = {
             document.getElementById('boostMensagem').value = config.boost_mensagem || '';
             document.getElementById('bonusAdmin').value = config.bonus_admin || 0;
             document.getElementById('bonusStack').value = config.bonus_stack === false ? "nao" : "sim";
+            document.getElementById('boostAfetaAdmin').checked = config.boost_afeta_bonus_admin !== false;
+            document.getElementById('xpMensagem').value = config.xp_mensagem ?? 20;
+            document.getElementById('xpReacao').value = config.xp_reacao ?? 5;
+            document.getElementById('xpVozMinuto').value = config.xp_voz_minuto ?? 15;
         } else {
             document.getElementById('channelSelect').value = "";
             document.getElementById('top1Select').value = "";
@@ -223,6 +227,10 @@ const app = {
             document.getElementById('boostMensagem').value = '';
             document.getElementById('bonusAdmin').value = 0;
             document.getElementById('bonusStack').value = "sim";
+            document.getElementById('boostAfetaAdmin').checked = true;
+            document.getElementById('xpMensagem').value = 20;
+            document.getElementById('xpReacao').value = 5;
+            document.getElementById('xpVozMinuto').value = 15;
         }
     },
 
@@ -518,8 +526,18 @@ const app = {
     async handleSalvarBoostCanal() {
         const canal = document.getElementById('boostChannel').value;
         const xp    = document.getElementById('boostXp').value;
-        const res   = await NZKAPI.salvarBoostCanal(this.selectedGuild, canal, xp);
+        const afetaAdmin = document.getElementById('boostAfetaAdmin').checked;
+        const res   = await NZKAPI.salvarBoostCanal(this.selectedGuild, canal, xp, afetaAdmin);
         if (res.success) this.showToast("💜 Canal e XP de boost salvos!");
+        else this.showToast("❌ Erro ao salvar.", "error");
+    },
+
+    async handleSalvarXpConfig() {
+        const xpMensagem   = document.getElementById('xpMensagem').value;
+        const xpReacao     = document.getElementById('xpReacao').value;
+        const xpVozMinuto  = document.getElementById('xpVozMinuto').value;
+        const res = await NZKAPI.salvarXpConfig(this.selectedGuild, xpMensagem, xpReacao, xpVozMinuto);
+        if (res.success) this.showToast("⭐ Configuração de XP salva!");
         else this.showToast("❌ Erro ao salvar.", "error");
     },
 

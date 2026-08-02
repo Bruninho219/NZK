@@ -188,12 +188,29 @@ var NZKAPI = {
         }
     },
 
-    async salvarBoostCanal(guildId, canalBoostId, bonusBoostXp) {
+    async salvarXpConfig(guildId, xpMensagem, xpReacao, xpVozMinuto) {
+        try {
+            const { error } = await sb.from('servidor_configs').upsert({
+                guild_id: guildId,
+                xp_mensagem: parseInt(xpMensagem) || 0,
+                xp_reacao: parseInt(xpReacao) || 0,
+                xp_voz_minuto: parseInt(xpVozMinuto) || 0
+            }, { onConflict: 'guild_id' });
+            if (error) throw error;
+            return { success: true };
+        } catch (err) {
+            console.error("Erro ao salvar config de XP:", err);
+            return { success: false };
+        }
+    },
+
+    async salvarBoostCanal(guildId, canalBoostId, bonusBoostXp, afetaBonusAdmin) {
         try {
             const { error } = await sb.from('servidor_configs').upsert({
                 guild_id: guildId,
                 canal_boost_id: canalBoostId || null,
-                bonus_boost_xp: parseInt(bonusBoostXp) || 0
+                bonus_boost_xp: parseInt(bonusBoostXp) || 0,
+                boost_afeta_bonus_admin: afetaBonusAdmin
             }, { onConflict: 'guild_id' });
             if (error) throw error;
             return { success: true };

@@ -100,6 +100,9 @@ class Leveling(commands.Cog):
     @commands.Cog.listener()
     async def on_member_join(self, member):
         """Boas-vindas e cargos automáticos ao entrar no servidor."""
+        if member.bot:
+            return  # cargos automáticos e boas-vindas só pra gente de verdade
+
         guild = member.guild
         gid = str(guild.id)
 
@@ -152,11 +155,12 @@ class Leveling(commands.Cog):
 
             try:
                 cfg = self.supabase.table("servidor_configs")\
-                    .select("canal_boost_id, bonus_boost_xp, boost_mensagem")\
+                    .select("canal_boost_id, bonus_boost_xp, boost_mensagem, boost_afeta_bonus_admin")\
                     .eq("guild_id", gid).execute()
 
                 canal_id = cfg.data[0].get("canal_boost_id") if cfg.data else None
                 bonus_xp = int(cfg.data[0].get("bonus_boost_xp") or 0) if cfg.data else 0
+                afeta_admin = cfg.data[0].get("boost_afeta_bonus_admin", True) if cfg.data else True
 
                 if canal_id:
                     canal = guild.get_channel(int(canal_id))
@@ -178,7 +182,7 @@ class Leveling(commands.Cog):
                         await canal.send(embed=embed)
 
                 if bonus_xp > 0:
-                    await self.adicionar_xp(after, guild, None, bonus_xp)
+                    await self.adicionar_xp(after, guild, None, "manual", xp_extra=bonus_xp, aplicar_bonus_admin=afeta_admin)
                     log_info("on_member_update", f"Boost detectado: {after.name} recebeu +{bonus_xp} XP")
 
             except Exception as e:
@@ -201,7 +205,7 @@ class Leveling(commands.Cog):
             return
 
         self.xp_cooldown[uid] = agora
-        await self.adicionar_xp(message.author, message.guild, message.channel, 20)
+        await self.adicionar_xp(message.author, message.guild, message.channel, "mensagem")
 
     @commands.Cog.listener()
     async def on_reaction_add(self, reaction, user):
@@ -216,7 +220,7 @@ class Leveling(commands.Cog):
             return
 
         self.xp_cooldown[rk] = agora
-        await self.adicionar_xp(user, reaction.message.guild, None, 5)
+        await self.adicionar_xp(user, reaction.message.guild, None, "reacao")
 
     @commands.Cog.listener()
     async def on_voice_state_update(self, member, before, after):
@@ -231,36 +235,59 @@ class Leveling(commands.Cog):
                 entrada = self.voice_tracker.pop(uid)
                 minutos = int((datetime.datetime.now() - entrada).total_seconds() / 60)
                 if minutos > 0:
-                    await self.adicionar_xp(member, member.guild, None, minutos * 15, minutos_voz=minutos)
+                    await self.adicionar_xp(member, member.guild, None, "voz", minutos_voz=minutos)
 
-    async def adicionar_xp(self, user, guild, channel, xp_ganho, minutos_voz=0):
+    async def adicionar_xp(self, user, guild, channel, tipo, minutos_voz=0, xp_extra=None, aplicar_bonus_admin=True):
+        """
+        tipo: 'mensagem', 'reacao', 'voz' ou 'manual' (usado por boost/bônus avulsos, junto com xp_extra)
+        aplicar_bonus_admin: se False, o bônus de % de admin não é aplicado a esse ganho específico
+                              (o bônus de booster continua valendo normalmente, se aplicável)
+        """
         uid, gid = str(user.id), str(guild.id)
         nickname = user.display_name
 
         await self.garantir_servidor_e_usuario(gid, uid, nickname)
 
         try:
-            # Busca configuração de bônus do servidor
+            # Busca configuração de bônus e taxas de XP do servidor
             cfg_res = self.supabase.table("servidor_configs")\
-                .select("bonus_booster, bonus_admin, bonus_stack")\
+                .select("bonus_booster, bonus_admin, bonus_stack, xp_mensagem, xp_reacao, xp_voz_minuto")\
                 .eq("guild_id", gid).execute()
 
+            cfg = cfg_res.data[0] if cfg_res.data else {}
+
+            xp_mensagem   = int(cfg.get("xp_mensagem")   if cfg.get("xp_mensagem")   is not None else 20)
+            xp_reacao     = int(cfg.get("xp_reacao")     if cfg.get("xp_reacao")     is not None else 5)
+            xp_voz_minuto = int(cfg.get("xp_voz_minuto") if cfg.get("xp_voz_minuto") is not None else 15)
+
+            if tipo == "mensagem":
+                xp_ganho = xp_mensagem
+            elif tipo == "reacao":
+                xp_ganho = xp_reacao
+            elif tipo == "voz":
+                xp_ganho = xp_voz_minuto * minutos_voz
+            elif tipo == "manual":
+                xp_ganho = xp_extra or 0
+            else:
+                xp_ganho = 0
+
+            if xp_ganho <= 0:
+                return
+
+            bonus_booster = int(cfg.get("bonus_booster") or 0)
+            bonus_admin   = int(cfg.get("bonus_admin") or 0)
+            bonus_stack   = cfg.get("bonus_stack", True)
+
+            eh_booster = bool(getattr(user, "premium_since", None))
+            eh_admin   = isinstance(user, discord.Member) and user.guild_permissions.administrator and aplicar_bonus_admin
+
             bonus_pct = 0
-            if cfg_res.data:
-                cfg = cfg_res.data[0]
-                bonus_booster = int(cfg.get("bonus_booster") or 0)
-                bonus_admin   = int(cfg.get("bonus_admin") or 0)
-                bonus_stack   = cfg.get("bonus_stack", True)
-
-                eh_booster = bool(getattr(user, "premium_since", None))
-                eh_admin   = isinstance(user, discord.Member) and user.guild_permissions.administrator
-
-                if eh_booster and eh_admin:
-                    bonus_pct = (bonus_booster + bonus_admin) if bonus_stack else max(bonus_booster, bonus_admin)
-                elif eh_booster:
-                    bonus_pct = bonus_booster
-                elif eh_admin:
-                    bonus_pct = bonus_admin
+            if eh_booster and eh_admin:
+                bonus_pct = (bonus_booster + bonus_admin) if bonus_stack else max(bonus_booster, bonus_admin)
+            elif eh_booster:
+                bonus_pct = bonus_booster
+            elif eh_admin:
+                bonus_pct = bonus_admin
 
             if bonus_pct > 0:
                 xp_ganho = int(xp_ganho * (1 + bonus_pct / 100))
@@ -273,9 +300,9 @@ class Leveling(commands.Cog):
                     "user_id": uid,
                     "xp": xp_ganho,
                     "level": 0,
-                    "msg_count": 1 if channel else 0,
+                    "msg_count": 1 if tipo == "mensagem" else 0,
                     "voice_minutes": minutos_voz,
-                    "reacoes": 1 if xp_ganho == 5 else 0
+                    "reacoes": 1 if tipo == "reacao" else 0
                 }).execute()
                 return
 
@@ -291,9 +318,9 @@ class Leveling(commands.Cog):
             update_data = {
                 "xp": int(novo_xp),
                 "level": int(novo_level),
-                "msg_count": d['msg_count'] + (1 if channel else 0),
+                "msg_count": d['msg_count'] + (1 if tipo == "mensagem" else 0),
                 "voice_minutes": (d.get('voice_minutes', 0) or 0) + minutos_voz,
-                "reacoes": (d.get('reacoes', 0) or 0) + (1 if xp_ganho == 5 else 0)
+                "reacoes": (d.get('reacoes', 0) or 0) + (1 if tipo == "reacao" else 0)
             }
 
             self.supabase.table("niveis").update(update_data).eq("guild_id", gid).eq("user_id", uid).execute()
