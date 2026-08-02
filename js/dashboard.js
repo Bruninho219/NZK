@@ -56,7 +56,7 @@ const app = {
         const guildData = {
             "602623690206609418": { name: "Nazarick", icon: "img/nazarick.gif" },
             "1044253947751309372": { name: "Serv Baharuth", icon: "img/baharuth.png" },
-            "1089351461588176908": { name: "Serv Teocracia Slane", icon: "img/slane.png" },
+            "1089351461588176908": { name: "Serv Teocracia Slane", icon: "img/slane2.png" },
             "100000000": { name: "Test Server", icon: "🧪" }
         };
 
