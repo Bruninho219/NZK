@@ -1,0 +1,4 @@
+This is a Brave Creators publisher verification file.
+
+Domain: nzk.app.br
+Token: 0ccf5b15edad3d778704bbc2b320fe5283f9fb8c66b840f16f94ceee08e1d305
