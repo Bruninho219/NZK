@@ -97,7 +97,14 @@ const app = {
                     ${removido ? `<div class="server-removido-badge">⚠️ Bot removido há ${diasRemovido}d</div>` : ''}
                 </div>
             `;
-        }).join('');
+        }).join('') + `
+            <div class="server-card" onclick="window.location.href='/invite'" style="border: 1px dashed rgba(255,255,255,0.2); background: rgba(255,255,255,0.02);">
+                <div class="icon-wrapper">
+                    <div style="width:55px; height:55px; border-radius:50%; background:var(--success); display:flex; align-items:center; justify-content:center; font-size:30px; font-weight:800; color:white; line-height:1;">+</div>
+                </div>
+                <h3>Convidar o bot pro seu servidor</h3>
+            </div>
+        `;
     },
 
     async loadConfig(guildId, guildName) {
