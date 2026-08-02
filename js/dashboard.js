@@ -56,7 +56,7 @@ const app = {
         const guildData = {
             "602623690206609418": { name: "Nazarick", icon: "img/nazarick.gif" },
             "1044253947751309372": { name: "Serv Baharuth", icon: "img/baharuth.png" },
-            "1089351461588176908": { name: "Serv Teocracia Slane", icon: "img/slane2.png" },
+            "1089351461588176908": { name: "Serv Teocracia Slane", icon: "img/slane.png" },
             "100000000": { name: "Test Server", icon: "🧪" }
         };
 
@@ -201,14 +201,8 @@ const app = {
             if (config.canal_boost_id) document.getElementById('boostChannel').value = config.canal_boost_id;
             if (config.canal_boas_vindas_id) document.getElementById('boasVindasChannel').value = config.canal_boas_vindas_id;
             document.getElementById('boasVindasMensagem').value = config.boas_vindas_mensagem || '';
-            // Marca os cargos de entrada salvos
-            const cargosEntrada = config.cargos_entrada || [];
-            const cargoSel = document.getElementById('cargoEntrada');
-            if (cargoSel) {
-                Array.from(cargoSel.options).forEach(opt => {
-                    opt.selected = cargosEntrada.includes(opt.value);
-                });
-            }
+            this.cargosEntradaAtuais = config.cargos_entrada || [];
+            this.renderCargosEntradaTable();
             document.getElementById('boostXp').value = config.bonus_boost_xp || 0;
             document.getElementById('boostMensagem').value = config.boost_mensagem || '';
             document.getElementById('bonusAdmin').value = config.bonus_admin || 0;
@@ -223,7 +217,8 @@ const app = {
             document.getElementById('boostChannel').value = "";
             document.getElementById('boasVindasChannel').value = "";
             document.getElementById('boasVindasMensagem').value = "";
-            document.getElementById('cargoEntrada').value = "";
+            this.cargosEntradaAtuais = [];
+            this.renderCargosEntradaTable();
             document.getElementById('boostXp').value = 0;
             document.getElementById('boostMensagem').value = '';
             document.getElementById('bonusAdmin').value = 0;
@@ -442,8 +437,7 @@ const app = {
 
     async handleSalvarBoasVindasCanal() {
         const canal = document.getElementById('boasVindasChannel').value;
-        const cargoSel = document.getElementById('cargoEntrada');
-        const cargos = Array.from(cargoSel.selectedOptions).map(o => o.value);
+        const cargos = this.cargosEntradaAtuais || [];
         const res   = await NZKAPI.salvarBoasVindasCanal(this.selectedGuild, canal, cargos);
         if (res.success) this.showToast("👋 Canal e cargo de boas-vindas salvos!");
         else this.showToast("❌ Erro ao salvar.", "error");
@@ -456,6 +450,46 @@ const app = {
         else this.showToast("❌ Erro ao salvar.", "error");
     },
 
+    handleAdicionarCargoEntrada() {
+        const sel = document.getElementById('cargoEntradaSelect');
+        if (!sel.value) return this.showToast("Selecione um cargo.", "error");
+
+        this.cargosEntradaAtuais = this.cargosEntradaAtuais || [];
+        if (this.cargosEntradaAtuais.length >= 10) return this.showToast("Limite de 10 cargos atingido.", "error");
+        if (this.cargosEntradaAtuais.includes(sel.value)) return this.showToast("Esse cargo já foi adicionado.", "error");
+
+        this.cargosEntradaAtuais.push(sel.value);
+        this.renderCargosEntradaTable();
+        sel.value = "";
+    },
+
+    handleRemoverCargoEntrada(roleId) {
+        this.cargosEntradaAtuais = (this.cargosEntradaAtuais || []).filter(id => id !== roleId);
+        this.renderCargosEntradaTable();
+    },
+
+    renderCargosEntradaTable() {
+        const body = document.getElementById('cargosEntradaBody');
+        if (!body) return;
+
+        const lista = this.cargosEntradaAtuais || [];
+        if (!lista.length) {
+            body.innerHTML = '<tr><td colspan="2" style="text-align:center; color:var(--text-muted); padding:15px;">Nenhum cargo automático configurado.</td></tr>';
+            return;
+        }
+
+        body.innerHTML = lista.map(roleId => {
+            const cargo = (this._cargosDisponiveis || []).find(c => c.role_id === roleId);
+            const nome = cargo ? cargo.role_name : `Cargo removido (${roleId})`;
+            return `
+                <tr>
+                    <td>${nome}</td>
+                    <td><button class="btn-table-action danger" onclick="app.handleRemoverCargoEntrada('${roleId}')">Excluir</button></td>
+                </tr>
+            `;
+        }).join('');
+    },
+
     handleTestarBoasVindas() {
         const mensagem_raw = document.getElementById('boasVindasMensagem').value
             || "Bem-vindo(a) ao {servidor}, {usuario}!";
@@ -464,10 +498,11 @@ const app = {
             .replace("{servidor}", this.selectedGuildName)
             .replace("{membros}", "**[Nº DE MEMBROS]**");
 
-        const sel = document.getElementById('cargoEntrada');
-        const cargoNome = sel.value
-            ? sel.options[sel.selectedIndex]?.text
-            : null;
+        const nomes = (this.cargosEntradaAtuais || []).map(roleId => {
+            const cargo = (this._cargosDisponiveis || []).find(c => c.role_id === roleId);
+            return cargo ? cargo.role_name : null;
+        }).filter(Boolean);
+        const cargoNome = nomes.length ? nomes.join(', ') : null;
 
         const preview = document.getElementById('boasVindasPreview');
         preview.innerHTML = `
@@ -475,7 +510,7 @@ const app = {
                 <div style="font-weight:800; color:var(--accent); margin-bottom:8px;">👋 Prévia da mensagem</div>
                 <div style="margin-bottom:8px;">${mensagem}</div>
                 <div style="font-size:11px; color:var(--text-muted);">🖼️ Thumbnail: foto do perfil do usuário</div>
-                ${cargoNome ? `<div style="font-size:11px; color:var(--text-muted); margin-top:4px;">🎭 Cargo atribuído: <b>${cargoNome}</b></div>` : ''}
+                ${cargoNome ? `<div style="font-size:11px; color:var(--text-muted); margin-top:4px;">🎭 Cargos atribuídos: <b>${cargoNome}</b></div>` : ''}
             </div>
         `;
     },
@@ -551,10 +586,11 @@ const app = {
     },
 
     renderRoles(cargos) {
+        this._cargosDisponiveis = cargos;
         const html = cargos.map(r => `<option value="${r.role_id}" data-name="${r.role_name}">${r.role_name}</option>`).join('');
         document.getElementById('roleSelect').innerHTML = html;
         document.getElementById('top1Select').innerHTML = `<option value="">-- Nenhum --</option>` + html;
-        document.getElementById('cargoEntrada').innerHTML = `<option value="">-- Nenhum --</option>` + html;
+        document.getElementById('cargoEntradaSelect').innerHTML = `<option value="">-- Selecionar cargo --</option>` + html;
     },
 
     renderChannels(canais) {
@@ -598,7 +634,7 @@ const app = {
             `<option value="${o.value}" ${o.value === roleIdAtual ? 'selected' : ''}>${o.text}</option>`
         ).join('');
 
-        row.innerHTML = `
+row.innerHTML = `
             <td colspan="4" style="padding: 10px 20px;">
                 <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
 					<div style="display: flex; flex-direction: column;">

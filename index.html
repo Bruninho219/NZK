@@ -40,6 +40,12 @@
 			<span id="userBadge" style="font-size: 13px; color: var(--text-muted); display: flex; align-items: center; gap: 8px;"></span>
 			<button id="btnLogout" class="secondary" style="padding: 8px 16px; font-size: 12px; margin: 0;">Sair</button>
 		</div>
+        <div style="text-align:center; margin-bottom:15px; font-size:11px; color:var(--text-muted);">
+            <a href="/privacidade.html" style="color:var(--text-muted);">Política de Privacidade</a>
+            &nbsp;·&nbsp;
+            <a href="/termos.html" style="color:var(--text-muted);">Termos de Serviço</a>
+        </div>
+
         <div id="selector">
             <h1>✨ Meus Servidores Ativos</h1>
             <div class="server-grid" id="serverList">
@@ -61,8 +67,8 @@
                 <button class="tab-btn" onclick="app.switchTab(event, 'tab-ranking')">🏆 Top 20 Membros</button>
                 <button class="tab-btn" onclick="app.switchTab(event, 'tab-historico')">📈 Histórico</button>
                 <button class="tab-btn" onclick="app.switchTab(event, 'tab-admin')">⚠️ Admin</button>
-                <button class="tab-btn" onclick="app.switchTab(event, 'tab-youtube')">🔴️ YouTube</button>
-                <button class="tab-btn" onclick="app.switchTab(event, 'tab-twitch')">🟣 Twitch</button>
+                <button class="tab-btn" onclick="app.switchTab(event, 'tab-youtube')">▶️ YouTube</button>
+                <button class="tab-btn" onclick="app.switchTab(event, 'tab-twitch')">💜 Twitch</button>
             </div>
 
             <!-- ABA CONFIGURAÇÕES -->
@@ -104,33 +110,50 @@
                     </div>
                 </div>
 
-				<div class="section-title" style="margin-top: 30px;">⬆️ Mensagem de Level Up</div>
-				<div class="form-row" style="align-items: flex-start;">
-					<div class="field">
-						<label>💬 MENSAGEM (deixe vazio para usar o padrão)</label>
-						<input type="text" id="levelupMensagem" placeholder="{usuario} >> **{nivel}**" style="width: 100%; box-sizing: border-box;">
-						<span style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">
-							Variáveis: <code>{usuario}</code> menção &nbsp;|&nbsp; <code>{nivel}</code> nível atingido &nbsp;|&nbsp; <code>{servidor}</code> nome do servidor
-						</span>
-					</div>
-					<div style="display:flex; flex-direction:column; gap:10px;">
-						<label style="visibility:hidden;">Salvar</label>
-						<button class="success" style="width: auto;" onclick="app.handleSalvarLevelupMensagem()">Salvar</button>
-					</div>
-				</div>
-                <div class="section-title" style="margin-top: 30px;">👋 Boas-vindas</div>
-                <div class="form-row" style="align-items: center;">
-					<div class="field">
-						<label>📢 CANAL DE BOAS-VINDAS</label>
-						<select id="boasVindasChannel"><option value="">-- Nenhum --</option></select>
-					</div>
-					<div class="field">
-						<label>🎭 CARGOS AO ENTRAR (até 10 — segure Ctrl para selecionar vários)</label>
-						<select id="cargoEntrada" multiple style="height: 120px;"></select>
-					</div>
-					<button class="success" style="width: auto; align-self: center;" onclick="app.handleSalvarBoasVindasCanal()">Salvar Canal e Cargo</button>
-				</div>
+                <div class="section-title" style="margin-top: 30px;">⬆️ Mensagem de Level Up</div>
                 <div class="form-row">
+                    <div class="field">
+                        <label>💬 MENSAGEM (deixe vazio para usar o padrão)</label>
+                        <input type="text" id="levelupMensagem" placeholder="{usuario} >> **{nivel}**" style="width: 100%; box-sizing: border-box;">
+                        <span style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">
+                            Variáveis: <code>{usuario}</code> menção &nbsp;|&nbsp; <code>{nivel}</code> nível atingido &nbsp;|&nbsp; <code>{servidor}</code> nome do servidor
+                        </span>
+                    </div>
+                    <button class="success" style="width: auto; align-self: flex-end;" onclick="app.handleSalvarLevelupMensagem()">Salvar</button>
+                </div>
+                <div class="section-title" style="margin-top: 30px;">👋 Boas-vindas</div>
+                <div class="form-row">
+                    <div class="field">
+                        <label>📢 CANAL DE BOAS-VINDAS</label>
+                        <select id="boasVindasChannel"><option value="">-- Nenhum --</option></select>
+                    </div>
+                    <button class="success" style="width: auto; align-self: flex-end;" onclick="app.handleSalvarBoasVindasCanal()">Salvar Canal</button>
+                </div>
+
+                <div class="form-row">
+                    <div class="field" style="flex-grow: 0;">
+                        <label>🎭 CARGO AUTOMÁTICO AO ENTRAR</label>
+                        <select id="cargoEntradaSelect"><option value="">-- Selecionar cargo --</option></select>
+                    </div>
+                    <button onclick="app.handleAdicionarCargoEntrada()">+ Adicionar</button>
+                </div>
+                <span style="font-size: 11px; color: var(--text-muted); margin-bottom: 15px; display:block;">
+                    💡 Até 10 cargos — cada um atribuído automaticamente a quem entra no servidor.
+                </span>
+
+                <div class="table-wrapper" style="max-height: 260px;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Cargo</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="cargosEntradaBody"></tbody>
+                    </table>
+                </div>
+
+                <div class="form-row" style="margin-top: 20px;">
                     <div class="field">
                         <label>💬 MENSAGEM DE BOAS-VINDAS (deixe vazio para desativar)</label>
                         <input type="text" id="boasVindasMensagem" placeholder="Bem-vindo(a) ao {servidor}, {usuario}!" style="width: 100%; box-sizing: border-box;">
