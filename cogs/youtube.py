@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands, tasks
-from logger import log_info, log_erro
+from logger import log_erro
 import aiohttp
 import xml.etree.ElementTree as ET
 
@@ -138,7 +138,6 @@ class YouTube(commands.Cog):
             embed.set_footer(text="YouTube")
 
             await canal.send(embed=embed)
-            log_info("YouTube", f"Novo vídeo anunciado: {titulo} em {guild.name}")
 
         except Exception as e:
             log_erro(f"_checar_canal ({monitor.get('youtube_channel_id')})", e)
