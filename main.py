@@ -1,4 +1,5 @@
 import os
+import datetime
 import discord
 from discord.ext import commands, tasks
 from supabase import create_client
@@ -13,20 +14,30 @@ key = os.getenv("SUPABASE_KEY")
 supabase_client = create_client(url, key)
 
 intents = discord.Intents.default()
-intents.message_content = True  
-intents.members = True          
-intents.guilds = True           
-intents.reactions = True        
-intents.voice_states = True     
+intents.message_content = True
+intents.members = True
+intents.guilds = True
+intents.reactions = True
+intents.voice_states = True
+
+# Gera todos os horários "redondos" de 5 em 5 minutos do dia (00:00, 00:05, ..., 23:55).
+# Usado pelo loop de status pra rodar sempre alinhado ao relógio, em vez de
+# contar 5 minutos a partir da hora que o bot ligou.
+HORARIOS_STATUS = [datetime.time(hour=h, minute=m) for h in range(24) for m in range(0, 60, 5)]
+
 
 class MoraxBot(commands.Bot):
     def __init__(self):
-        super().__init__(command_prefix=config.PREFIX, intents=intents)
+        super().__init__(
+            command_prefix=config.PREFIX,
+            intents=intents,
+            case_insensitive=True  # !nRank, !nrank, !NRANK... todos funcionam igual
+        )
         self.supabase = supabase_client
 
     async def setup_hook(self):
         self.atualizar_status_db.start()
-        
+
         modulos = ['cogs.leveling', 'cogs.commands', 'cogs.sync', 'cogs.youtube', 'cogs.twitch']
         for modulo in modulos:
             try:
@@ -35,26 +46,35 @@ class MoraxBot(commands.Bot):
             except Exception as e:
                 log_erro("setup_hook", e)
 
-    @tasks.loop(minutes=1440)
+        # Registra os slash commands (/comando) no Discord.
+        # A primeira sincronização global pode levar até ~1h pra aparecer
+        # em todo lugar — isso é limitação do próprio Discord, não do bot.
+        try:
+            sincronizados = await self.tree.sync()
+            log_info("setup_hook", f"🔄 {len(sincronizados)} slash commands sincronizados!")
+        except Exception as e:
+            log_erro("tree.sync", e)
+
+    @tasks.loop(time=HORARIOS_STATUS)
     async def atualizar_status_db(self):
         try:
-            if not self.guilds: 
+            if not self.guilds:
                 return
-            
+
             guild_id = "602623690206609418"  # Nazarick
 
             res = self.supabase.table("servidor_configs") \
                 .select("status_texto, tipo_atividade") \
                 .eq("guild_id", guild_id) \
                 .execute()
-            
+
             if res.data and res.data[0].get('status_texto'):
                 cfg = res.data[0]
                 texto = cfg['status_texto']
                 tipo_id = cfg.get('tipo_atividade') if cfg.get('tipo_atividade') is not None else 0
-                
+
                 tipo_formatado = discord.ActivityType(int(tipo_id))
-                
+
                 await self.change_presence(
                     activity=discord.Activity(type=tipo_formatado, name=texto)
                 )
@@ -79,6 +99,20 @@ async def on_ready():
     print(f"✅ {bot.user} online!")
     print(f"🌍 Servidores: {len(bot.guilds)}")
     print("---")
+
+@bot.event
+async def on_app_command_error(interaction: discord.Interaction, error):
+    """Trata erros de slash commands (equivalente ao on_command_error, mas
+    pra comandos '/'). Sem isso, erro de permissão em slash command falha
+    silenciosamente pro usuário."""
+    if isinstance(error, discord.app_commands.MissingPermissions):
+        msg = "❌ Você não tem permissão para usar este comando."
+        if interaction.response.is_done():
+            await interaction.followup.send(msg, ephemeral=True)
+        else:
+            await interaction.response.send_message(msg, ephemeral=True)
+    else:
+        log_erro("on_app_command_error", error)
 
 token = os.getenv("TOKEN_DISCORD")
 if token:

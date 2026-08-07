@@ -26,7 +26,7 @@ class GeneralCommands(commands.Cog):
         if isinstance(error, commands.MissingPermissions):
             await ctx.send("❌ Você não tem permissão para usar este comando.")
 
-    @commands.command(name="nRank")
+    @commands.hybrid_command(name="nrank", description="Mostra seu nível, XP e posição no ranking")
     async def rank(self, ctx, target: discord.Member = None):
         target = target or ctx.author
         try:
@@ -74,7 +74,7 @@ class GeneralCommands(commands.Cog):
         except Exception as e:
             log_erro("nRank", e)
 
-    @commands.command(name="nTop")
+    @commands.hybrid_command(name="ntop", description="Exibe o Top 5 do servidor")
     async def ntop(self, ctx):
         """Mostra o Top 5 do servidor"""
         try:
@@ -105,7 +105,7 @@ class GeneralCommands(commands.Cog):
             log_erro("nTop", e)
             await ctx.send("❌ Erro ao buscar o ranking.")
 
-    @commands.command(name="nHelp")
+    @commands.hybrid_command(name="nhelp", description="Lista todos os comandos do bot")
     async def nhelp(self, ctx):
         """Lista todos os comandos do bot"""
         embed = discord.Embed(title="📖 Comandos do Bot", color=0x5865f2)
@@ -135,10 +135,10 @@ class GeneralCommands(commands.Cog):
 
         ), inline=False)
 
-        embed.set_footer(text="XP: +20 por mensagem (cooldown 15s) • +5 por reação • +15 por minuto em voz")
+        embed.set_footer(text="XP: +20 por mensagem (cooldown 15s) • +5 por reação • +15 por minuto em voz\n💡 Todos os comandos também funcionam como /slash")
         await ctx.send(embed=embed)
 
-    @commands.command(name="nStatus")
+    @commands.hybrid_command(name="nstatus", description="Aplica o status configurado no painel web")
     @commands.has_permissions(administrator=True)
     async def update_status(self, ctx):
         msg = await ctx.send("🔄 Atualizando status...")
@@ -184,7 +184,7 @@ class GeneralCommands(commands.Cog):
             await msg.edit(content=f"❌ Erro ao atualizar status: {e}")
             log_erro("nStatus", e)
 
-    @commands.command()
+    @commands.hybrid_command(name="setchannel", description="Define este canal como canal de avisos")
     @commands.has_permissions(administrator=True)
     async def setchannel(self, ctx):
         guild_id = str(ctx.guild.id)
@@ -198,7 +198,7 @@ class GeneralCommands(commands.Cog):
 
         await ctx.send(f"✅ Canal de anúncios definido para {ctx.channel.mention}!")
 
-    @commands.command(name="nPing")
+    @commands.hybrid_command(name="nping", description="Mostra a latência do bot")
     async def ping(self, ctx):
         latencia = round(self.bot.latency * 1000)
         embed = discord.Embed(
@@ -208,7 +208,7 @@ class GeneralCommands(commands.Cog):
         )
         await ctx.send(embed=embed)
 
-    @commands.command(name="nPing2")
+    @commands.hybrid_command(name="nping2", description="Mostra a latência real (ida e volta)")
     async def ping_real(self, ctx):
         inicio = datetime.now()
         msg = await ctx.send("🏓 Calculando...")
@@ -217,7 +217,7 @@ class GeneralCommands(commands.Cog):
         duracao = round((fim - inicio).total_seconds() * 1000)
         await msg.edit(content=f"🏓 **Pong!**\nResposta em: `{duracao}ms` | Gateway: `{round(self.bot.latency * 1000)}ms`")
 
-    @commands.command(name="nFix")
+    @commands.hybrid_command(name="nfix", description="Corrige os cargos de todos os membros conforme o nível")
     @commands.has_permissions(administrator=True)
     async def nfix(self, ctx):
         """Corrige os cargos de todos os membros baseado no nível atual"""
@@ -267,7 +267,7 @@ class GeneralCommands(commands.Cog):
             await msg.edit(content=f"❌ Erro no nFix: {e}")
             log_erro("nFix", e)
 
-    @commands.command(name="nAdmin")
+    @commands.hybrid_command(name="nadmin", description="Mostra o painel administrativo do servidor")
     @commands.has_permissions(administrator=True)
     async def nadmin(self, ctx):
         """Painel administrativo do servidor"""
@@ -338,7 +338,7 @@ class GeneralCommands(commands.Cog):
 
 
 
-    @commands.command(name="nHistorico")
+    @commands.hybrid_command(name="nhistorico", description="Histórico de XP em tabela (30 dias)")
     async def nhistorico(self, ctx, target: discord.Member = None):
         """Exibe o historico de XP dos ultimos 30 dias em tabela"""
         target = target or ctx.author
@@ -392,7 +392,7 @@ class GeneralCommands(commands.Cog):
             log_erro("nHistorico", e)
             await ctx.send("Erro ao buscar historico.")
 
-    @commands.command(name="nHistorico2")
+    @commands.hybrid_command(name="nhistorico2", description="Histórico de XP em gráfico (30 dias)")
     async def nhistorico2(self, ctx, target: discord.Member = None):
         """Exibe o historico de XP dos ultimos 30 dias em grafico"""
         target = target or ctx.author
@@ -462,7 +462,7 @@ class GeneralCommands(commands.Cog):
             await ctx.send("Erro ao gerar grafico.")
 
 
-    @commands.command(name="nReset")
+    @commands.hybrid_command(name="nreset", description="Reseta níveis — todos ou de um usuário específico")
     @commands.has_permissions(administrator=True)
     async def nreset(self, ctx, target: discord.Member = None):
         """Reset de XP. Uso: !nReset (todos) | !nReset @usuario"""
@@ -496,7 +496,7 @@ class GeneralCommands(commands.Cog):
             self.log_acao(gid, str(ctx.author.id), str(ctx.author), "reset_user", target_id=uid)
             log_info("nReset", f"Reset de {target} executado por {ctx.author}")
 
-    @commands.command(name="nSetXP")
+    @commands.hybrid_command(name="nsetxp", description="Define o XP de um usuário manualmente")
     @commands.has_permissions(administrator=True)
     async def nsetxp(self, ctx, target: discord.Member = None, valor: int = None):
         """Define o XP de um usuário. Uso: !nSetXP @usuario 500"""
@@ -517,7 +517,7 @@ class GeneralCommands(commands.Cog):
         await ctx.send(f"✅ XP de **{target.display_name}** definido para **{valor}**!")
         log_info("nSetXP", f"XP de {target} definido para {valor} por {ctx.author}")
 
-    @commands.command(name="nSetLevel")
+    @commands.hybrid_command(name="nsetlevel", description="Define o nível de um usuário manualmente")
     @commands.has_permissions(administrator=True)
     async def nsetlevel(self, ctx, target: discord.Member = None, valor: int = None):
         """Define o nível de um usuário. Uso: !nSetLevel @usuario 5"""
@@ -539,7 +539,7 @@ class GeneralCommands(commands.Cog):
         log_info("nSetLevel", f"Nível de {target} definido para {valor} por {ctx.author}")
 
 
-    @commands.command(name="nInfo")
+    @commands.hybrid_command(name="ninfo", description="Exibe informações e versão do bot")
     async def ninfo(self, ctx):
         """Exibe informações sobre o bot"""
         try:
@@ -561,7 +561,7 @@ class GeneralCommands(commands.Cog):
         embed.set_footer(text=f"Solicitado por {ctx.author.display_name}", icon_url=ctx.author.display_avatar.url)
         await ctx.send(embed=embed)
 
-    @commands.command(name="nBonus")
+    @commands.hybrid_command(name="nbonus", description="Configura ou mostra o bônus de XP (booster/admin)")
     @commands.has_permissions(administrator=True)
     async def nbonus(self, ctx, tipo: str = None, valor: int = None):
         """Configura o bonus de XP. Uso: !nBonus booster 10 | !nBonus admin 10"""
@@ -599,7 +599,7 @@ class GeneralCommands(commands.Cog):
         else:
             await ctx.send("❌ Tipo inválido. Use `booster` ou `admin`.")
 
-    @commands.command(name="nBonusStack")
+    @commands.hybrid_command(name="nbonusstack", description="Define se os bônus se somam ou usa o maior")
     @commands.has_permissions(administrator=True)
     async def nbonus_stack(self, ctx, valor: str = None):
         """Define se os bônus se somam ou usa o maior. Uso: !nBonusStack sim | !nBonusStack nao"""

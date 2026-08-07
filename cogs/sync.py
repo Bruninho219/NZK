@@ -7,7 +7,7 @@ class Sync(commands.Cog):
         self.bot = bot
         self.supabase = bot.supabase
 
-    @commands.command(name="nSync")
+    @commands.hybrid_command(name="nsync", description="Sincroniza cargos, canais e admins com o banco")
     @commands.has_permissions(administrator=True)
     async def nSync(self, ctx):
         """Sincroniza a lista mestre de cargos, canais e admins respeitando as tabelas com FK"""
@@ -69,7 +69,7 @@ class Sync(commands.Cog):
             await ctx.send(f"❌ Erro na integridade do nSync: {e}")
             log_erro("nSync", e)
 
-    @commands.command(name="nSync2")
+    @commands.hybrid_command(name="nsync2", description="Atualiza os nomes de exibição das patentes")
     @commands.has_permissions(administrator=True)
     async def nSync2(self, ctx):
         """Atualiza os nomes de exibição na tabela patentes puxando da tabela mestre servidor_cargos"""
