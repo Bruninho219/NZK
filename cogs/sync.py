@@ -126,5 +126,39 @@ class Sync(commands.Cog):
         except Exception as e:
             log_erro("auto_sync_admin", e)
 
+    @commands.Cog.listener()
+    async def on_guild_role_update(self, before, after):
+        """Mantém servidor_admins sincronizado quando a permissão de
+        administrador do CARGO EM SI muda (ex: tira 'Administrador' das
+        permissões do cargo 'Moderador') — diferente do on_member_update,
+        que só cobre quando alguém ganha/perde um cargo específico."""
+        if before.permissions.administrator == after.permissions.administrator:
+            return  # nada relevante mudou nesse cargo
+
+        guild = after.guild
+        gid = str(guild.id)
+        membros_afetados = [m for m in after.members if not m.bot]
+
+        for member in membros_afetados:
+            uid = str(member.id)
+            # Recalcula considerando TODOS os cargos do membro, não só este
+            is_admin = member.guild_permissions.administrator
+            try:
+                if is_admin:
+                    self.supabase.table("servidor_admins").upsert({
+                        "guild_id": gid, "user_id": uid
+                    }).execute()
+                else:
+                    self.supabase.table("servidor_admins").delete()\
+                        .eq("guild_id", gid).eq("user_id", uid).execute()
+            except Exception as e:
+                log_erro("auto_sync_admin_role", e)
+
+        log_info(
+            "auto_sync_admin_role",
+            f"Cargo '{after.name}' mudou permissão de admin em {guild.name} — "
+            f"{len(membros_afetados)} membro(s) recalculado(s)"
+        )
+
 async def setup(bot):
     await bot.add_cog(Sync(bot))

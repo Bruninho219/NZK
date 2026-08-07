@@ -5,6 +5,7 @@ const app = {
     selectedGuildName: "",
     _lastLeaderboard: [],
     _sortLeaderboard: { col: null, asc: true },
+    _leaderboardPage: 1,
 
     // Servidores que não têm o limite de 3 canais do YouTube (ex: seu próprio servidor)
     SEM_LIMITE_YOUTUBE: ["602623690206609418"],
@@ -144,6 +145,7 @@ const app = {
         this.renderRoles(data[0]);
         this.renderChannels(data[3]);
         this.renderTable(data[1]);
+        this._leaderboardPage = 1;
         this._lastLeaderboard = data[2];
         this.renderLeaderboard(data[2]);
         this.renderEstatisticas(data[2]);
@@ -711,9 +713,18 @@ row.innerHTML = `
                 (u.user_id || '').includes(filtro))
             : usuarios;
 
+        const PAGE_SIZE = 20;
+        const totalPaginas = Math.max(1, Math.ceil(filtrados.length / PAGE_SIZE));
+        if (this._leaderboardPage > totalPaginas) this._leaderboardPage = totalPaginas;
+        if (this._leaderboardPage < 1) this._leaderboardPage = 1;
+
+        const inicio = (this._leaderboardPage - 1) * PAGE_SIZE;
+        const pagina = filtrados.slice(inicio, inicio + PAGE_SIZE);
+
         const coresXP = { 0: 'var(--gold)', 1: 'var(--silver)', 2: 'var(--bronze)' };
 
-        document.getElementById('leaderboardBody').innerHTML = filtrados.map((u, i) => {
+        document.getElementById('leaderboardBody').innerHTML = pagina.map((u, iLocal) => {
+            const i = inicio + iLocal; // posição real no ranking geral, não só na página
             const topClass = i < 3 ? `top-${i + 1}` : '';
             const xpNecessario = (parseInt(u.level) * 100) + 75;
             const xpAtual = parseInt(u.xp);
@@ -736,6 +747,26 @@ row.innerHTML = `
                 </tr>
             `;
         }).join('');
+
+        this.renderLeaderboardPagination(filtrados.length, totalPaginas);
+    },
+
+    renderLeaderboardPagination(totalItens, totalPaginas) {
+        const el = document.getElementById('leaderboardPagination');
+        if (!el) return;
+
+        if (totalPaginas <= 1) { el.innerHTML = ''; return; }
+
+        el.innerHTML = `
+            <button class="secondary" style="padding:8px 14px; margin:0; ${this._leaderboardPage === 1 ? 'opacity:0.4; cursor:not-allowed;' : ''}" onclick="app.mudarPaginaLeaderboard(-1)" ${this._leaderboardPage === 1 ? 'disabled' : ''}>‹ Anterior</button>
+            <span style="color:var(--text-muted); font-size:13px;">Página ${this._leaderboardPage} de ${totalPaginas} (${totalItens} membros)</span>
+            <button class="secondary" style="padding:8px 14px; margin:0; ${this._leaderboardPage === totalPaginas ? 'opacity:0.4; cursor:not-allowed;' : ''}" onclick="app.mudarPaginaLeaderboard(1)" ${this._leaderboardPage === totalPaginas ? 'disabled' : ''}>Próxima ›</button>
+        `;
+    },
+
+    mudarPaginaLeaderboard(delta) {
+        this._leaderboardPage += delta;
+        this.renderLeaderboard(this._lastLeaderboard);
     },
 
     renderEstatisticas(usuarios) {
@@ -752,6 +783,7 @@ row.innerHTML = `
     },
 
     sortLeaderboard(col) {
+        this._leaderboardPage = 1;
         if (this._sortLeaderboard.col === col) {
             this._sortLeaderboard.asc = !this._sortLeaderboard.asc;
         } else {
