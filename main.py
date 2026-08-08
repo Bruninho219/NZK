@@ -34,6 +34,8 @@ class MoraxBot(commands.Bot):
             case_insensitive=True  # !nRank, !nrank, !NRANK... todos funcionam igual
         )
         self.supabase = supabase_client
+        self._ultimo_status_aplicado = None  # (tipo_id, texto) — evita relogar/reaplicar à toa
+        self._ultimo_status_aplicado = None  # (tipo_id, texto) — pra evitar log repetido
 
     async def setup_hook(self):
         self.atualizar_status_db.start()
@@ -78,7 +80,15 @@ class MoraxBot(commands.Bot):
                 await self.change_presence(
                     activity=discord.Activity(type=tipo_formatado, name=texto)
                 )
-                log_info("atualizar_status_db", f"Status atualizado: {tipo_formatado.name} -> {texto}")
+
+                # Só loga quando o status muda de verdade — reaplicar o mesmo
+                # texto a cada 5min é necessário (combate um bug do próprio
+                # Discord que às vezes apaga status customizado sozinho), mas
+                # não precisa poluir o log toda vez que não muda nada.
+                chave_atual = (tipo_id, texto)
+                if chave_atual != self._ultimo_status_aplicado:
+                    log_info("atualizar_status_db", f"Status atualizado: {tipo_formatado.name} -> {texto}")
+                    self._ultimo_status_aplicado = chave_atual
             else:
                 await self.change_presence(
                     activity=discord.Activity(type=config.BOT_STATUS_TYPE, name=config.BOT_STATUS_TEXT)
