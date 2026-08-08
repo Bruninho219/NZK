@@ -383,7 +383,7 @@ class GeneralCommands(commands.Cog):
             embed.set_thumbnail(url=target.display_avatar.url)
 
             for i, chunk in enumerate(chunks[1:], start=2):
-                embed.add_field(name=f"Continuacao ({i})", value=separador.join(chunk), inline=False)
+                embed.add_field(name="\u200b", value=separador.join(chunk), inline=False)
 
             embed.set_footer(text=f"Ultimos 30 dias - {len(res.data)} registros")
             await ctx.send(embed=embed)
