@@ -118,11 +118,9 @@ class Sync(commands.Cog):
                     "guild_id": gid,
                     "user_id": uid
                 }).execute()
-                log_info("auto_sync_admin", f"{after} agora é admin em {after.guild.name} — liberado no dashboard")
             else:
                 self.supabase.table("servidor_admins").delete()\
                     .eq("guild_id", gid).eq("user_id", uid).execute()
-                log_info("auto_sync_admin", f"{after} perdeu admin em {after.guild.name} — removido do dashboard")
         except Exception as e:
             log_erro("auto_sync_admin", e)
 
@@ -143,7 +141,6 @@ class Sync(commands.Cog):
                     "role_name": after.name,
                     "posicao": after.position
                 }, on_conflict="guild_id,role_id").execute()
-                log_info("auto_sync_cargo", f"Cargo atualizado em {after.guild.name}: {before.name} -> {after.name}")
             except Exception as e:
                 log_erro("auto_sync_cargo", e)
 
@@ -164,12 +161,6 @@ class Sync(commands.Cog):
                 except Exception as e:
                     log_erro("auto_sync_admin_role", e)
 
-            log_info(
-                "auto_sync_admin_role",
-                f"Cargo '{after.name}' mudou permissão de admin em {after.guild.name} — "
-                f"{len(membros_afetados)} membro(s) recalculado(s)"
-            )
-
     @commands.Cog.listener()
     async def on_guild_role_create(self, role):
         """Adiciona o cargo novo em servidor_cargos assim que é criado."""
@@ -182,7 +173,6 @@ class Sync(commands.Cog):
                 "role_name": role.name,
                 "posicao": role.position
             }, on_conflict="guild_id,role_id").execute()
-            log_info("auto_sync_cargo", f"Cargo novo '{role.name}' adicionado em {role.guild.name}")
         except Exception as e:
             log_erro("auto_sync_cargo_create", e)
 
@@ -192,7 +182,6 @@ class Sync(commands.Cog):
         try:
             self.supabase.table("servidor_cargos").delete()\
                 .eq("guild_id", str(role.guild.id)).eq("role_id", str(role.id)).execute()
-            log_info("auto_sync_cargo", f"Cargo '{role.name}' removido em {role.guild.name}")
         except Exception as e:
             log_erro("auto_sync_cargo_delete", e)
 
@@ -209,7 +198,6 @@ class Sync(commands.Cog):
                 "channel_name": channel.name,
                 "posicao": channel.position
             }, on_conflict="guild_id,channel_id").execute()
-            log_info("auto_sync_canal", f"Canal novo '#{channel.name}' adicionado em {channel.guild.name}")
         except Exception as e:
             log_erro("auto_sync_canal_create", e)
 
@@ -228,7 +216,6 @@ class Sync(commands.Cog):
                 "channel_name": after.name,
                 "posicao": after.position
             }, on_conflict="guild_id,channel_id").execute()
-            log_info("auto_sync_canal", f"Canal atualizado em {after.guild.name}: #{before.name} -> #{after.name}")
         except Exception as e:
             log_erro("auto_sync_canal_update", e)
 
@@ -240,7 +227,6 @@ class Sync(commands.Cog):
         try:
             self.supabase.table("servidor_canais").delete()\
                 .eq("guild_id", str(channel.guild.id)).eq("channel_id", str(channel.id)).execute()
-            log_info("auto_sync_canal", f"Canal '#{channel.name}' removido em {channel.guild.name}")
         except Exception as e:
             log_erro("auto_sync_canal_delete", e)
 
