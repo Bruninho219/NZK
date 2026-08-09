@@ -6,3 +6,5 @@ teste_webhook.py
 *.bat
 requirements.txt
 instalacao.txt
+_github.bat
+*.cmd
