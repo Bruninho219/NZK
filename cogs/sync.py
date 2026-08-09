@@ -128,37 +128,121 @@ class Sync(commands.Cog):
 
     @commands.Cog.listener()
     async def on_guild_role_update(self, before, after):
-        """Mantém servidor_admins sincronizado quando a permissão de
-        administrador do CARGO EM SI muda (ex: tira 'Administrador' das
-        permissões do cargo 'Moderador') — diferente do on_member_update,
-        que só cobre quando alguém ganha/perde um cargo específico."""
-        if before.permissions.administrator == after.permissions.administrator:
-            return  # nada relevante mudou nesse cargo
+        """Mantém servidor_cargos e servidor_admins sincronizados automaticamente:
+        - Nome ou posição do cargo mudou → atualiza servidor_cargos
+        - Permissão de admin do cargo mudou → recalcula servidor_admins de quem tem esse cargo
+        """
+        gid = str(after.guild.id)
 
-        guild = after.guild
-        gid = str(guild.id)
-        membros_afetados = [m for m in after.members if not m.bot]
-
-        for member in membros_afetados:
-            uid = str(member.id)
-            # Recalcula considerando TODOS os cargos do membro, não só este
-            is_admin = member.guild_permissions.administrator
+        # --- Nome/posição do cargo ---
+        if before.name != after.name or before.position != after.position:
             try:
-                if is_admin:
-                    self.supabase.table("servidor_admins").upsert({
-                        "guild_id": gid, "user_id": uid
-                    }).execute()
-                else:
-                    self.supabase.table("servidor_admins").delete()\
-                        .eq("guild_id", gid).eq("user_id", uid).execute()
+                self.supabase.table("servidor_cargos").upsert({
+                    "guild_id": gid,
+                    "role_id": str(after.id),
+                    "role_name": after.name,
+                    "posicao": after.position
+                }, on_conflict="guild_id,role_id").execute()
+                log_info("auto_sync_cargo", f"Cargo atualizado em {after.guild.name}: {before.name} -> {after.name}")
             except Exception as e:
-                log_erro("auto_sync_admin_role", e)
+                log_erro("auto_sync_cargo", e)
 
-        log_info(
-            "auto_sync_admin_role",
-            f"Cargo '{after.name}' mudou permissão de admin em {guild.name} — "
-            f"{len(membros_afetados)} membro(s) recalculado(s)"
-        )
+        # --- Permissão de administrador do cargo ---
+        if before.permissions.administrator != after.permissions.administrator:
+            membros_afetados = [m for m in after.members if not m.bot]
+            for member in membros_afetados:
+                uid = str(member.id)
+                is_admin = member.guild_permissions.administrator
+                try:
+                    if is_admin:
+                        self.supabase.table("servidor_admins").upsert({
+                            "guild_id": gid, "user_id": uid
+                        }).execute()
+                    else:
+                        self.supabase.table("servidor_admins").delete()\
+                            .eq("guild_id", gid).eq("user_id", uid).execute()
+                except Exception as e:
+                    log_erro("auto_sync_admin_role", e)
+
+            log_info(
+                "auto_sync_admin_role",
+                f"Cargo '{after.name}' mudou permissão de admin em {after.guild.name} — "
+                f"{len(membros_afetados)} membro(s) recalculado(s)"
+            )
+
+    @commands.Cog.listener()
+    async def on_guild_role_create(self, role):
+        """Adiciona o cargo novo em servidor_cargos assim que é criado."""
+        if role.is_default() or role.managed:
+            return
+        try:
+            self.supabase.table("servidor_cargos").upsert({
+                "guild_id": str(role.guild.id),
+                "role_id": str(role.id),
+                "role_name": role.name,
+                "posicao": role.position
+            }, on_conflict="guild_id,role_id").execute()
+            log_info("auto_sync_cargo", f"Cargo novo '{role.name}' adicionado em {role.guild.name}")
+        except Exception as e:
+            log_erro("auto_sync_cargo_create", e)
+
+    @commands.Cog.listener()
+    async def on_guild_role_delete(self, role):
+        """Remove o cargo excluído de servidor_cargos."""
+        try:
+            self.supabase.table("servidor_cargos").delete()\
+                .eq("guild_id", str(role.guild.id)).eq("role_id", str(role.id)).execute()
+            log_info("auto_sync_cargo", f"Cargo '{role.name}' removido em {role.guild.name}")
+        except Exception as e:
+            log_erro("auto_sync_cargo_delete", e)
+
+    @commands.Cog.listener()
+    async def on_guild_channel_create(self, channel):
+        """Adiciona o canal novo em servidor_canais assim que é criado
+        (só canais de texto, mesmo escopo que o !nSync já cobre)."""
+        if not isinstance(channel, discord.TextChannel):
+            return
+        try:
+            self.supabase.table("servidor_canais").upsert({
+                "guild_id": str(channel.guild.id),
+                "channel_id": str(channel.id),
+                "channel_name": channel.name,
+                "posicao": channel.position
+            }, on_conflict="guild_id,channel_id").execute()
+            log_info("auto_sync_canal", f"Canal novo '#{channel.name}' adicionado em {channel.guild.name}")
+        except Exception as e:
+            log_erro("auto_sync_canal_create", e)
+
+    @commands.Cog.listener()
+    async def on_guild_channel_update(self, before, after):
+        """Mantém servidor_canais sincronizado quando um canal de texto
+        muda de nome ou de posição."""
+        if not isinstance(after, discord.TextChannel):
+            return
+        if before.name == after.name and before.position == after.position:
+            return
+        try:
+            self.supabase.table("servidor_canais").upsert({
+                "guild_id": str(after.guild.id),
+                "channel_id": str(after.id),
+                "channel_name": after.name,
+                "posicao": after.position
+            }, on_conflict="guild_id,channel_id").execute()
+            log_info("auto_sync_canal", f"Canal atualizado em {after.guild.name}: #{before.name} -> #{after.name}")
+        except Exception as e:
+            log_erro("auto_sync_canal_update", e)
+
+    @commands.Cog.listener()
+    async def on_guild_channel_delete(self, channel):
+        """Remove o canal excluído de servidor_canais."""
+        if not isinstance(channel, discord.TextChannel):
+            return
+        try:
+            self.supabase.table("servidor_canais").delete()\
+                .eq("guild_id", str(channel.guild.id)).eq("channel_id", str(channel.id)).execute()
+            log_info("auto_sync_canal", f"Canal '#{channel.name}' removido em {channel.guild.name}")
+        except Exception as e:
+            log_erro("auto_sync_canal_delete", e)
 
 async def setup(bot):
     await bot.add_cog(Sync(bot))
