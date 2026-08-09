@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Funcionalidades | NZK</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔥</text></svg>">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .page-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 60px 24px 40px;
+            line-height: 1.7;
+        }
+        .back-link { display: inline-block; margin-bottom: 24px; font-size: 13px; color: var(--text-muted); text-decoration: none; }
+        .back-link:hover { text-decoration: underline; }
+
+        .hero { text-align: center; margin-bottom: 60px; }
+        .hero .emoji { font-size: 52px; margin-bottom: 12px; }
+        .hero h1 { font-size: 32px; margin: 0 0 12px; }
+        .hero p { color: var(--text-muted); font-size: 15px; max-width: 520px; margin: 0 auto 28px; }
+        .hero-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+        .btn-primary {
+            display: inline-block; background: var(--accent); color: white; font-weight: 700;
+            padding: 14px 28px; border-radius: 8px; text-decoration: none; font-size: 14px;
+        }
+        .btn-primary:hover { background: var(--accent-hover); }
+        .btn-secondary {
+            display: inline-block; background: transparent; color: var(--text-main); font-weight: 700;
+            padding: 14px 28px; border-radius: 8px; text-decoration: none; font-size: 14px;
+            border: 1px solid rgba(255,255,255,0.15);
+        }
+        .btn-secondary:hover { background: rgba(255,255,255,0.05); }
+
+        .section { margin-bottom: 48px; }
+        .section-header { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; }
+        .section-header .icon { font-size: 22px; }
+        .section-header h2 { font-size: 19px; margin: 0; color: var(--text-main); }
+        .section-header p { color: var(--text-muted); font-size: 13px; margin: 2px 0 0; }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 14px;
+        }
+        .feature-card {
+            background: var(--card);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 18px;
+        }
+        .feature-card .f-icon { font-size: 20px; margin-bottom: 8px; }
+        .feature-card h3 { font-size: 14px; margin: 0 0 6px; color: var(--text-main); }
+        .feature-card p { font-size: 12.5px; color: var(--text-muted); margin: 0; line-height: 1.5; }
+
+        .cmd-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .cmd-table th { text-align: left; color: var(--text-muted); font-size: 11px; text-transform: uppercase; padding: 10px 12px; }
+        .cmd-table td { padding: 10px 12px; background: rgba(255,255,255,0.03); border-radius: 8px; }
+        .cmd-table code { background: #1e1f22; padding: 3px 8px; border-radius: 6px; color: var(--accent); font-size: 12px; }
+        .cmd-table tr { border-bottom: 6px solid var(--bg); }
+
+        .cta-footer {
+            text-align: center;
+            padding: 40px 20px;
+            background: var(--card);
+            border-radius: 16px;
+            margin-top: 20px;
+        }
+        .cta-footer h2 { font-size: 22px; margin: 0 0 10px; }
+        .cta-footer p { color: var(--text-muted); font-size: 14px; margin: 0 0 22px; }
+
+        .page-footer { text-align: center; margin-top: 40px; font-size: 12px; color: var(--text-muted); }
+        .page-footer a { color: var(--text-muted); }
+    </style>
+</head>
+<body>
+    <div class="page-container">
+        <a class="back-link" href="/">← Voltar pro painel</a>
+
+        <div class="hero">
+            <div class="emoji">🔥</div>
+            <h1>NZK — Bot de Níveis e XP pra Discord</h1>
+            <p>Ranking baseado em atividade de verdade (chat, voz e reações), totalmente configurável, com um painel web pra gerenciar tudo sem precisar decorar comando nenhum.</p>
+            <div class="hero-actions">
+                <a class="btn-primary" href="/invite">+ Convidar o NZK pro seu servidor</a>
+                <a class="btn-secondary" href="/">Ir pro painel</a>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-header">
+                <span class="icon">📈</span>
+                <div>
+                    <h2>Sistema de Níveis e XP</h2>
+                    <p>O motor principal do bot — cada servidor calibra do seu jeito.</p>
+                </div>
+            </div>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <div class="f-icon">💬</div>
+                    <h3>XP por mensagem, voz e reação</h3>
+                    <p>Cada tipo de atividade rende XP separadamente, com valores ajustáveis por servidor (padrão: 20 / 15 por min / 5).</p>
+                </div>
+                <div class="feature-card">
+                    <div class="f-icon">🎭</div>
+                    <h3>Cargos automáticos por nível</h3>
+                    <p>Configura quais cargos são liberados em cada nível — o bot troca sozinho quando alguém sobe.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="f-icon">👑</div>
+                    <h3>Cargo especial de Top 1</h3>
+                    <p>Um cargo exclusivo pra quem lidera o ranking do servidor, atualizado automaticamente.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="f-icon">🚀</div>
+                    <h3>Bônus configurável</h3>
+                    <p>Bônus percentual de XP pra quem impulsiona o servidor e/ou é admin, com opção de somar ou usar o maior.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="f-icon">💜</div>
+                    <h3>Recompensa por impulso</h3>
+                    <p>XP bônus único ao impulsionar o servidor, com anúncio configurável no canal que quiser.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="f-icon">📊</div>
+                    <h3>Histórico de progresso</h3>
+                    <p>Acompanhe a evolução de XP de qualquer membro em tabela ou gráfico dos últimos 30 dias.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-header">
+                <span class="icon">⚙️</span>
+                <div>
+                    <h2>Painel Web</h2>
+                    <p>Tudo configurável visualmente — sem precisar decorar sintaxe de comando.</p>
+                </div>
+            </div>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <div class="f-icon">🔒</div>
+                    <h3>Login seguro via Discord</h3>
+                    <p>Só quem é administrador de verdade no servidor consegue entrar — cada admin só vê os próprios servidores.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="f-icon">🏆</div>
+                    <h3>Ranking completo</h3>
+                    <p>Lista paginada com busca e ordenação por nível, XP, mensagens ou tempo em voz.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="f-icon">🛡️</div>
+                    <h3>Configuração de patentes</h3>
+                    <p>Define visualmente qual cargo corresponde a qual nível, sem precisar decorar IDs.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="f-icon">👋</div>
+                    <h3>Boas-vindas e impulso</h3>
+                    <p>Mensagens customizáveis com prévia ao vivo, cargos automáticos de entrada, canal de anúncio de boost.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="f-icon">📜</div>
+                    <h3>Log de auditoria</h3>
+                    <p>Todo reset ou edição manual de nível/XP fica registrado — quem fez, quando e o quê.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="f-icon">📱</div>
+                    <h3>Funciona no celular</h3>
+                    <p>Painel responsivo — configura o servidor de onde estiver.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-header">
+                <span class="icon">🔔</span>
+                <div>
+                    <h2>Notificações Automáticas</h2>
+                    <p>Avisa seu servidor sem você precisar ficar checando manualmente.</p>
+                </div>
+            </div>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <div class="f-icon">▶️</div>
+                    <h3>YouTube</h3>
+                    <p>Monitora até 5 canais por servidor e anuncia vídeo novo automaticamente, com capa e link.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="f-icon">💜</div>
+                    <h3>Twitch</h3>
+                    <p>Avisa quando um canal monitorado entra ao vivo, com título e categoria da stream.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-header">
+                <span class="icon">⌨️</span>
+                <div>
+                    <h2>Comandos principais</h2>
+                    <p>Funcionam com <code>!prefixo</code> ou <code>/slash</code> — como preferir. Lista completa com <code>/nhelp</code>.</p>
+                </div>
+            </div>
+            <table class="cmd-table">
+                <tr><td><code>/nrank</code></td><td>Mostra seu nível, XP e posição no ranking</td></tr>
+                <tr><td><code>/ntop</code></td><td>Top 5 do servidor</td></tr>
+                <tr><td><code>/nhistorico</code></td><td>Histórico de XP em tabela ou gráfico</td></tr>
+                <tr><td><code>/ninfo</code></td><td>Versão e informações do bot</td></tr>
+                <tr><td><code>/nhelp</code></td><td>Lista completa de comandos</td></tr>
+            </table>
+        </div>
+
+        <div class="cta-footer">
+            <h2>Pronto pra testar no seu servidor?</h2>
+            <p>Leva menos de um minuto pra adicionar.</p>
+            <a class="btn-primary" href="/invite">+ Convidar o NZK</a>
+        </div>
+
+        <div class="page-footer">
+            <a href="/privacidade.html">Política de Privacidade</a>
+            &nbsp;·&nbsp;
+            <a href="/termos.html">Termos de Serviço</a>
+            &nbsp;·&nbsp;
+            <a href="/">Painel</a>
+        </div>
+    </div>
+</body>
+</html>
