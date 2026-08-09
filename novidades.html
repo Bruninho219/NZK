@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Novidades | NZK</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔥</text></svg>">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .page-container {
+            max-width: 760px;
+            margin: 0 auto;
+            padding: 60px 24px 40px;
+            line-height: 1.7;
+        }
+        .back-link { display: inline-block; margin-bottom: 24px; font-size: 13px; color: var(--text-muted); text-decoration: none; }
+        .back-link:hover { text-decoration: underline; }
+
+        .page-header { margin-bottom: 44px; }
+        .page-header h1 { font-size: 28px; margin: 0 0 8px; }
+        .page-header p { color: var(--text-muted); font-size: 14px; margin: 0; }
+
+        .timeline { position: relative; padding-left: 28px; }
+        .timeline::before {
+            content: "";
+            position: absolute; left: 6px; top: 8px; bottom: 8px;
+            width: 2px; background: rgba(255,255,255,0.08);
+        }
+
+        .entry { position: relative; margin-bottom: 36px; }
+        .entry::before {
+            content: "";
+            position: absolute; left: -28px; top: 4px;
+            width: 12px; height: 12px; border-radius: 50%;
+            background: var(--accent); box-shadow: 0 0 0 4px rgba(88,101,242,0.15);
+        }
+        .entry h2 { font-size: 16px; margin: 0 0 10px; display: flex; align-items: center; gap: 8px; }
+        .entry ul { margin: 0; padding-left: 20px; }
+        .entry li { color: var(--text-muted); font-size: 13.5px; margin-bottom: 5px; }
+
+        .page-footer { text-align: center; margin-top: 50px; font-size: 12px; color: var(--text-muted); }
+        .page-footer a { color: var(--text-muted); }
+    </style>
+</head>
+<body>
+    <div class="page-container">
+        <a class="back-link" href="/">← Voltar pro painel</a>
+
+        <div class="page-header">
+            <h1>📣 Novidades</h1>
+            <p>O que já mudou no NZK, da mais recente pra mais antiga.</p>
+        </div>
+
+        <div class="timeline">
+            <div class="entry">
+                <h2>📱 Painel funcionando bem no celular</h2>
+                <ul>
+                    <li>Tabelas, abas e formulários ajustados pra telas pequenas</li>
+                    <li>Trocador rápido de servidor no topo do painel</li>
+                </ul>
+            </div>
+
+            <div class="entry">
+                <h2>⌨️ Comandos por / (slash commands)</h2>
+                <ul>
+                    <li>Todo comando funciona tanto no formato antigo (<code>!n...</code>) quanto no novo (<code>/n...</code>)</li>
+                    <li>Status do bot atualiza de forma mais confiável, com menos chance de sumir sozinho</li>
+                </ul>
+            </div>
+
+            <div class="entry">
+                <h2>🔄 Sincronização automática</h2>
+                <ul>
+                    <li>Criar, renomear ou excluir cargo/canal no Discord já reflete no painel na hora, sem precisar de comando manual</li>
+                    <li>Promover ou remover um administrador também atualiza o acesso ao painel automaticamente</li>
+                    <li>Ranking paginado (20 membros por página), com busca e ordenação</li>
+                </ul>
+            </div>
+
+            <div class="entry">
+                <h2>⭐ XP totalmente configurável</h2>
+                <ul>
+                    <li>Cada servidor define seu próprio XP por mensagem, reação e minuto de voz</li>
+                    <li>Bônus de impulso com opção de também receber (ou não) o bônus de admin</li>
+                </ul>
+            </div>
+
+            <div class="entry">
+                <h2>💜 Chegou o monitor de Twitch</h2>
+                <ul>
+                    <li>Avisa automaticamente quando um canal monitorado entra ao vivo</li>
+                </ul>
+            </div>
+
+            <div class="entry">
+                <h2>🌐 Painel foi ao ar</h2>
+                <ul>
+                    <li>Domínio e hospedagem próprios</li>
+                    <li>Página de convite rápido e página de funcionalidades</li>
+                    <li>Política de Privacidade e Termos de Serviço publicados</li>
+                </ul>
+            </div>
+
+            <div class="entry">
+                <h2>▶️ Monitor de YouTube mais confiável</h2>
+                <ul>
+                    <li>Resolução de canal por @handle corrigida e mais rápida</li>
+                    <li>Limite de canais monitorados aumentado</li>
+                </ul>
+            </div>
+
+            <div class="entry">
+                <h2>📜 Log de auditoria</h2>
+                <ul>
+                    <li>Toda ação administrativa sensível (reset, edição manual) fica registrada — quem fez, quando e o quê</li>
+                    <li>Alertas automáticos se o bot encontrar algum erro crítico</li>
+                </ul>
+            </div>
+
+            <div class="entry">
+                <h2>🔒 Login seguro</h2>
+                <ul>
+                    <li>Painel administrativo passou a exigir login via Discord</li>
+                    <li>Cada administrador só acessa os servidores onde tem permissão de verdade</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="page-footer">
+            <a href="/funcionalidades.html">Funcionalidades</a>
+            &nbsp;·&nbsp;
+            <a href="/privacidade.html">Política de Privacidade</a>
+            &nbsp;·&nbsp;
+            <a href="/termos.html">Termos de Serviço</a>
+        </div>
+    </div>
+</body>
+</html>

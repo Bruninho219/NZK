@@ -78,6 +78,13 @@ const app = {
             return nameA.localeCompare(nameB);
         });
 
+        // Guarda pra alimentar o trocador rápido de servidor no cabeçalho do editor
+        this._servidoresDisponiveis = servidores.map(srv => ({
+            id: srv.id,
+            name: guildData[srv.id]?.name || "Servidor Ativo",
+            removido: srv.removido_em
+        }));
+
         list.innerHTML = servidores.map(srv => {
             const id = srv.id;
             const server = guildData[id] || { name: "Servidor Ativo", icon: "🏰" };
@@ -108,6 +115,26 @@ const app = {
         `;
     },
 
+    renderServerSwitcher() {
+        const el = document.getElementById('serverSwitcher');
+        if (!el) return;
+
+        const lista = this._servidoresDisponiveis || [];
+        el.innerHTML = lista.map(srv => `
+            <option value="${srv.id}" data-name="${srv.name}" ${srv.id === this.selectedGuild ? 'selected' : ''}>
+                ${srv.removido ? '⚠️ ' : ''}${srv.name}
+            </option>
+        `).join('');
+    },
+
+    handleSwitchServer() {
+        const sel = document.getElementById('serverSwitcher');
+        const guildId = sel.value;
+        const guildName = sel.options[sel.selectedIndex].getAttribute('data-name');
+        if (guildId === this.selectedGuild) return;
+        this.loadConfig(guildId, guildName);
+    },
+
     async loadConfig(guildId, guildName) {
         this.selectedGuild = guildId;
         this.selectedGuildName = guildName;
@@ -119,6 +146,8 @@ const app = {
         document.getElementById('selector').style.display = 'none';
         document.getElementById('editor').style.display = 'block';
         document.getElementById('serverTitle').innerText = "🏰 Painel: " + guildName;
+
+        this.renderServerSwitcher();
 
         const statusSection = document.getElementById('statusSection');
         statusSection.style.display = guildId === "602623690206609418" ? "block" : "none";
