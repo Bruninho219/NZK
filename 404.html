@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Página não encontrada | NZK</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔥</text></svg>">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .error-container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            gap: 18px;
+            padding: 24px;
+            box-sizing: border-box;
+        }
+        .error-code {
+            font-size: 96px;
+            font-weight: 800;
+            line-height: 1;
+            background: linear-gradient(135deg, var(--accent), #9146FF);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        .error-emoji { font-size: 40px; }
+        .error-container h1 { font-size: 20px; margin: 0; }
+        .error-container p { color: var(--text-muted); font-size: 14px; max-width: 380px; margin: 0; }
+        .error-actions { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin-top: 10px; }
+        .btn-primary {
+            display: inline-block; background: var(--accent); color: white; font-weight: 700;
+            padding: 12px 24px; border-radius: 8px; text-decoration: none; font-size: 13px;
+        }
+        .btn-primary:hover { background: var(--accent-hover); }
+        .btn-secondary {
+            display: inline-block; background: transparent; color: var(--text-main); font-weight: 700;
+            padding: 12px 24px; border-radius: 8px; text-decoration: none; font-size: 13px;
+            border: 1px solid rgba(255,255,255,0.15);
+        }
+        .btn-secondary:hover { background: rgba(255,255,255,0.05); }
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <div class="error-emoji">🧭</div>
+        <div class="error-code">404</div>
+        <h1>Essa página não existe (ainda?)</h1>
+        <p>Deve ter sido um portal mal calculado — nem em Nazarick tem registro desse caminho. Confere se o link está certo, ou volta pra um lugar conhecido.</p>
+        <div class="error-actions">
+            <a class="btn-primary" href="/">Ir pro painel</a>
+            <a class="btn-secondary" href="/funcionalidades.html">Ver funcionalidades</a>
+        </div>
+    </div>
+</body>
+</html>
