@@ -19,6 +19,45 @@ const app = {
         }
     },
 
+    confirmar(mensagem, tituloBotao = "Confirmar") {
+        return new Promise(resolve => {
+            const overlay = document.createElement('div');
+            overlay.style.cssText = 'position:fixed; inset:0; background:rgba(0,0,0,0.65); display:flex; align-items:center; justify-content:center; z-index:9999; padding:20px;';
+            overlay.innerHTML = `
+                <div style="background:var(--sidebar); border-radius:16px; padding:28px; max-width:380px; width:100%; box-shadow:0 20px 50px rgba(0,0,0,0.4); animation:fadeIn 0.2s ease;">
+                    <div style="font-size:14.5px; margin-bottom:22px; line-height:1.6; color:var(--text-main);">${mensagem}</div>
+                    <div style="display:flex; gap:10px; justify-content:flex-end;">
+                        <button class="secondary" style="margin:0; width:auto; font-size:13px; padding:12px 24px;">Cancelar</button>
+                        <button class="danger" style="margin:0; width:auto; font-size:13px; padding:12px 24px;">${tituloBotao}</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+
+            const fechar = (resultado) => {
+                document.body.removeChild(overlay);
+                resolve(resultado);
+            };
+
+            overlay.querySelector('.secondary').onclick = () => fechar(false);
+            overlay.querySelector('.danger').onclick = () => fechar(true);
+            overlay.onclick = (e) => { if (e.target === overlay) fechar(false); };
+        });
+    },
+
+    copiarTexto(texto) {
+        navigator.clipboard.writeText(texto).then(() => {
+            this.showToast('📋 Copiado!');
+        }).catch(() => {
+            this.showToast('❌ Não foi possível copiar.', 'error');
+        });
+    },
+
+    idCopiavel(id) {
+        if (!id) return '—';
+        return `<code style="cursor:pointer;" title="Clique para copiar" onclick="event.stopPropagation(); app.copiarTexto('${id}')">${id} 📋</code>`;
+    },
+
     showToast(mensagem, tipo = "success") {
         const existing = document.querySelector('.nzk-toast');
         if (existing) existing.remove();
@@ -101,7 +140,7 @@ const app = {
                             : `<span class="server-icon">${server.icon}</span>`}
                     </div>
                     <h3>${server.name}</h3>
-                    <code>${id}</code>
+                    ${this.idCopiavel(id)}
                     ${removido ? `<div class="server-removido-badge">⚠️ Bot removido há ${diasRemovido}d</div>` : ''}
                 </div>
             `;
@@ -145,7 +184,7 @@ const app = {
 
         document.getElementById('selector').style.display = 'none';
         document.getElementById('editor').style.display = 'block';
-        document.getElementById('serverTitle').innerText = "🏰 Painel: " + guildName;
+        document.getElementById('serverTitle').innerText = "Painel";
 
         this.renderServerSwitcher();
 
@@ -215,7 +254,7 @@ const app = {
         body.innerHTML = data.map(log => {
             const data_fmt = new Date(log.created_at).toLocaleString('pt-BR');
             const acaoNome = acoesTraduzidas[log.action] || log.action;
-            const alvo = log.target_id ? `<code>${log.target_id}</code>` : '—';
+            const alvo = this.idCopiavel(log.target_id);
             return `
                 <tr>
                     <td>${data_fmt}</td>
@@ -277,8 +316,8 @@ const app = {
 
 
     async handleResetarServidor() {
-        if (!confirm("⚠️ Isso vai zerar TODOS os níveis e XP do servidor. Tem certeza?")) return;
-        if (!confirm("⚠️ Última confirmação — essa ação não pode ser desfeita!")) return;
+        if (!(await this.confirmar("⚠️ Isso vai zerar <b>TODOS</b> os níveis e XP do servidor.<br>Tem certeza?", "Zerar tudo"))) return;
+        if (!(await this.confirmar("⚠️ Última confirmação — essa ação <b>não pode ser desfeita</b>!", "Confirmar reset"))) return;
         const res = await NZKAPI.resetarServidor(this.selectedGuild);
         if (res.success) {
             this.showToast("✅ Todos os níveis foram resetados!");
@@ -290,7 +329,7 @@ const app = {
         const sel = document.getElementById('resetUsuario');
         if (!sel.value) return this.showToast("Selecione um usuário.", "error");
         const nome = sel.options[sel.selectedIndex].text;
-        if (!confirm(`⚠️ Resetar nível e XP de ${nome}?`)) return;
+        if (!(await this.confirmar(`⚠️ Resetar nível e XP de <b>${nome}</b>?`, "Resetar"))) return;
         const res = await NZKAPI.resetarUsuario(this.selectedGuild, sel.value);
         if (res.success) {
             this.showToast(`✅ ${nome} resetado!`);
@@ -335,7 +374,7 @@ const app = {
         body.innerHTML = data.map(m => `
             <tr>
                 <td>${m.youtube_channel_name || m.youtube_channel_id}</td>
-                <td><code>${m.youtube_channel_id}</code></td>
+                <td>${this.idCopiavel(m.youtube_channel_id)}</td>
                 <td>#${m.discord_channel_id}</td>
                 <td>
                     <span style="color: ${m.ativo ? 'var(--success)' : 'var(--danger)'}">
@@ -399,7 +438,7 @@ const app = {
     },
 
     async deletarYoutube(id) {
-        if (!confirm("Remover este canal monitorado?")) return;
+        if (!(await this.confirmar("Remover este canal monitorado?", "Remover"))) return;
         const res = await NZKAPI.deletarYoutubeMonitor(id);
         if (res.success) {
             this.showToast("🗑️ Monitor removido.", "error");
@@ -473,7 +512,7 @@ const app = {
     },
 
     async deletarTwitch(id) {
-        if (!confirm("Remover este canal monitorado?")) return;
+        if (!(await this.confirmar("Remover este canal monitorado?", "Remover"))) return;
         const res = await NZKAPI.deletarTwitchMonitor(id);
         if (res.success) {
             this.showToast("🗑️ Monitor removido.", "error");
@@ -671,7 +710,7 @@ const app = {
                 <td>${index + 1}</td>
                 <td>Level ${patente.level_required}</td>
                 <td>${patente.role_name || 'N/A'}</td>
-                <td><code>${patente.role_id}</code></td>
+                <td>${this.idCopiavel(patente.role_id)}</td>
                 <td style="display:flex; gap:8px;">
                     <button class="btn-table-action secondary" onclick="app.handleEdit('${patente.id}', ${patente.level_required}, '${patente.role_id}')">✏️ Editar</button>
                     <button class="btn-table-action danger" onclick="app.handleDelete('${patente.id}')">Excluir</button>
@@ -831,14 +870,14 @@ row.innerHTML = `
     },
 
     async handleSaveChannel() {
-        if (!confirm("Confirmar alteração do canal de avisos?")) return;
+        if (!(await this.confirmar("Confirmar alteração do canal de avisos?", "Confirmar"))) return;
         const res = await NZKAPI.salvarConfigCanal(this.selectedGuild, document.getElementById('channelSelect').value);
         if (res.success) this.showToast("✅ Canal de avisos salvo!");
         else this.showToast("❌ Erro ao salvar canal.", "error");
     },
 
     async handleSaveTop1() {
-        if (!confirm("Confirmar alteração do cargo Top 1?")) return;
+        if (!(await this.confirmar("Confirmar alteração do cargo Top 1?", "Confirmar"))) return;
         const res = await NZKAPI.salvarConfigTop1(this.selectedGuild, document.getElementById('top1Select').value);
         if (res.success) this.showToast("⭐ Cargo de líder definido!");
         else this.showToast("❌ Erro ao salvar cargo.", "error");
@@ -866,7 +905,7 @@ row.innerHTML = `
     },
 
     async handleDelete(id) {
-        if (confirm("Deseja realmente excluir esta patente?")) {
+        if (await this.confirmar("Deseja realmente excluir esta patente?", "Excluir")) {
             const res = await NZKAPI.deletarPatente(id);
             if (res.success) {
                 this.showToast("🗑️ Patente removida.", "error");
