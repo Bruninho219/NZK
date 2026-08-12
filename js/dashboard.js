@@ -184,7 +184,7 @@ const app = {
 
         document.getElementById('selector').style.display = 'none';
         document.getElementById('editor').style.display = 'block';
-        document.getElementById('serverTitle').innerText = "🏰 Painel";
+        document.getElementById('serverTitle').innerText = "Painel";
 
         this.renderServerSwitcher();
 
