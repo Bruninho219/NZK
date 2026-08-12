@@ -97,12 +97,14 @@ class MoraxBot(commands.Bot):
                 else:
                     usar_padrao = False
                     texto = cfg['status_texto']
-                    tipo_id = cfg.get('tipo_atividade') if cfg.get('tipo_atividade') is not None else 0
-                    tipo_formatado = discord.ActivityType(int(tipo_id))
+                    tipo_id = int(cfg.get('tipo_atividade') if cfg.get('tipo_atividade') is not None else 0)
 
-                    await self.change_presence(
-                        activity=discord.Activity(type=tipo_formatado, name=texto)
-                    )
+                    if tipo_id == 4:
+                        atividade = discord.CustomActivity(name=texto)
+                    else:
+                        atividade = discord.Activity(type=discord.ActivityType(tipo_id), name=texto)
+
+                    await self.change_presence(activity=atividade)
 
                     # Só loga quando o status muda de verdade — reaplicar o mesmo
                     # texto a cada 5min é necessário (combate um bug do próprio
@@ -110,7 +112,8 @@ class MoraxBot(commands.Bot):
                     # não precisa poluir o log toda vez que não muda nada.
                     chave_atual = (tipo_id, texto)
                     if chave_atual != self._ultimo_status_aplicado:
-                        log_info("atualizar_status_db", f"Status atualizado: {tipo_formatado.name} -> {texto}")
+                        nome_tipo = "custom" if tipo_id == 4 else discord.ActivityType(tipo_id).name
+                        log_info("atualizar_status_db", f"Status atualizado: {nome_tipo} -> {texto}")
                         self._ultimo_status_aplicado = chave_atual
 
             if usar_padrao:
