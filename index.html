@@ -63,7 +63,7 @@
                     <button class="secondary" onclick="app.refreshData()">🔄 Atualizar</button>
                 </div>
                 <div style="display: flex; align-items: center; gap: 10px;">
-                    <h2 id="serverTitle" style="margin: 0;">Painel</h2>
+                    <h2 id="serverTitle" style="margin: 0;">🏰 Painel</h2>
                     <select id="serverSwitcher" onchange="app.handleSwitchServer()" style="padding: 10px 14px; font-size: 15px; font-weight: 700; max-width: 220px;"></select>
                     <span id="realtimeBadge" title="Atualizações em tempo real ativas" style="display:none; align-items:center; justify-content:center; background:rgba(35,165,89,0.12); padding:8px; border-radius:50%;">
                         <span style="width:7px; height:7px; border-radius:50%; background:var(--success); box-shadow:0 0 6px var(--success);"></span>
@@ -109,12 +109,23 @@
                                 <option value="5">Competindo</option>
                             </select>
                         </div>
+                        <div class="field" style="flex-grow: 1;">
+                            <label>DURAÇÃO</label>
+                            <select id="statusDuracao">
+                                <option value="6">6 horas</option>
+                                <option value="12">12 horas</option>
+                                <option value="24" selected>24 horas</option>
+                                <option value="36">36 horas</option>
+                                <option value="0">Para sempre</option>
+                            </select>
+                        </div>
                         <div class="field" style="flex-grow: 3;">
                             <label>TEXTO DO STATUS</label>
                             <div style="display: flex; gap: 10px;">
                                 <input type="text" id="statusInput" placeholder="Ex: 🛡️ Protegendo Nazarick" style="flex-grow: 1;">
                                 <button class="success" onclick="app.handleSalvarStatus()" style="width: 150px; background: #5865F2;">Salvar Status</button>
                             </div>
+                            <span id="statusExpiraInfo" style="font-size: 11px; color: var(--text-muted); margin-top: 4px; display: block;"></span>
                         </div>
                     </div>
                 </div>

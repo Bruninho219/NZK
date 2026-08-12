@@ -118,12 +118,13 @@ var NZKAPI = {
         }
     },
 
-    async salvarStatusBot(guildId, textoStatus, tipoAtividade) {
+    async salvarStatusBot(guildId, textoStatus, tipoAtividade, expiraEm) {
         try {
             const { error } = await sb.from('servidor_configs').upsert({
                 guild_id: guildId,
                 status_texto: textoStatus,
-                tipo_atividade: parseInt(tipoAtividade)
+                tipo_atividade: parseInt(tipoAtividade),
+                status_expira_em: expiraEm
             }, { onConflict: 'guild_id' });
             if (error) throw error;
             return { success: true };

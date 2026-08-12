@@ -66,34 +66,61 @@ class MoraxBot(commands.Bot):
             guild_id = "602623690206609418"  # Nazarick
 
             res = self.supabase.table("servidor_configs") \
-                .select("status_texto, tipo_atividade") \
+                .select("status_texto, tipo_atividade, status_expira_em") \
                 .eq("guild_id", guild_id) \
                 .execute()
 
+            usar_padrao = True
+
             if res.data and res.data[0].get('status_texto'):
                 cfg = res.data[0]
-                texto = cfg['status_texto']
-                tipo_id = cfg.get('tipo_atividade') if cfg.get('tipo_atividade') is not None else 0
+                expira_em = cfg.get('status_expira_em')
 
-                tipo_formatado = discord.ActivityType(int(tipo_id))
+                expirou = False
+                if expira_em:
+                    try:
+                        expira_dt = datetime.datetime.fromisoformat(expira_em.replace('Z', '+00:00'))
+                        expirou = datetime.datetime.now(datetime.timezone.utc) >= expira_dt
+                    except Exception as e:
+                        log_erro("atualizar_status_db_parse_data", e)
 
-                await self.change_presence(
-                    activity=discord.Activity(type=tipo_formatado, name=texto)
-                )
+                if expirou:
+                    # Limpa o status vencido no banco, pro dashboard também refletir
+                    try:
+                        self.supabase.table("servidor_configs").update({
+                            "status_texto": None,
+                            "status_expira_em": None
+                        }).eq("guild_id", guild_id).execute()
+                        log_info("atualizar_status_db", "Status configurado expirou, voltando ao padrão")
+                    except Exception as e:
+                        log_erro("atualizar_status_db_expirar", e)
+                else:
+                    usar_padrao = False
+                    texto = cfg['status_texto']
+                    tipo_id = cfg.get('tipo_atividade') if cfg.get('tipo_atividade') is not None else 0
+                    tipo_formatado = discord.ActivityType(int(tipo_id))
 
-                # Só loga quando o status muda de verdade — reaplicar o mesmo
-                # texto a cada 5min é necessário (combate um bug do próprio
-                # Discord que às vezes apaga status customizado sozinho), mas
-                # não precisa poluir o log toda vez que não muda nada.
-                chave_atual = (tipo_id, texto)
-                if chave_atual != self._ultimo_status_aplicado:
-                    log_info("atualizar_status_db", f"Status atualizado: {tipo_formatado.name} -> {texto}")
-                    self._ultimo_status_aplicado = chave_atual
-            else:
+                    await self.change_presence(
+                        activity=discord.Activity(type=tipo_formatado, name=texto)
+                    )
+
+                    # Só loga quando o status muda de verdade — reaplicar o mesmo
+                    # texto a cada 5min é necessário (combate um bug do próprio
+                    # Discord que às vezes apaga status customizado sozinho), mas
+                    # não precisa poluir o log toda vez que não muda nada.
+                    chave_atual = (tipo_id, texto)
+                    if chave_atual != self._ultimo_status_aplicado:
+                        log_info("atualizar_status_db", f"Status atualizado: {tipo_formatado.name} -> {texto}")
+                        self._ultimo_status_aplicado = chave_atual
+
+            if usar_padrao:
                 await self.change_presence(
                     activity=discord.Activity(type=config.BOT_STATUS_TYPE, name=config.BOT_STATUS_TEXT)
                 )
-                log_aviso("atualizar_status_db", "Nenhum status encontrado no banco, usando config padrão")
+                chave_padrao = ('default', config.BOT_STATUS_TEXT)
+                if chave_padrao != self._ultimo_status_aplicado:
+                    log_aviso("atualizar_status_db", "Nenhum status configurado, usando padrão")
+                    self._ultimo_status_aplicado = chave_padrao
         except Exception as e:
             log_erro("atualizar_status_db", e)
 

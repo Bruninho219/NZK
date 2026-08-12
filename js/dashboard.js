@@ -184,7 +184,7 @@ const app = {
 
         document.getElementById('selector').style.display = 'none';
         document.getElementById('editor').style.display = 'block';
-        document.getElementById('serverTitle').innerText = "Painel";
+        document.getElementById('serverTitle').innerText = "🏰 Painel";
 
         this.renderServerSwitcher();
 
@@ -342,6 +342,7 @@ const app = {
             if (config.cargo_top1_id) document.getElementById('top1Select').value = config.cargo_top1_id;
             if (config.status_texto) document.getElementById('statusInput').value = config.status_texto;
             if (config.tipo_atividade !== null) document.getElementById('statusType').value = config.tipo_atividade;
+            this.renderStatusExpiraInfo(config.status_expira_em || null);
             document.getElementById('levelupMensagem').value = config.levelup_mensagem || '';
             document.getElementById('bonusBooster').value = config.bonus_booster || 0;
             if (config.canal_boost_id) document.getElementById('boostChannel').value = config.canal_boost_id;
@@ -362,6 +363,7 @@ const app = {
             document.getElementById('top1Select').value = "";
             document.getElementById('statusInput').value = "";
             document.getElementById('statusType').value = "0";
+            document.getElementById('statusExpiraInfo').textContent = "";
             document.getElementById('levelupMensagem').value = '';
             document.getElementById('bonusBooster').value = 0;
             document.getElementById('boostChannel').value = "";
@@ -740,13 +742,31 @@ const app = {
     async handleSalvarStatus() {
         const texto = document.getElementById('statusInput').value;
         const tipo = document.getElementById('statusType').value;
+        const horas = parseInt(document.getElementById('statusDuracao').value);
         if (!this.selectedGuild) return this.showToast("Selecione um servidor primeiro.", "error");
-        const res = await NZKAPI.salvarStatusBot(this.selectedGuild, texto, tipo);
+
+        const expiraEm = horas > 0
+            ? new Date(Date.now() + horas * 60 * 60 * 1000).toISOString()
+            : null;
+
+        const res = await NZKAPI.salvarStatusBot(this.selectedGuild, texto, tipo, expiraEm);
         if (res.success) {
             this.showToast("✅ Status salvo com sucesso!");
+            this.renderStatusExpiraInfo(expiraEm);
         } else {
             this.showToast("❌ Erro ao salvar status.", "error");
         }
+    },
+
+    renderStatusExpiraInfo(expiraEm) {
+        const el = document.getElementById('statusExpiraInfo');
+        if (!el) return;
+        if (!expiraEm) {
+            el.textContent = '♾️ Esse status fica valendo até você trocar de novo.';
+            return;
+        }
+        const data = new Date(expiraEm);
+        el.textContent = `⏳ Esse status volta ao padrão em ${data.toLocaleString('pt-BR')}.`;
     },
 
     renderRoles(cargos) {
