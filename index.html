@@ -7,7 +7,7 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔥</text></svg>">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
-	<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8816082473901477" crossorigin="anonymous"></script>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8816082473901477" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="js/config.js"></script>
@@ -65,6 +65,9 @@
                 <div style="display: flex; align-items: center; gap: 10px;">
                     <h2 id="serverTitle" style="margin: 0;">Painel</h2>
                     <select id="serverSwitcher" onchange="app.handleSwitchServer()" style="padding: 10px 14px; font-size: 15px; font-weight: 700; max-width: 220px;"></select>
+                    <span id="realtimeBadge" title="Atualizações em tempo real ativas" style="display:none; align-items:center; justify-content:center; background:rgba(35,165,89,0.12); padding:8px; border-radius:50%;">
+                        <span style="width:7px; height:7px; border-radius:50%; background:var(--success); box-shadow:0 0 6px var(--success);"></span>
+                    </span>
                 </div>
             </div>
 

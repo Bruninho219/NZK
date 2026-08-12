@@ -197,6 +197,75 @@ const app = {
         this.showLoading('leaderboardBody');
 
         await this.fetchAndRender(guildId);
+        this.iniciarRealtime(guildId);
+        this.iniciarRealtimeAuditLog(guildId);
+    },
+
+    iniciarRealtime(guildId) {
+        // Remove qualquer inscrição anterior antes de criar uma nova
+        // (evita ficar acumulando conexões ao trocar de servidor)
+        if (this._realtimeChannel) {
+            sb.removeChannel(this._realtimeChannel);
+            this._realtimeChannel = null;
+        }
+
+        this._realtimeChannel = sb.channel(`niveis-${guildId}`)
+            .on('postgres_changes', {
+                event: '*',
+                schema: 'public',
+                table: 'niveis',
+                filter: `guild_id=eq.${guildId}`
+            }, () => this.atualizarLeaderboardEmTempoReal())
+            .subscribe((status) => {
+                const badge = document.getElementById('realtimeBadge');
+                if (!badge) return;
+                badge.style.display = (status === 'SUBSCRIBED') ? 'inline-flex' : 'none';
+            });
+    },
+
+    pararRealtime() {
+        if (this._realtimeChannel) {
+            sb.removeChannel(this._realtimeChannel);
+            this._realtimeChannel = null;
+        }
+        const badge = document.getElementById('realtimeBadge');
+        if (badge) badge.style.display = 'none';
+    },
+
+    iniciarRealtimeAuditLog(guildId) {
+        if (this._auditChannel) {
+            sb.removeChannel(this._auditChannel);
+            this._auditChannel = null;
+        }
+
+        this._auditChannel = sb.channel(`audit-log-${guildId}`)
+            .on('postgres_changes', {
+                event: 'INSERT',
+                schema: 'public',
+                table: 'audit_log',
+                filter: `guild_id=eq.${guildId}`
+            }, (payload) => {
+                this.renderAuditLog(guildId);
+                // Avisa mesmo se o admin não estiver com a aba Admin aberta no momento
+                const quem = payload.new?.actor_name || 'Alguém';
+                this.showToast(`📜 ${quem} registrou uma ação no log`);
+            })
+            .subscribe();
+    },
+
+    pararRealtimeAuditLog() {
+        if (this._auditChannel) {
+            sb.removeChannel(this._auditChannel);
+            this._auditChannel = null;
+        }
+    },
+
+    async atualizarLeaderboardEmTempoReal() {
+        if (!this.selectedGuild) return;
+        const data = await NZKAPI.getLeaderboard(this.selectedGuild);
+        this._lastLeaderboard = data;
+        this.renderLeaderboard(data);
+        this.renderEstatisticas(data);
     },
 
     async fetchAndRender(guildId) {
@@ -1011,6 +1080,8 @@ row.innerHTML = `
 
     closeEditor() {
         window.scrollTo({ top: 0, behavior: 'instant' });
+        this.pararRealtime();
+        this.pararRealtimeAuditLog();
         history.back();
     },
 
