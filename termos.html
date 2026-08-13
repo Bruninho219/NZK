@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,35 +7,36 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔥</text></svg>">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
-	<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8816082473901477"
-     crossorigin="anonymous"></script>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8816082473901477" crossorigin="anonymous"></script>
+    <script src="i18n/pt-BR.js"></script>
+    <script src="i18n/en-US.js"></script>
+    <script src="js/i18n.js"></script>
     <style>
-        .legal-container {
-            max-width: 760px;
-            margin: 0 auto;
-            padding: 50px 24px 80px;
-            line-height: 1.7;
-        }
+        .legal-container { max-width: 760px; margin: 0 auto; padding: 50px 24px 80px; line-height: 1.7; }
         .legal-container h1 { font-size: 28px; margin-bottom: 6px; }
         .legal-container .updated { color: var(--text-muted); font-size: 13px; margin-bottom: 40px; }
-        .legal-container h2 {
-            font-size: 18px;
-            color: var(--accent);
-            margin-top: 40px;
-            margin-bottom: 12px;
-            border-bottom: 1px solid rgba(255,255,255,0.08);
-            padding-bottom: 8px;
-        }
+        .legal-container h2 { font-size: 18px; color: var(--accent); margin-top: 40px; margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 8px; }
         .legal-container p, .legal-container li { color: var(--text-muted); font-size: 14.5px; }
         .legal-container ul { padding-left: 20px; }
         .legal-container li { margin-bottom: 6px; }
         .legal-container a { color: var(--accent); text-decoration: none; }
         .legal-container a:hover { text-decoration: underline; }
         .back-link { display: inline-block; margin-bottom: 24px; font-size: 13px; }
+        .language-picker { display:flex; justify-content:flex-end; align-items:center; gap:10px; margin-bottom:20px; }
+        .language-picker label { color:var(--text-muted); font-size:12px; }
+        .language-picker select { padding:8px 10px; font-size:12px; }
     </style>
 </head>
 <body>
     <div class="legal-container">
+        <div class="language-picker">
+            <label for="languageSelect" data-i18n="label.language">Idioma</label>
+            <select id="languageSelect" data-language-select>
+                <option value="pt-BR">🇧🇷 Português</option>
+                <option value="en-US">🇺🇸 English</option>
+            </select>
+        </div>
+
         <a class="back-link" href="/">← Voltar pro painel</a>
         <h1>📜 Termos de Serviço</h1>
         <p class="updated">Última atualização: agosto de 2026</p>
