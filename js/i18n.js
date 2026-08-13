@@ -11,6 +11,7 @@
     let currentLanguage = localStorage.getItem(STORAGE_KEY) || "pt-BR";
     let applying = false;
     let observer = null;
+    const originalTitle = document.title;
 
     function escapeRegex(s) {
         return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -110,6 +111,7 @@
     }
 
     function translate() {
+        document.title = translateText(originalTitle);
         document.documentElement.lang = currentLanguage === "en-US" ? "en" : "pt-BR";
         document.querySelectorAll("[data-language-select]").forEach(select => {
             select.value = currentLanguage;

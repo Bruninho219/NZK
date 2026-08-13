@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,79 +7,52 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔥</text></svg>">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
-	<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8816082473901477" crossorigin="anonymous"></script>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js?client=ca-pub-8816082473901477" crossorigin="anonymous"></script>
+    <script src="i18n/pt-BR.js"></script>
+    <script src="i18n/en-US.js"></script>
+    <script src="js/i18n.js"></script>
     <style>
-        .legal-container {
-            max-width: 760px;
-            margin: 0 auto;
-            padding: 50px 24px 80px;
-            line-height: 1.7;
-        }
+        .legal-container { max-width: 760px; margin: 0 auto; padding: 50px 24px 80px; line-height: 1.7; }
         .legal-container h1 { font-size: 28px; margin-bottom: 6px; }
         .legal-container .updated { color: var(--text-muted); font-size: 13px; margin-bottom: 40px; }
-        .legal-container h2 {
-            font-size: 18px;
-            color: var(--accent);
-            margin-top: 40px;
-            margin-bottom: 12px;
-            border-bottom: 1px solid rgba(255,255,255,0.08);
-            padding-bottom: 8px;
-        }
+        .legal-container h2 { font-size: 18px; color: var(--accent); margin-top: 40px; margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 8px; }
         .legal-container p, .legal-container li { color: var(--text-muted); font-size: 14.5px; }
         .legal-container ul { padding-left: 20px; }
         .legal-container li { margin-bottom: 6px; }
         .legal-container a { color: var(--accent); text-decoration: none; }
         .legal-container a:hover { text-decoration: underline; }
         .back-link { display: inline-block; margin-bottom: 24px; font-size: 13px; }
+        .language-picker { display:flex; justify-content:flex-end; align-items:center; gap:10px; margin-bottom:20px; }
+        .language-picker label { color:var(--text-muted); font-size:12px; }
+        .language-picker select { padding:8px 10px; font-size:12px; }
     </style>
 </head>
 <body>
     <div class="legal-container">
+        <div class="language-picker"><label for="languageSelect" data-i18n="label.language">Idioma</label><select id="languageSelect" data-language-select><option value="pt-BR">🇧🇷 Português</option><option value="en-US">🇺🇸 English</option></select></div>
         <a class="back-link" href="/">← Voltar pro painel</a>
         <h1>🔒 Política de Privacidade</h1>
         <p class="updated">Última atualização: agosto de 2026</p>
-
         <p>O NZK é um bot de níveis e XP para Discord, feito e mantido de forma independente. Essa página explica, de forma direta, quais dados a gente coleta, pra que servem, e como você pode pedir a remoção deles.</p>
-
         <h2>O que coletamos</h2>
         <p>Pra fazer o sistema de níveis funcionar, guardamos:</p>
-        <ul>
-            <li>Seu ID de usuário do Discord e nome de exibição no servidor</li>
-            <li>Contagem de mensagens enviadas, tempo em canais de voz e reações dadas (usados só pra calcular XP — não guardamos o conteúdo das mensagens)</li>
-            <li>Seu nível, XP atual e histórico de progressão ao longo do tempo</li>
-        </ul>
-
+        <ul><li>Seu ID de usuário do Discord e nome de exibição no servidor</li><li>Contagem de mensagens enviadas, tempo em canais de voz e reações dadas (usados só pra calcular XP — não guardamos o conteúdo das mensagens)</li><li>Seu nível, XP atual e histórico de progressão ao longo do tempo</li></ul>
         <p>Se você é <strong>administrador</strong> de um servidor e faz login no painel web:</p>
-        <ul>
-            <li>Seu ID do Discord, nome de usuário, e-mail associado à conta Discord e avatar (fornecidos pelo próprio Discord no momento do login)</li>
-            <li>Um registro de ações administrativas realizadas por você no painel (ex: reset de nível, edição de XP), incluindo data e horário — isso existe pra garantir transparência e rastreabilidade sobre ações que afetam outros usuários</li>
-        </ul>
-
+        <ul><li>Seu ID do Discord, nome de usuário, e-mail associado à conta Discord e avatar (fornecidos pelo próprio Discord no momento do login)</li><li>Um registro de ações administrativas realizadas por você no painel (ex: reset de nível, edição de XP), incluindo data e horário — isso existe pra garantir transparência e rastreabilidade sobre ações que afetam outros usuários</li></ul>
         <h2>O que a gente NÃO faz</h2>
-        <ul>
-            <li>Não lemos nem guardamos o conteúdo das suas mensagens</li>
-            <li>Não vendemos, alugamos ou compartilhamos seus dados com terceiros para fins comerciais</li>
-            <li>Não usamos seus dados fora do escopo do sistema de níveis/XP e da administração do bot</li>
-        </ul>
-
+        <ul><li>Não lemos nem guardamos o conteúdo das suas mensagens</li><li>Não vendemos, alugamos ou compartilhamos seus dados com terceiros para fins comerciais</li><li>Não usamos seus dados fora do escopo do sistema de níveis/XP e da administração do bot</li></ul>
         <h2>Onde os dados ficam armazenados</h2>
         <p>Os dados são armazenados no Supabase (infraestrutura de banco de dados de terceiros, com proteção de acesso por autenticação e controle de permissão por servidor). O acesso ao painel administrativo é restrito — cada administrador só consegue ver e editar dados dos servidores onde ele próprio tem permissão de administrador no Discord.</p>
-
         <h2>Anúncios (Google AdSense)</h2>
         <p>O painel web utiliza o Google AdSense, que pode usar cookies e identificadores para exibir anúncios, inclusive personalizados com base na sua navegação. Você pode saber mais e ajustar suas preferências de anúncio diretamente em <a href="https://adssettings.google.com" target="_blank" rel="noopener">adssettings.google.com</a>, e consultar a <a href="https://policies.google.com/technologies/partner-sites" target="_blank" rel="noopener">política de parceiros do Google</a> para mais detalhes sobre como esses dados são tratados.</p>
-
         <h2>Quanto tempo guardamos os dados</h2>
         <p>Seus dados de nível/XP ficam armazenados enquanto o bot estiver presente no servidor. Se o bot for removido de um servidor, os dados daquele servidor deixam de ser atualizados, mas podem permanecer armazenados por um tempo até serem limpos periodicamente.</p>
-
         <h2>Como pedir a remoção dos seus dados</h2>
         <p>Se você quiser que seus dados (nível, XP, histórico) sejam removidos da base, entre em contato pelo Discord com o desenvolvedor (<strong>bruninho219</strong>) explicando o pedido. A remoção é feita manualmente e pode levar alguns dias.</p>
-
         <h2>Menores de idade</h2>
         <p>O uso do NZK segue os mesmos requisitos de idade mínima do próprio Discord. Não coletamos intencionalmente dados adicionais de menores além do que o Discord já fornece pela API pública de bots.</p>
-
         <h2>Mudanças nesta política</h2>
         <p>Essa política pode ser atualizada conforme o projeto evolui. Mudanças relevantes serão refletidas nesta mesma página, com a data de atualização no topo.</p>
-
         <h2>Contato</h2>
         <p>Dúvidas, pedidos de remoção de dados ou qualquer outra questão relacionada à privacidade: fale com <strong>bruninho219</strong> no Discord.</p>
     </div>
