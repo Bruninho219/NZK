@@ -321,7 +321,7 @@ const app = {
         }
 
         body.innerHTML = data.map(log => {
-            const data_fmt = new Date(log.created_at).toLocaleString('pt-BR');
+            const data_fmt = new Date(log.created_at).toLocaleString(NZKI18n?.language || 'pt-BR');
             const acaoNome = acoesTraduzidas[log.action] || log.action;
             const alvo = this.idCopiavel(log.target_id);
             return `
@@ -766,7 +766,7 @@ const app = {
             return;
         }
         const data = new Date(expiraEm);
-        el.textContent = `⏳ Esse status volta ao padrão em ${data.toLocaleString('pt-BR')}.`;
+        el.textContent = `⏳ Esse status volta ao padrão em ${data.toLocaleString(NZKI18n?.language || 'pt-BR')}.`;
     },
 
     renderRoles(cargos) {

@@ -13,12 +13,22 @@
     <script src="js/config.js"></script>
     <script src="js/api.js"></script>
     <script src="js/auth.js"></script>
+    <script src="i18n/pt-BR.js"></script>
+    <script src="i18n/en-US.js"></script>
+    <script src="js/i18n.js"></script>
     <script src="js/dashboard.js"></script>
 </head>
 <body>
 
 <!-- TELA DE LOGIN -->
 <div id="loginScreen" style="display:none; min-height:100vh; flex-direction:column; align-items:center; justify-content:center; gap:20px; text-align:center;">
+    <div style="position:fixed; top:20px; right:20px; display:flex; align-items:center; gap:8px;">
+        <label for="languageSelectLogin" data-i18n="label.language" style="font-size:12px; color:var(--text-muted);">Idioma</label>
+        <select id="languageSelectLogin" data-language-select style="padding:8px 10px; font-size:12px;">
+            <option value="pt-BR">🇧🇷 Português</option>
+            <option value="en-US">🇺🇸 English</option>
+        </select>
+    </div>
     <div style="font-size:48px;">🔥</div>
     <h1 style="margin:0;">NZK Admin Dashboard</h1>
     <p style="color:var(--text-muted); max-width:340px;">Entre com sua conta do Discord para gerenciar os servidores em que você é administrador.</p>
@@ -45,8 +55,15 @@
 <div id="appScreen" style="display:none;">
     <div class="container" style="padding-top:0;">
 		<div style="display: flex; justify-content: flex-end; align-items: center; gap: 15px; padding: 15px 0;">
+            <div style="display:flex; align-items:center; gap:8px;">
+                <label for="languageSelect" data-i18n="label.language" style="font-size:12px; color:var(--text-muted);">Idioma</label>
+                <select id="languageSelect" data-language-select style="padding:8px 10px; font-size:12px;">
+                    <option value="pt-BR">🇧🇷 Português</option>
+                    <option value="en-US">🇺🇸 English</option>
+                </select>
+            </div>
 			<span id="userBadge" style="font-size: 13px; color: var(--text-muted); display: flex; align-items: center; gap: 8px;"></span>
-			<button id="btnLogout" class="secondary" style="padding: 8px 16px; font-size: 12px; margin: 0;">Sair</button>
+			<button id="btnLogout" class="secondary" style="padding: 8px 16px; font-size: 12px; margin: 0;" data-i18n="btn.logout">Sair</button>
 		</div>
 
         <div id="selector">
@@ -65,7 +82,7 @@
                 <div style="display: flex; align-items: center; gap: 10px;">
                     <h2 id="serverTitle" style="margin: 0;">Painel</h2>
                     <select id="serverSwitcher" onchange="app.handleSwitchServer()" style="padding: 10px 14px; font-size: 15px; font-weight: 700; max-width: 220px;"></select>
-                    <span id="realtimeBadge" title="Atualizações em tempo real ativas" style="display:none; align-items:center; justify-content:center; background:rgba(35,165,89,0.12); padding:8px; border-radius:50%;">
+                    <span id="realtimeBadge" title="Atualizações em tempo real ativas" data-i18n-title="realtime.title" style="display:none; align-items:center; justify-content:center; background:rgba(35,165,89,0.12); padding:8px; border-radius:50%;">
                         <span style="width:7px; height:7px; border-radius:50%; background:var(--success); box-shadow:0 0 6px var(--success);"></span>
                     </span>
                 </div>
@@ -122,7 +139,7 @@
                         <div class="field" style="flex-grow: 3;">
                             <label>TEXTO DO STATUS</label>
                             <div style="display: flex; gap: 10px;">
-                                <input type="text" id="statusInput" placeholder="Ex: 🛡️ Protegendo Nazarick" style="flex-grow: 1;">
+                                <input type="text" id="statusInput" placeholder="Ex: 🛡️ Protegendo Nazarick" data-i18n-placeholder="placeholder.status" style="flex-grow: 1;">
                                 <button class="success" onclick="app.handleSalvarStatus()" style="width: 150px; background: #5865F2;">Salvar</button>
                             </div>
                             <span id="statusExpiraInfo" style="font-size: 11px; color: var(--text-muted); margin-top: 4px; display: block;"></span>
@@ -135,7 +152,7 @@
 				    <div class="field" style="width: 100%;">
 				        <label>💬 MENSAGEM (deixe vazio para usar o padrão)</label>
 				        <div style="display: flex; gap: 10px; align-items: center;">
-				            <input type="text" id="levelupMensagem" placeholder="{usuario} >> **{nivel}**" style="flex-grow: 1; box-sizing: border-box;">
+				            <input type="text" id="levelupMensagem" placeholder="{usuario} >> **{nivel}**" data-i18n-placeholder="placeholder.levelup" style="flex-grow: 1; box-sizing: border-box;">
 				            <button class="success" style="width: auto;" onclick="app.handleSalvarLevelupMensagem()">Salvar</button>
 				        </div>
 				
@@ -179,7 +196,7 @@
                 <div class="form-row" style="margin-top: 20px;">
                     <div class="field">
                         <label>💬 MENSAGEM DE BOAS-VINDAS (deixe vazio para desativar)</label>
-                        <input type="text" id="boasVindasMensagem" placeholder="Bem-vindo(a) ao {servidor}, {usuario}!" style="width: 100%; box-sizing: border-box;">
+                        <input type="text" id="boasVindasMensagem" placeholder="Bem-vindo(a) ao {servidor}, {usuario}!" data-i18n-placeholder="placeholder.welcome" style="width: 100%; box-sizing: border-box;">
                         <span style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">
                             Variáveis: <code>{usuario}</code> menção &nbsp;|&nbsp; <code>{servidor}</code> nome do servidor &nbsp;|&nbsp; <code>{membros}</code> total de membros
                         </span>
@@ -212,7 +229,7 @@
                 <div class="form-row">
                     <div class="field">
                         <label>💬 MENSAGEM DO ANÚNCIO (deixe vazio para desativar)</label>
-                        <input type="text" id="boostMensagem" placeholder="{usuario} acabou de impulsionar o servidor! Obrigado pelo apoio!" style="width: 100%; box-sizing: border-box;">
+                        <input type="text" id="boostMensagem" placeholder="{usuario} acabou de impulsionar o servidor! Obrigado pelo apoio!" data-i18n-placeholder="placeholder.boost" style="width: 100%; box-sizing: border-box;">
                         <span style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">
                             Variáveis: <code>{usuario}</code> menção &nbsp;|&nbsp; <code>{servidor}</code> nome do servidor &nbsp;|&nbsp; <code>{xp}</code> XP bônus
                         </span>
@@ -262,7 +279,7 @@
                 <div class="form-row">
                     <div class="field" style="flex-grow: 0;">
                         <label>NÍVEL</label>
-                        <input type="number" id="lvl" placeholder="Ex: 5" style="width: 100px;">
+                        <input type="number" id="lvl" placeholder="Ex: 5" data-i18n-placeholder="placeholder.levelExample" style="width: 100px;">
                     </div>
                     <div class="field">
                         <label>CARGO DO DISCORD</label>
@@ -313,7 +330,7 @@
                 <div class="section-title" style="margin-top: 30px;">🏆 Ranking Global</div>
 
                 <div style="margin-bottom: 15px;">
-                    <input type="text" id="searchLeaderboard" placeholder="🔍 Buscar membro..." style="width: 100%; box-sizing: border-box;"
+                    <input type="text" id="searchLeaderboard" placeholder="🔍 Buscar membro..." data-i18n-placeholder="placeholder.searchMember" style="width: 100%; box-sizing: border-box;"
                         oninput="app._leaderboardPage = 1; app.renderLeaderboard(app._lastLeaderboard || [])">
                 </div>
 
@@ -393,11 +410,11 @@
                 <div class="form-row">
                     <div class="field" style="flex-grow: 0;">
                         <label>ID DO CANAL YOUTUBE</label>
-                        <input type="text" id="youtubeChannelId" placeholder="@handle, UCxxxx ou URL" style="width: 220px;">
+                        <input type="text" id="youtubeChannelId" placeholder="@handle, UCxxxx ou URL" data-i18n-placeholder="placeholder.youtubeId" style="width: 220px;">
                     </div>
                     <div class="field" style="flex-grow: 0;">
                         <label>NOME DO CANAL (opcional)</label>
-                        <input type="text" id="youtubeChannelName" placeholder="Ex: Nazarick TV" style="width: 180px;">
+                        <input type="text" id="youtubeChannelName" placeholder="Ex: Nazarick TV" data-i18n-placeholder="placeholder.youtubeName" style="width: 180px;">
                     </div>
                     <div class="field">
                         <label>CANAL DO DISCORD PARA ANUNCIAR</label>
@@ -430,7 +447,7 @@
                 <div class="form-row">
                     <div class="field" style="flex-grow: 0;">
                         <label>USUÁRIO DA TWITCH</label>
-                        <input type="text" id="twitchUsername" placeholder="ex: nomeaqui" style="width: 220px;">
+                        <input type="text" id="twitchUsername" placeholder="ex: nomeaqui" data-i18n-placeholder="placeholder.twitchUser" style="width: 220px;">
                     </div>
                     <div class="field">
                         <label>CANAL DO DISCORD PARA ANUNCIAR</label>
