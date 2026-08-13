@@ -170,7 +170,7 @@ button {
 button:hover { background: var(--accent-hover); transform: scale(1.02); }
 button.secondary { background: #4e5058; margin-bottom: 25px; }
 button.success { background: var(--success); }
-button.danger { background: var(--danger); padding: 8px 15px; font-size: 11px; }
+button.danger { background: var(--danger); padding: 12px 24px; font-size: 11px; }
 
 /* --- ABAS --- */
 .tab-container {
