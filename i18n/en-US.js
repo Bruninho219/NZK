@@ -359,4 +359,5 @@ window.NZK_I18N_EN_US = {
   "Funcionam com ": "They work with ",
   " ou ": " or ",
   " — como preferir. Lista completa com ": " — whichever you prefer. Full list with ",
+  "VersãoNZK": "0.9.0",
 };
