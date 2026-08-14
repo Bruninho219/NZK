@@ -78,6 +78,13 @@
 </head>
 <body>
     <div class="page-container">
+        <div class="language-picker" style="display:flex; justify-content:flex-end; align-items:center; gap:8px; margin-bottom:12px;">
+            <label for="languageSelectFeatures" data-i18n="label.language" style="font-size:12px; color:var(--text-muted);">Idioma</label>
+            <select id="languageSelectFeatures" data-language-select style="padding:8px 10px; font-size:12px;">
+                <option value="pt-BR">🇧🇷 Português</option>
+                <option value="en-US">🇺🇸 English</option>
+            </select>
+        </div>
         <a class="back-link" href="/">← Voltar pro painel</a>
 
         <div class="hero">
@@ -229,5 +236,8 @@
             <a href="/">Painel</a>
         </div>
     </div>
+    <script src="i18n/pt-BR.js"></script>
+    <script src="i18n/en-US.js"></script>
+    <script src="js/i18n.js"></script>
 </body>
 </html>
