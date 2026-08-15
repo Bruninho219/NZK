@@ -16,11 +16,26 @@
         });
     }
 
+    // Intercepta qualquer atribuição a select.value (feita por nós ou pelo i18n.js)
+    // e mantém a bandeira sempre sincronizada, não importa quem mudou o valor.
+    function hijackValue(select, onChange) {
+        const descriptor = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value');
+        Object.defineProperty(select, 'value', {
+            get: function () { return descriptor.get.call(select); },
+            set: function (v) {
+                descriptor.set.call(select, v);
+                onChange(v);
+            },
+            configurable: true
+        });
+    }
+
     document.querySelectorAll('.lang-select').forEach(function (wrap) {
         const trigger = wrap.querySelector('.lang-trigger');
         const options = wrap.querySelector('.lang-options');
         const select = wrap.querySelector('select[data-language-select]');
 
+        hijackValue(select, function (v) { syncTrigger(wrap, v); });
         syncTrigger(wrap, select.value);
 
         trigger.addEventListener('click', function (e) {
@@ -33,9 +48,8 @@
 
         options.querySelectorAll('li').forEach(function (li) {
             li.addEventListener('click', function () {
-                select.value = li.dataset.value;
+                select.value = li.dataset.value; // já dispara a sincronização da bandeira
                 select.dispatchEvent(new Event('change', { bubbles: true }));
-                syncTrigger(wrap, li.dataset.value);
                 closeAll();
             });
         });
