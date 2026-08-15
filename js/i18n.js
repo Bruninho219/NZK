@@ -3,7 +3,8 @@
     const STORAGE_KEY = "nzk_language";
     const DICTS = {
         "pt-BR": window.NZK_I18N_PT_BR || {},
-        "en-US": window.NZK_I18N_EN_US || {}
+        "en-US": window.NZK_I18N_EN_US || {},
+        "es-ES": window.NZK_I18N_ES_ES || {}
     };
 
     const textSources = new WeakMap();
@@ -38,6 +39,17 @@
                 .replace(/^\+\s*(\d+) XP$/, "+$1 XP");
         }
 
+        if (currentLanguage === "es-ES") {
+            translated = translated
+                .replace(/^⚠️ Bot removido há (\d+)d$/, "⚠️ Bot eliminado hace $1d")
+                .replace(/^Lvl (\d+)$/, "Nvl $1")
+                .replace(/^Level (\d+)$/, "Nivel $1")
+                .replace(/^Cargo removido \((.+)\)$/, "Rol eliminado ($1)")
+                .replace(/^⏳ Esse status volta ao padrão em (.+)\.$/, "⏳ Este estado vuelve al valor predeterminado en $1.")
+                .replace(/^Selecione um membro para ver o histórico\.$/, "Selecciona un miembro para ver el historial.")
+                .replace(/^\+\s*(\d+) XP$/, "+$1 XP");
+        }
+
         return match ? `${match[1]}${translated}${match[3]}` : translated;
     }
 
@@ -56,18 +68,18 @@
     }
 
     const keyTranslations = {
-        "label.language": { "pt-BR": "Idioma", "en-US": "Language" },
-        "btn.logout": { "pt-BR": "Sair", "en-US": "Log out" },
-        "realtime.title": { "pt-BR": "Atualizações em tempo real ativas", "en-US": "Real-time updates active" },
-        "placeholder.status": { "pt-BR": "Ex: 🛡️ Protegendo Nazarick", "en-US": "E.g.: 🛡️ Protecting Nazarick" },
-        "placeholder.levelup": { "pt-BR": "{usuario} >> **{nivel}**", "en-US": "{user} >> **{level}**" },
-        "placeholder.welcome": { "pt-BR": "Bem-vindo(a) ao {servidor}, {usuario}!", "en-US": "Welcome to {server}, {user}!" },
-        "placeholder.boost": { "pt-BR": "{usuario} acabou de impulsionar o servidor! Obrigado pelo apoio!", "en-US": "{usuario} just boosted the server! Thanks for the support!" },
-        "placeholder.youtubeId": { "pt-BR": "@handle, UCxxxx ou URL", "en-US": "@handle, UCxxxx or URL" },
-        "placeholder.youtubeName": { "pt-BR": "Ex: Nazarick TV", "en-US": "E.g.: Nazarick TV" },
-        "placeholder.twitchUser": { "pt-BR": "ex: nomeaqui", "en-US": "e.g.: username" },
-        "placeholder.searchMember": { "pt-BR": "🔍 Buscar membro...", "en-US": "🔍 Search member..." },
-        "placeholder.levelExample": { "pt-BR": "Ex: 5", "en-US": "E.g.: 5" }
+        "label.language": { "pt-BR": "Idioma", "en-US": "Language", "es-ES": "Idioma" },
+        "btn.logout": { "pt-BR": "Sair", "en-US": "Log out", "es-ES": "Cerrar sesión" },
+        "realtime.title": { "pt-BR": "Atualizações em tempo real ativas", "en-US": "Real-time updates active", "es-ES": "Actualizaciones en tiempo real activas" },
+        "placeholder.status": { "pt-BR": "Ex: 🛡️ Protegendo Nazarick", "en-US": "E.g.: 🛡️ Protecting Nazarick", "es-ES": "Ej.: 🛡️ Protegiendo Nazarick" },
+        "placeholder.levelup": { "pt-BR": "{usuario} >> **{nivel}**", "en-US": "{user} >> **{level}**", "es-ES": "{usuario} >> **{nivel}**" },
+        "placeholder.welcome": { "pt-BR": "Bem-vindo(a) ao {servidor}, {usuario}!", "en-US": "Welcome to {server}, {user}!", "es-ES": "¡Bienvenido(a) a {servidor}, {usuario}!" },
+        "placeholder.boost": { "pt-BR": "{usuario} acabou de impulsionar o servidor! Obrigado pelo apoio!", "en-US": "{usuario} just boosted the server! Thanks for the support!", "es-ES": "¡{usuario} acaba de impulsar el servidor! ¡Gracias por el apoyo!" },
+        "placeholder.youtubeId": { "pt-BR": "@handle, UCxxxx ou URL", "en-US": "@handle, UCxxxx or URL", "es-ES": "@handle, UCxxxx o URL" },
+        "placeholder.youtubeName": { "pt-BR": "Ex: Nazarick TV", "en-US": "E.g.: Nazarick TV", "es-ES": "Ej.: Nazarick TV" },
+        "placeholder.twitchUser": { "pt-BR": "ex: nomeaqui", "en-US": "e.g.: username", "es-ES": "ej.: nombreaqui" },
+        "placeholder.searchMember": { "pt-BR": "🔍 Buscar membro...", "en-US": "🔍 Search member...", "es-ES": "🔍 Buscar miembro..." },
+        "placeholder.levelExample": { "pt-BR": "Ex: 5", "en-US": "E.g.: 5", "es-ES": "Ej.: 5" }
     };
 
     function translateKey(key, fallback="") {
