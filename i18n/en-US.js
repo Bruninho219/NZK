@@ -366,5 +366,5 @@ window.NZK_I18N_EN_US = {
   "Canal Discord": "Discord Channel",
   "Zera o nível e XP de todos os membros. Ação irreversível.": "Resets the level and XP of all members. This action cannot be undone.",
   "Zera o nível e XP de": "Resets the level and XP of",
-  "os membros. Ação irreversível.": "members. This action cannot be undone.",
+  " os membros. Ação irreversível.": " members. This action cannot be undone.",
 };
