@@ -128,7 +128,7 @@ window.NZK_I18N_FR_FR = {
   "ID YouTube": "ID YouTube",
   "Status": "Statut",
   "▶️ Ativar": "▶️ Activer",
-  "⏸️ Pausar": "⏸️ Mettre en pause",
+  "⏸️ Pausar": "⏸️ Suspendre",
   "Excluir": "Supprimer",
   "💜 Monitorar Streams da Twitch": "💜 Surveiller des streams Twitch",
   "USUÁRIO DA TWITCH": "NOM D'UTILISATEUR TWITCH",
