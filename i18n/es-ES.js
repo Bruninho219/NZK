@@ -365,6 +365,6 @@ window.NZK_I18N_ES_ES = {
   "Canal Discord": "Canal de Discord",
   "Zera o nível e XP de todos os membros. Ação irreversível.": "Restablece el nivel y XP de todos los miembros. Esta acción no se puede deshacer.",
   "Zera o nível e XP de": "Restablece el nivel y XP de",
-  " os membros. Ação irreversível.": " los miembros. Esta acción no se puede deshacer."
+  " os membros. Ação irreversível.": " los miembros. Esta acción no se puede deshacer.",
   "🌎 Multi idiomas": "🌎 Soporte multiidioma",
 };
