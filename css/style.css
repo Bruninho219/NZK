@@ -504,3 +504,5 @@ code {
 
 .lang-options li:hover { background: rgba(255,255,255,0.07); }
 .lang-options li[aria-selected="true"] { background: rgba(88,101,242,0.15); color: var(--accent); }
+
+#serverTitle { white-space: nowrap; }
