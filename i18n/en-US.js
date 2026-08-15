@@ -360,4 +360,9 @@ window.NZK_I18N_EN_US = {
   " ou ": " or ",
   " — como preferir. Lista completa com ": " — whichever you prefer. Full list with ",
   "VersãoNZK": "0.9.0.0",
+  "✅ Ativo": "✅ Active",
+  "💡 Aceita @handle, URL completa ou ID UCxxxx — sem limite de canais neste servidor. 👑": "💡 Accepts @handle, full URL, or UCxxxx ID — no channel limit on this server. 👑",
+  "Canal": "Channel",
+  "Canal Discord": "Discord Channel",
+  "Zera o nível e XP de todos os membros. Ação irreversível.": "Resets the level and XP of all members. This action cannot be undone.",
 };

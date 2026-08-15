@@ -361,4 +361,10 @@ window.NZK_I18N_PT_BR = {
   "Leva menos de um minuto pra adicionar.": "Leva menos de um minuto pra adicionar.",
   "+ Convidar o NZK": "+ Convidar o NZK",
   "VersãoNZK": "0.9.0.0",
+  "✅ Ativo": "✅ Active",
+  "💡 Aceita @handle, URL completa ou ID UCxxxx — sem limite de canais neste servidor. 👑": "💡 Aceita @handle, URL completa ou ID UCxxxx — sem limite de canais neste servidor. 👑",
+  "Canal": "Canal",
+  "Canal Discord": "Canal Discord",
+  "Zera o nível e XP de todos os membros. Ação irreversível.": "Zera o nível e XP de todos os membros. Ação irreversível.",
+  
 };
