@@ -68,12 +68,27 @@
     <div class="container" style="padding-top:0;">
 		<div style="display: flex; justify-content: flex-end; align-items: center; gap: 15px; padding: 15px 0;">
             <div style="display:flex; align-items:center; gap:8px;">
-                <label for="languageSelect" data-i18n="label.language" style="font-size:12px; color:var(--text-muted);">Idioma</label>
-                <select id="languageSelect" data-language-select style="padding:8px 10px; font-size:12px;">
-                    <option value="pt-BR">🇧🇷 Português</option>
-                    <option value="en-US">🇺🇸 English</option>
-                </select>
-            </div>
+				<label for="languageSelect" data-i18n="label.language" style="font-size:12px; color:var(--text-muted);">Idioma</label>
+
+				<div class="lang-select" data-lang-select>
+					<button type="button" class="lang-trigger" aria-haspopup="listbox" aria-expanded="false">
+						<img src="svg/br.svg" alt="" class="lang-flag" data-lang-flag>
+						<span data-lang-label>Português</span>
+					</button>
+					<ul class="lang-options" role="listbox" hidden>
+						<li role="option" data-value="pt-BR" data-flag="svg/br.svg" aria-selected="true">
+							<img src="svg/br.svg" alt=""><span>Português</span>
+						</li>
+						<li role="option" data-value="en-US" data-flag="svg/us.svg" aria-selected="false">
+							<img src="svg/us.svg" alt=""><span>English</span>
+						</li>
+					</ul>
+					<select id="languageSelect" data-language-select hidden>
+						<option value="pt-BR">Português</option>
+						<option value="en-US">English</option>
+					</select>
+				</div>
+			</div>
 			<span id="userBadge" style="font-size: 13px; color: var(--text-muted); display: flex; align-items: center; gap: 8px;"></span>
 			<button id="btnLogout" class="secondary" style="padding: 8px 16px; font-size: 12px; margin: 0;" data-i18n="btn.logout">Sair</button>
 		</div>
