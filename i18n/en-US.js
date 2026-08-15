@@ -359,7 +359,6 @@ window.NZK_I18N_EN_US = {
   "Funcionam com ": "They work with ",
   " ou ": " or ",
   " — como preferir. Lista completa com ": " — whichever you prefer. Full list with ",
-  "VersãoNZK": "0.9.0.0",
   "✅ Ativo": "✅ Active",
   "💡 Aceita @handle, URL completa ou ID UCxxxx — sem limite de canais neste servidor. 👑": "💡 Accepts @handle, full URL, or UCxxxx ID — no channel limit on this server. 👑",
   "Canal": "Channel",
