@@ -360,4 +360,5 @@ window.NZK_I18N_FR_FR = {
   "Zera o nível e XP de todos os membros. Ação irreversível.": "Réinitialise le niveau et l'XP de tous les membres. Action irréversible.",
   "Zera o nível e XP de": "Réinitialise le niveau et l'XP de",
   " os membros. Ação irreversível.": " membres. Action irréversible.",
+  "🌎 Multi idiomas": "🌎 Support multilingue",
 };

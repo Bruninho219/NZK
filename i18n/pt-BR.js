@@ -367,4 +367,5 @@ window.NZK_I18N_PT_BR = {
   "Zera o nível e XP de todos os membros. Ação irreversível.": "Zera o nível e XP de todos os membros. Ação irreversível.",
   "Zera o nível e XP de": "Zera o nível e XP de",
   " os membros. Ação irreversível.": " os membros. Ação irreversível.",
+  "🌎 Multi idiomas": "🌎 Multi idiomas",
 };
