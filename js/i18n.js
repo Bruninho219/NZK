@@ -5,7 +5,8 @@
         "pt-BR": window.NZK_I18N_PT_BR || {},
         "en-US": window.NZK_I18N_EN_US || {},
         "es-ES": window.NZK_I18N_ES_ES || {},
-        "fr-FR": window.NZK_I18N_FR_FR || {}
+        "fr-FR": window.NZK_I18N_FR_FR || {},
+        "ja-JP": window.NZK_I18N_JA_JP || {}
     };
 
     const textSources = new WeakMap();
@@ -62,6 +63,17 @@
                 .replace(/^\+\s*(\d+) XP$/, "+$1 XP");
         }
 
+        if (currentLanguage === "ja-JP") {
+            translated = translated
+                .replace(/^⚠️ Bot removido há (\d+)d$/, "⚠️ Botが削除されました: $1日")
+                .replace(/^Lvl (\d+)$/, "レベル $1")
+                .replace(/^Level (\d+)$/, "レベル $1")
+                .replace(/^Cargo removido \((.+)\)$/, "ロールが削除されました ($1)")
+                .replace(/^⏳ Esse status volta ao padrão em (.+)\.$/, "⏳ このステータスは $1 にデフォルトに戻ります。")
+                .replace(/^Selecione um membro para ver o histórico\.$/, "履歴を表示するにはメンバーを選択してください。")
+                .replace(/^\+\s*(\d+) XP$/, "+$1 XP");
+        }
+
         return match ? `${match[1]}${translated}${match[3]}` : translated;
     }
 
@@ -80,18 +92,18 @@
     }
 
     const keyTranslations = {
-        "label.language": { "pt-BR": "Idioma", "en-US": "Language", "es-ES": "Idioma", "fr-FR": "Langue" },
-        "btn.logout": { "pt-BR": "Sair", "en-US": "Log out", "es-ES": "Cerrar sesión", "fr-FR": "Déconnexion" },
-        "realtime.title": { "pt-BR": "Atualizações em tempo real ativas", "en-US": "Real-time updates active", "es-ES": "Actualizaciones en tiempo real activas", "fr-FR": "Mises à jour en temps réel actives" },
-        "placeholder.status": { "pt-BR": "Ex: 🛡️ Protegendo Nazarick", "en-US": "E.g.: 🛡️ Protecting Nazarick", "es-ES": "Ej.: 🛡️ Protegiendo Nazarick", "fr-FR": "Ex. : 🛡️ Protège Nazarick" },
-        "placeholder.levelup": { "pt-BR": "{usuario} >> **{nivel}**", "en-US": "{user} >> **{level}**", "es-ES": "{usuario} >> **{nivel}**", "fr-FR": "{usuario} >> **{nivel}**" },
-        "placeholder.welcome": { "pt-BR": "Bem-vindo(a) ao {servidor}, {usuario}!", "en-US": "Welcome to {server}, {user}!", "es-ES": "¡Bienvenido(a) a {servidor}, {usuario}!", "fr-FR": "Bienvenue sur {servidor}, {usuario} !" },
-        "placeholder.boost": { "pt-BR": "{usuario} acabou de impulsionar o servidor! Obrigado pelo apoio!", "en-US": "{usuario} just boosted the server! Thanks for the support!", "es-ES": "¡{usuario} acaba de impulsar el servidor! ¡Gracias por el apoyo!", "fr-FR": "{usuario} vient de booster le serveur ! Merci pour le soutien !" },
-        "placeholder.youtubeId": { "pt-BR": "@handle, UCxxxx ou URL", "en-US": "@handle, UCxxxx or URL", "es-ES": "@handle, UCxxxx o URL", "fr-FR": "@pseudo, UCxxxx ou URL" },
-        "placeholder.youtubeName": { "pt-BR": "Ex: Nazarick TV", "en-US": "E.g.: Nazarick TV", "es-ES": "Ej.: Nazarick TV", "fr-FR": "Ex. : Nazarick TV" },
-        "placeholder.twitchUser": { "pt-BR": "ex: nomeaqui", "en-US": "e.g.: username", "es-ES": "ej.: nombreaqui", "fr-FR": "ex. : nomici" },
-        "placeholder.searchMember": { "pt-BR": "🔍 Buscar membro...", "en-US": "🔍 Search member...", "es-ES": "🔍 Buscar miembro...", "fr-FR": "🔍 Rechercher un membre..." },
-        "placeholder.levelExample": { "pt-BR": "Ex: 5", "en-US": "E.g.: 5", "es-ES": "Ej.: 5", "fr-FR": "Ex. : 5" }
+        "label.language": { "pt-BR": "Idioma", "en-US": "Language", "es-ES": "Idioma", "fr-FR": "Langue", "ja-JP": "言語" },
+        "btn.logout": { "pt-BR": "Sair", "en-US": "Log out", "es-ES": "Cerrar sesión", "fr-FR": "Déconnexion", "ja-JP": "ログアウト" },
+        "realtime.title": { "pt-BR": "Atualizações em tempo real ativas", "en-US": "Real-time updates active", "es-ES": "Actualizaciones en tiempo real activas", "fr-FR": "Mises à jour en temps réel actives", "ja-JP": "リアルタイム更新が有効です" },
+        "placeholder.status": { "pt-BR": "Ex: 🛡️ Protegendo Nazarick", "en-US": "E.g.: 🛡️ Protecting Nazarick", "es-ES": "Ej.: 🛡️ Protegiendo Nazarick", "fr-FR": "Ex. : 🛡️ Protège Nazarick", "ja-JP": "例: 🛡️ ナザリックを護衛中" },
+        "placeholder.levelup": { "pt-BR": "{usuario} >> **{nivel}**", "en-US": "{user} >> **{level}**", "es-ES": "{usuario} >> **{nivel}**", "fr-FR": "{usuario} >> **{nivel}**", "ja-JP": "{usuario} >> **{nivel}**" },
+        "placeholder.welcome": { "pt-BR": "Bem-vindo(a) ao {servidor}, {usuario}!", "en-US": "Welcome to {server}, {user}!", "es-ES": "¡Bienvenido(a) a {servidor}, {usuario}!", "fr-FR": "Bienvenue sur {servidor}, {usuario} !", "ja-JP": "{servidor} へようこそ、{usuario}！" },
+        "placeholder.boost": { "pt-BR": "{usuario} acabou de impulsionar o servidor! Obrigado pelo apoio!", "en-US": "{usuario} just boosted the server! Thanks for the support!", "es-ES": "¡{usuario} acaba de impulsar el servidor! ¡Gracias por el apoyo!", "fr-FR": "{usuario} vient de booster le serveur ! Merci pour le soutien !", "ja-JP": "{usuario} がサーバーをブーストしました！サポートありがとうございます！" },
+        "placeholder.youtubeId": { "pt-BR": "@handle, UCxxxx ou URL", "en-US": "@handle, UCxxxx or URL", "es-ES": "@handle, UCxxxx o URL", "fr-FR": "@pseudo, UCxxxx ou URL", "ja-JP": "@ハンドル、UCxxxx または URL" },
+        "placeholder.youtubeName": { "pt-BR": "Ex: Nazarick TV", "en-US": "E.g.: Nazarick TV", "es-ES": "Ej.: Nazarick TV", "fr-FR": "Ex. : Nazarick TV", "ja-JP": "例: ナザリックTV" },
+        "placeholder.twitchUser": { "pt-BR": "ex: nomeaqui", "en-US": "e.g.: username", "es-ES": "ej.: nombreaqui", "fr-FR": "ex. : nomici", "ja-JP": "例: ユーザー名" },
+        "placeholder.searchMember": { "pt-BR": "🔍 Buscar membro...", "en-US": "🔍 Search member...", "es-ES": "🔍 Buscar miembro...", "fr-FR": "🔍 Rechercher un membre...", "ja-JP": "🔍 メンバーを検索..." },
+        "placeholder.levelExample": { "pt-BR": "Ex: 5", "en-US": "E.g.: 5", "es-ES": "Ej.: 5", "fr-FR": "Ex. : 5", "ja-JP": "例: 5" }
     };
 
     function translateKey(key, fallback="") {
@@ -136,7 +148,7 @@
 
     function translate() {
         document.title = translateText(originalTitle);
-        const langAttr = { "pt-BR": "pt-BR", "en-US": "en", "es-ES": "es", "fr-FR": "fr" };
+        const langAttr = { "pt-BR": "pt-BR", "en-US": "en", "es-ES": "es", "fr-FR": "fr", "ja-JP": "ja" };
         document.documentElement.lang = langAttr[currentLanguage] || "pt-BR";
         document.querySelectorAll("[data-language-select]").forEach(select => {
             select.value = currentLanguage;
