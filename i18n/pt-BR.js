@@ -361,7 +361,7 @@ window.NZK_I18N_PT_BR = {
   "Leva menos de um minuto pra adicionar.": "Leva menos de um minuto pra adicionar.",
   "+ Convidar o NZK": "+ Convidar o NZK",
   "VersãoNZK": "0.9.0.0",
-  "✅ Ativo": "✅ Active",
+  "✅ Ativo": "✅ Ativo",
   "💡 Aceita @handle, URL completa ou ID UCxxxx — sem limite de canais neste servidor. 👑": "💡 Aceita @handle, URL completa ou ID UCxxxx — sem limite de canais neste servidor. 👑",
   "Canal": "Canal",
   "Canal Discord": "Canal Discord",
