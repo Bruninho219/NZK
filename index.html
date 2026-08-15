@@ -26,32 +26,35 @@
 
 <!-- TELA DE LOGIN -->
 <div id="loginScreen" style="display:none; min-height:100vh; flex-direction:column; align-items:center; justify-content:center; gap:20px; text-align:center;">
-    <div class="lang-select" data-lang-select  style="display: flex; justify-content: flex-end; align-items: center; gap: 10px; margin-bottom: 20px;">
-		<button type="button" class="lang-trigger" aria-haspopup="listbox" aria-expanded="false">
-			<img src="svg/br.svg" alt="" class="lang-flag" data-lang-flag>
-			<span data-lang-label>Português</span>
-		</button>
-		<ul class="lang-options" role="listbox" hidden>
-			<li role="option" data-value="pt-BR" data-flag="svg/br.svg" aria-selected="true">
-				<img src="svg/br.svg" alt=""><span>Português</span>
-			</li>
-			<li role="option" data-value="en-US" data-flag="svg/us.svg" aria-selected="false">
-				<img src="svg/us.svg" alt=""><span>English</span>
-			</li>
-			<li role="option" data-value="es-ES" data-flag="svg/es.svg" aria-selected="false">
-				<img src="svg/es.svg" alt=""><span>Español</span>
-			</li>
-			<li role="option" data-value="fr-FR" data-flag="svg/fr.svg" aria-selected="false">
-				<img src="svg/fr.svg" alt=""><span>Français</span>
-			</li>
-		</ul>
-		<select id="languageSelectLogin" data-language-select hidden>
-			<option value="pt-BR">Português</option>
-			<option value="en-US">English</option>
-			<option value="es-ES">Español</option>
-			<option value="es-ES">Français</option>
-		</select>
-	</div>
+    <div style="position:fixed; top:20px; right:20px; display:flex; align-items:center; gap:8px;">
+        <label for="languageSelectLogin" data-i18n="label.language" style="font-size:12px; color:var(--text-muted);">Idioma</label>
+        <div class="lang-select" data-lang-select>
+            <button type="button" class="lang-trigger" aria-haspopup="listbox" aria-expanded="false">
+                <img src="svg/br.svg" alt="" class="lang-flag" data-lang-flag>
+                <span data-lang-label>Português</span>
+            </button>
+            <ul class="lang-options" role="listbox" hidden>
+                <li role="option" data-value="pt-BR" data-flag="svg/br.svg" aria-selected="true">
+                    <img src="svg/br.svg" alt=""><span>Português</span>
+                </li>
+                <li role="option" data-value="en-US" data-flag="svg/us.svg" aria-selected="false">
+                    <img src="svg/us.svg" alt=""><span>English</span>
+                </li>
+                <li role="option" data-value="es-ES" data-flag="svg/es.svg" aria-selected="false">
+                    <img src="svg/es.svg" alt=""><span>Español</span>
+                </li>
+                <li role="option" data-value="fr-FR" data-flag="svg/fr.svg" aria-selected="false">
+                    <img src="svg/fr.svg" alt=""><span>Français</span>
+                </li>
+            </ul>
+            <select id="languageSelectLogin" data-language-select hidden>
+                <option value="pt-BR">Português</option>
+                <option value="en-US">English</option>
+                <option value="es-ES">Español</option>
+                <option value="fr-FR">Français</option>
+            </select>
+        </div>
+    </div>
     <div style="font-size:48px;">🔥</div>
     <h1 style="margin:0;">NZK Admin Dashboard</h1>
     <p style="color:var(--text-muted); max-width:340px;">Entre com sua conta do Discord para gerenciar os servidores em que você é administrador.</p>
