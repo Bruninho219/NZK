@@ -1,4 +1,4 @@
-window.NZK_I18N_JA_JP = {
+window.NZK_I18N_FR_FR = {
   "Idioma": "言語",
   "NZK Admin Dashboard": "NZK管理ダッシュボード",
   "Entre com sua conta do Discord para gerenciar os servidores em que você é administrador.": "Discordアカウントでログインして、管理者のサーバーを管理してください。",
