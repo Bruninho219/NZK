@@ -30,6 +30,8 @@
         .entry h2 { font-size: 16px; margin: 0 0 10px; display: flex; align-items: center; gap: 8px; }
         .entry ul { margin: 0; padding-left: 20px; }
         .entry li { color: var(--text-muted); font-size: 13.5px; margin-bottom: 5px; }
+        .lang-flags-list li { display: flex; align-items: center; gap: 8px; }
+        .entry-flag { width: 18px; height: 13px; object-fit: cover; border-radius: 2px; flex-shrink: 0; }
         .page-footer { text-align: center; margin-top: 50px; font-size: 12px; color: var(--text-muted); }
         .page-footer a { color: var(--text-muted); }
         .language-picker { display:flex; justify-content:flex-end; align-items:center; gap:10px; margin-bottom:20px; }
@@ -64,7 +66,7 @@
 					<option value="pt-BR">Português</option>
 					<option value="en-US">English</option>
 					<option value="es-ES">Español</option>
-					<option value="es-ES">Français</option>
+					<option value="fr-FR">Français</option>
 				</select>
 			</div>
 		</div>
@@ -81,7 +83,14 @@
             <div class="entry"><h2>▶️ Monitor de YouTube mais confiável</h2><ul><li>Resolução de canal por @handle corrigida e mais rápida</li><li>Limite de canais monitorados aumentado</li></ul></div>
             <div class="entry"><h2>📜 Log de auditoria</h2><ul><li>Toda ação administrativa sensível (reset, edição manual) fica registrada — quem fez, quando e o quê</li><li>Alertas automáticos se o bot encontrar algum erro crítico</li></ul></div>
             <div class="entry"><h2>🔒 Login seguro</h2><ul><li>Painel administrativo passou a exigir login via Discord</li><li>Cada administrador só acessa os servidores onde tem permissão de verdade</li></ul></div>
-			<div class="entry"><h2>🌎 Multi idiomas</h2><ul><li>[Bandeira] PT-BR</li><li>[Bandeira] EN-US</li><li>[Bandeira] ES-ES</li><li>[Bandeira] FR-FR</li></ul></div>
+			<div class="entry"><h2 data-i18n="novidades.e10.title">🌎 Multi idiomas</h2>
+				<ul class="lang-flags-list">
+					<li><img src="svg/br.svg" alt="" class="entry-flag"><span>Português (PT-BR)</span></li>
+					<li><img src="svg/us.svg" alt="" class="entry-flag"><span>English (EN-US)</span></li>
+					<li><img src="svg/es.svg" alt="" class="entry-flag"><span>Español (ES-ES)</span></li>
+					<li><img src="svg/fr.svg" alt="" class="entry-flag"><span>Français (FR-FR)</span></li>
+				</ul>
+			</div>
 		</div>
         <div class="page-footer">
 			<a href="/">Painel</a>
