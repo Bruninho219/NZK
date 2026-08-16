@@ -35,7 +35,6 @@ class MoraxBot(commands.Bot):
         )
         self.supabase = supabase_client
         self._ultimo_status_aplicado = None  # (tipo_id, texto) — evita relogar/reaplicar à toa
-        self._ultimo_status_aplicado = None  # (tipo_id, texto) — pra evitar log repetido
 
     async def setup_hook(self):
         self.atualizar_status_db.start()
