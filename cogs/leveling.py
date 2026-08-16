@@ -209,9 +209,11 @@ class Leveling(commands.Cog):
 
     @commands.Cog.listener()
     async def on_reaction_add(self, reaction, user):
+        # Nota: reaction.count é o TOTAL de reações daquele emoji na mensagem
+        # (somando todo mundo), não quantas vezes esse usuário reagiu — por isso
+        # não é usado aqui como filtro. O cooldown abaixo (por usuário+mensagem)
+        # já impede farm de XP removendo e reagindo de novo repetidamente.
         if user.bot or not reaction.message.guild:
-            return
-        if reaction.count > 1:
             return
 
         rk = f"react_{user.id}_{reaction.message.id}"
