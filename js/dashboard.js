@@ -10,6 +10,19 @@ const app = {
     // Servidores que não têm o limite de 3 canais do YouTube (ex: seu próprio servidor)
     SEM_LIMITE_YOUTUBE: ["602623690206609418"],
 
+    // Neutraliza caracteres HTML perigosos antes de inserir qualquer dado
+    // vindo do banco (nicknames, nomes de cargo/canal, etc.) via innerHTML —
+    // esses dados são controlados pelo usuário do Discord e não são confiáveis.
+    escapeHtml(str) {
+        if (str == null) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    },
+
     async init() {
         try {
             const servidores = await NZKAPI.getServidoresAtivos();
@@ -55,7 +68,8 @@ const app = {
 
     idCopiavel(id) {
         if (!id) return '—';
-        return `<code style="cursor:pointer;" title="Clique para copiar" onclick="event.stopPropagation(); app.copiarTexto('${id}')">${id} 📋</code>`;
+        const safe = this.escapeHtml(id);
+        return `<code style="cursor:pointer;" title="Clique para copiar" onclick="event.stopPropagation(); app.copiarTexto('${safe}')">${safe} 📋</code>`;
     },
 
     showToast(mensagem, tipo = "success") {
@@ -247,7 +261,7 @@ const app = {
             }, (payload) => {
                 this.renderAuditLog(guildId);
                 // Avisa mesmo se o admin não estiver com a aba Admin aberta no momento
-                const quem = payload.new?.actor_name || 'Alguém';
+                const quem = this.escapeHtml(payload.new?.actor_name || 'Alguém');
                 this.showToast(`📜 ${quem} registrou uma ação no log`);
             })
             .subscribe();
@@ -290,7 +304,7 @@ const app = {
 
         // Popula selects da aba Admin
         const opts = '<option value="">-- Selecionar membro --</option>' +
-            data[2].map(u => `<option value="${u.user_id}">${u.username || u.user_id}</option>`).join('');
+            data[2].map(u => `<option value="${this.escapeHtml(u.user_id)}">${this.escapeHtml(u.username || u.user_id)}</option>`).join('');
         ['resetUsuario', 'editUsuario'].forEach(id => {
             const sel = document.getElementById(id);
             if (sel) { const cur = sel.value; sel.innerHTML = opts; if (cur) sel.value = cur; }
@@ -327,7 +341,7 @@ const app = {
             return `
                 <tr>
                     <td>${data_fmt}</td>
-                    <td>${log.actor_name || log.actor_id}</td>
+                    <td>${this.escapeHtml(log.actor_name || log.actor_id)}</td>
                     <td>${acaoNome}</td>
                     <td>${alvo}</td>
                 </tr>
@@ -399,7 +413,7 @@ const app = {
     async handleResetarUsuario() {
         const sel = document.getElementById('resetUsuario');
         if (!sel.value) return this.showToast("Selecione um usuário.", "error");
-        const nome = sel.options[sel.selectedIndex].text;
+        const nome = this.escapeHtml(sel.options[sel.selectedIndex].text);
         if (!(await this.confirmar(`⚠️ Resetar nível e XP de <b>${nome}</b>?`, "Resetar"))) return;
         const res = await NZKAPI.resetarUsuario(this.selectedGuild, sel.value);
         if (res.success) {
@@ -416,7 +430,7 @@ const app = {
         if (level === "" || xp === "") return this.showToast("Preencha nível e XP.", "error");
         const res = await NZKAPI.editarUsuario(this.selectedGuild, sel.value, level, xp);
         if (res.success) {
-            this.showToast(`✅ ${sel.options[sel.selectedIndex].text} atualizado!`);
+            this.showToast(`✅ ${this.escapeHtml(sel.options[sel.selectedIndex].text)} atualizado!`);
             NZKAPI.logAcao(this.selectedGuild, "edit_user", sel.value, { level, xp });
         } else this.showToast("❌ Erro ao editar.", "error");
     },
@@ -444,9 +458,9 @@ const app = {
 
         body.innerHTML = data.map(m => `
             <tr>
-                <td>${m.youtube_channel_name || m.youtube_channel_id}</td>
+                <td>${this.escapeHtml(m.youtube_channel_name || m.youtube_channel_id)}</td>
                 <td>${this.idCopiavel(m.youtube_channel_id)}</td>
-                <td>#${m.discord_channel_id}</td>
+                <td>#${this.escapeHtml(m.discord_channel_id)}</td>
                 <td>
                     <span style="color: ${m.ativo ? 'var(--success)' : 'var(--danger)'}">
                         ${m.ativo ? '✅ Ativo' : '⏸️ Pausado'}
@@ -530,11 +544,11 @@ const app = {
         body.innerHTML = data.map(m => `
             <tr>
                 <td>
-                    <a href="https://twitch.tv/${m.twitch_username}" target="_blank" style="color:var(--text-main); text-decoration:none;">
-                        ${m.twitch_username}
+                    <a href="https://twitch.tv/${encodeURIComponent(m.twitch_username)}" target="_blank" style="color:var(--text-main); text-decoration:none;">
+                        ${this.escapeHtml(m.twitch_username)}
                     </a>
                 </td>
-                <td>#${m.discord_channel_id}</td>
+                <td>#${this.escapeHtml(m.discord_channel_id)}</td>
                 <td style="display:flex; gap:8px;">
                     <span style="color: ${m.ativo ? 'var(--success)' : 'var(--danger)'}; align-self:center;">
                         ${m.ativo ? '✅ Ativo' : '⏸️ Pausado'}
@@ -636,11 +650,11 @@ const app = {
 
         body.innerHTML = lista.map(roleId => {
             const cargo = (this._cargosDisponiveis || []).find(c => c.role_id === roleId);
-            const nome = cargo ? cargo.role_name : `Cargo removido (${roleId})`;
+            const nome = this.escapeHtml(cargo ? cargo.role_name : `Cargo removido (${roleId})`);
             return `
                 <tr>
                     <td>${nome}</td>
-                    <td><button class="btn-table-action danger" onclick="app.handleRemoverCargoEntrada('${roleId}')">Excluir</button></td>
+                    <td><button class="btn-table-action danger" onclick="app.handleRemoverCargoEntrada('${this.escapeHtml(roleId)}')">Excluir</button></td>
                 </tr>
             `;
         }).join('');
@@ -656,7 +670,7 @@ const app = {
 
         const nomes = (this.cargosEntradaAtuais || []).map(roleId => {
             const cargo = (this._cargosDisponiveis || []).find(c => c.role_id === roleId);
-            return cargo ? cargo.role_name : null;
+            return cargo ? this.escapeHtml(cargo.role_name) : null;
         }).filter(Boolean);
         const cargoNome = nomes.length ? nomes.join(', ') : null;
 
@@ -771,14 +785,17 @@ const app = {
 
     renderRoles(cargos) {
         this._cargosDisponiveis = cargos;
-        const html = cargos.map(r => `<option value="${r.role_id}" data-name="${r.role_name}">${r.role_name}</option>`).join('');
+        const html = cargos.map(r => {
+            const nome = this.escapeHtml(r.role_name);
+            return `<option value="${this.escapeHtml(r.role_id)}" data-name="${nome}">${nome}</option>`;
+        }).join('');
         document.getElementById('roleSelect').innerHTML = html;
         document.getElementById('top1Select').innerHTML = `<option value="">-- Nenhum --</option>` + html;
         document.getElementById('cargoEntradaSelect').innerHTML = `<option value="">-- Selecionar cargo --</option>` + html;
     },
 
     renderChannels(canais) {
-        const opts = canais.map(c => `<option value="${c.channel_id}"># ${c.channel_name}</option>`).join('');
+        const opts = canais.map(c => `<option value="${this.escapeHtml(c.channel_id)}"># ${this.escapeHtml(c.channel_name)}</option>`).join('');
         document.getElementById('channelSelect').innerHTML = `<option value="">-- Selecionar Canal --</option>` + opts;
         document.getElementById('boostChannel').innerHTML = `<option value="">-- Nenhum --</option>` + opts;
         document.getElementById('boasVindasChannel').innerHTML = `<option value="">-- Nenhum --</option>` + opts;
@@ -798,7 +815,7 @@ const app = {
             row.innerHTML = `
                 <td>${index + 1}</td>
                 <td>Level ${patente.level_required}</td>
-                <td>${patente.role_name || 'N/A'}</td>
+                <td>${this.escapeHtml(patente.role_name || 'N/A')}</td>
                 <td>${this.idCopiavel(patente.role_id)}</td>
                 <td style="display:flex; gap:8px;">
                     <button class="btn-table-action secondary" onclick="app.handleEdit('${patente.id}', ${patente.level_required}, '${patente.role_id}')">✏️ Editar</button>
@@ -815,7 +832,7 @@ const app = {
 
         const sel = document.getElementById('roleSelect');
         const opcoesRoles = Array.from(sel.options).map(o =>
-            `<option value="${o.value}" ${o.value === roleIdAtual ? 'selected' : ''}>${o.text}</option>`
+            `<option value="${this.escapeHtml(o.value)}" ${o.value === roleIdAtual ? 'selected' : ''}>${this.escapeHtml(o.text)}</option>`
         ).join('');
 
 row.innerHTML = `
@@ -891,7 +908,7 @@ row.innerHTML = `
             return `
                 <tr class="${topClass}">
                     <td>${i + 1}</td>
-                    <td><b>${u.username || 'Desconhecido'}</b></td>
+                    <td><b>${this.escapeHtml(u.username || 'Desconhecido')}</b></td>
                     <td>Lvl ${u.level}</td>
                     <td>
                         <span style="font-size: 11px; color: var(--text-muted);">${xpAtual} / ${xpNecessario} XP (${porcentagem}%)</span>
@@ -1095,7 +1112,7 @@ row.innerHTML = `
     renderHistoricoSelect(usuarios) {
         const sel = document.getElementById('historicoSelect');
         sel.innerHTML = '<option value="">-- Selecionar membro --</option>' +
-            usuarios.map(u => `<option value="${u.user_id}">${u.username || u.user_id}</option>`).join('');
+            usuarios.map(u => `<option value="${this.escapeHtml(u.user_id)}">${this.escapeHtml(u.username || u.user_id)}</option>`).join('');
     },
 
     closeEditor() {
