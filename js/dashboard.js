@@ -526,7 +526,7 @@ const app = {
         if (!(await this.confirmar("Remover este canal monitorado?", "Remover"))) return;
         const res = await NZKAPI.deletarYoutubeMonitor(id);
         if (res.success) {
-            this.showToast("🗑️ Monitor removido.", "error");
+            this.showToast("🗑️ Monitor removido.");
             this.renderYoutubeMonitores(this.selectedGuild);
         }
     },
@@ -600,7 +600,7 @@ const app = {
         if (!(await this.confirmar("Remover este canal monitorado?", "Remover"))) return;
         const res = await NZKAPI.deletarTwitchMonitor(id);
         if (res.success) {
-            this.showToast("🗑️ Monitor removido.", "error");
+            this.showToast("🗑️ Monitor removido.");
             this.renderTwitchMonitores(this.selectedGuild);
         }
     },
@@ -1014,7 +1014,7 @@ row.innerHTML = `
         if (await this.confirmar("Deseja realmente excluir esta patente?", "Excluir")) {
             const res = await NZKAPI.deletarPatente(id);
             if (res.success) {
-                this.showToast("🗑️ Patente removida.", "error");
+                this.showToast("🗑️ Patente removida.");
                 this.fetchAndRender(this.selectedGuild);
             }
         }

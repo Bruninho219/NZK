@@ -47,6 +47,27 @@ class Twitch(commands.Cog):
             log_erro("twitch_token", e)
             return None
 
+    async def _buscar_streams_ao_vivo(self, session, headers, usernames):
+        """Busca quem está ao vivo, paginando em blocos de 100 —
+        a API da Twitch ignora silenciosamente qualquer user_login
+        além do 100º numa mesma chamada."""
+        ao_vivo_agora = {}
+        for i in range(0, len(usernames), 100):
+            bloco = usernames[i:i + 100]
+            params = [("user_login", u) for u in bloco]
+            async with session.get(
+                "https://api.twitch.tv/helix/streams",
+                headers=headers,
+                params=params,
+                timeout=aiohttp.ClientTimeout(total=10)
+            ) as resp:
+                if resp.status != 200:
+                    log_erro("verificar_streams", Exception(f"Status {resp.status} da API da Twitch"))
+                    continue
+                data = await resp.json()
+                ao_vivo_agora.update({s["user_login"].lower(): s for s in data.get("data", [])})
+        return ao_vivo_agora
+
     @tasks.loop(minutes=5)
     async def verificar_streams(self):
         try:
@@ -66,20 +87,8 @@ class Twitch(commands.Cog):
 
                 monitores = res.data
                 usernames = [m["twitch_username"].lower() for m in monitores]
-                params = [("user_login", u) for u in usernames]
 
-                async with session.get(
-                    "https://api.twitch.tv/helix/streams",
-                    headers=headers,
-                    params=params,
-                    timeout=aiohttp.ClientTimeout(total=10)
-                ) as resp:
-                    if resp.status != 200:
-                        log_erro("verificar_streams", Exception(f"Status {resp.status} da API da Twitch"))
-                        return
-                    data = await resp.json()
-
-                ao_vivo_agora = {s["user_login"].lower(): s for s in data.get("data", [])}
+                ao_vivo_agora = await self._buscar_streams_ao_vivo(session, headers, usernames)
 
                 for monitor in monitores:
                     username = monitor["twitch_username"].lower()

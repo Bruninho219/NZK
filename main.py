@@ -35,6 +35,7 @@ class MoraxBot(commands.Bot):
         )
         self.supabase = supabase_client
         self._ultimo_status_aplicado = None  # (tipo_id, texto) — evita relogar/reaplicar à toa
+        self._ultimo_status_aplicado = None  # (tipo_id, texto) — pra evitar log repetido
 
     async def setup_hook(self):
         self.atualizar_status_db.start()
@@ -143,15 +144,25 @@ async def on_ready():
 async def on_app_command_error(interaction: discord.Interaction, error):
     """Trata erros de slash commands (equivalente ao on_command_error, mas
     pra comandos '/'). Sem isso, erro de permissão em slash command falha
-    silenciosamente pro usuário."""
+    silenciosamente pro usuário — e qualquer outro tipo de erro deixava a
+    interação sem resposta nenhuma, parecendo que o comando travou."""
     if isinstance(error, discord.app_commands.MissingPermissions):
         msg = "❌ Você não tem permissão para usar este comando."
+    elif isinstance(error, discord.app_commands.CommandOnCooldown):
+        msg = f"⏳ Calma aí! Tenta de novo em {error.retry_after:.1f}s."
+    elif isinstance(error, discord.app_commands.CheckFailure):
+        msg = "❌ Você não pode usar este comando aqui."
+    else:
+        msg = "❌ Deu um erro inesperado ao rodar esse comando. Já foi registrado."
+        log_erro("on_app_command_error", error)
+
+    try:
         if interaction.response.is_done():
             await interaction.followup.send(msg, ephemeral=True)
         else:
             await interaction.response.send_message(msg, ephemeral=True)
-    else:
-        log_erro("on_app_command_error", error)
+    except Exception:
+        pass  # interação já expirou/foi respondida em outro lugar, sem problema
 
 token = os.getenv("TOKEN_DISCORD")
 if token:

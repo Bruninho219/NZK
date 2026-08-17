@@ -1,7 +1,17 @@
 import discord
 from logger import log_info, log_erro, log_aviso
-from discord.ext import commands
+from discord.ext import commands, tasks
 import datetime
+
+# xp_cooldown: cooldowns reais duram só 5-15s, então qualquer entrada mais
+# velha que isso já está "morta" — só ocupando memória pra sempre.
+LIMPEZA_XP_COOLDOWN_SEGUNDOS = 60
+
+# voice_tracker: uma sessão de voz normal dura o tempo que durar (não é pra
+# limpar por idade). Esse limite é só uma válvula de segurança pra entradas
+# "presas" por algum evento perdido (ex: bot reiniciou no meio de uma sessão
+# de voz, ou o membro saiu do servidor sem disparar o evento de saída de voz).
+LIMPEZA_VOICE_TRACKER_HORAS = 12
 
 class Leveling(commands.Cog):
     def __init__(self, bot):
@@ -9,6 +19,43 @@ class Leveling(commands.Cog):
         self.supabase = bot.supabase
         self.voice_tracker = {}
         self.xp_cooldown = {}  # {"msg_uid" ou "reacao_uid": datetime}
+        self.limpar_caches.start()
+
+    def cog_unload(self):
+        self.limpar_caches.cancel()
+
+    @tasks.loop(minutes=30)
+    async def limpar_caches(self):
+        """Remove entradas velhas de xp_cooldown e voice_tracker, evitando
+        que esses dicionários cresçam pra sempre num bot rodando 24/7."""
+        try:
+            agora = datetime.datetime.now()
+
+            expirados_cooldown = [
+                chave for chave, quando in self.xp_cooldown.items()
+                if (agora - quando).total_seconds() > LIMPEZA_XP_COOLDOWN_SEGUNDOS
+            ]
+            for chave in expirados_cooldown:
+                del self.xp_cooldown[chave]
+
+            expirados_voice = [
+                uid for uid, quando in self.voice_tracker.items()
+                if (agora - quando).total_seconds() > LIMPEZA_VOICE_TRACKER_HORAS * 3600
+            ]
+            for uid in expirados_voice:
+                del self.voice_tracker[uid]
+
+            if expirados_cooldown or expirados_voice:
+                log_info(
+                    "limpar_caches",
+                    f"Removidos {len(expirados_cooldown)} cooldowns e {len(expirados_voice)} rastreios de voz presos"
+                )
+        except Exception as e:
+            log_erro("limpar_caches", e)
+
+    @limpar_caches.before_loop
+    async def before_limpar_caches(self):
+        await self.bot.wait_until_ready()
 
     async def garantir_servidor_e_usuario(self, guild_id: str, user_id: str, username: str):
         """Garante que as chaves estrangeiras existam em servidores e usuarios antes de manipular niveis."""
@@ -79,7 +126,7 @@ class Leveling(commands.Cog):
         """Registra quando o bot é removido de um servidor."""
         try:
             self.supabase.table("servidores").update({
-                "removido_em": datetime.datetime.utcnow().isoformat()
+                "removido_em": datetime.datetime.now(datetime.timezone.utc).isoformat()
             }).eq("guild_id", str(guild.id)).execute()
             log_info("on_guild_remove", f"Bot removido de {guild.name} ({guild.id})")
         except Exception as e:

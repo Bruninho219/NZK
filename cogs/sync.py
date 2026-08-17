@@ -147,19 +147,24 @@ class Sync(commands.Cog):
         # --- Permissão de administrador do cargo ---
         if before.permissions.administrator != after.permissions.administrator:
             membros_afetados = [m for m in after.members if not m.bot]
-            for member in membros_afetados:
-                uid = str(member.id)
-                is_admin = member.guild_permissions.administrator
-                try:
-                    if is_admin:
-                        self.supabase.table("servidor_admins").upsert({
-                            "guild_id": gid, "user_id": uid
-                        }).execute()
-                    else:
-                        self.supabase.table("servidor_admins").delete()\
-                            .eq("guild_id", gid).eq("user_id", uid).execute()
-                except Exception as e:
-                    log_erro("auto_sync_admin_role", e)
+
+            # Separa em dois grupos e manda cada um numa chamada só (upsert em
+            # lote / delete com .in_()), em vez de uma request por membro —
+            # evita centenas de chamadas sequenciais em cargos com muita gente.
+            vira_admin = [str(m.id) for m in membros_afetados if m.guild_permissions.administrator]
+            perde_admin = [str(m.id) for m in membros_afetados if not m.guild_permissions.administrator]
+
+            try:
+                if vira_admin:
+                    self.supabase.table("servidor_admins").upsert([
+                        {"guild_id": gid, "user_id": uid} for uid in vira_admin
+                    ]).execute()
+
+                if perde_admin:
+                    self.supabase.table("servidor_admins").delete()\
+                        .eq("guild_id", gid).in_("user_id", perde_admin).execute()
+            except Exception as e:
+                log_erro("auto_sync_admin_role", e)
 
     @commands.Cog.listener()
     async def on_guild_role_create(self, role):

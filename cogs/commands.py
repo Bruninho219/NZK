@@ -1,7 +1,7 @@
 import discord
 from logger import log_info, log_erro, log_aviso
 from discord.ext import commands
-from datetime import datetime
+from datetime import datetime, timezone
 import asyncio
 
 class GeneralCommands(commands.Cog):
@@ -348,7 +348,7 @@ class GeneralCommands(commands.Cog):
 
         try:
             from datetime import timedelta
-            limite = (datetime.utcnow() - timedelta(days=30)).isoformat()
+            limite = (datetime.now(timezone.utc) - timedelta(days=30)).isoformat()
 
             res = self.supabase.table("xp_historico")\
                 .select("xp_total, registrado_em")\
@@ -408,7 +408,7 @@ class GeneralCommands(commands.Cog):
             import matplotlib.dates as mdates
             from datetime import timedelta
 
-            limite = (datetime.utcnow() - timedelta(days=30)).isoformat()
+            limite = (datetime.now(timezone.utc) - timedelta(days=30)).isoformat()
 
             res = self.supabase.table("xp_historico")\
                 .select("xp_total, registrado_em")\
