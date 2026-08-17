@@ -2,6 +2,7 @@ import discord
 from logger import log_info, log_erro, log_aviso
 from discord.ext import commands
 from datetime import datetime
+import asyncio
 
 class GeneralCommands(commands.Cog):
     def __init__(self, bot):
@@ -484,9 +485,8 @@ class GeneralCommands(commands.Cog):
                 self.log_acao(gid, str(ctx.author.id), str(ctx.author), "reset_server")
 
                 log_info("nReset", f"Reset total executado por {ctx.author} no servidor {ctx.guild.name}")
-            except:
+            except asyncio.TimeoutError:
                 await ctx.send("❌ Reset cancelado — tempo esgotado.")
-                confirm = await ctx.send("⚠️ Isso vai resetar **todos** os níveis do servidor. Digite `CONFIRMAR` em 15 segundos para prosseguir.")
         else:
             uid = str(target.id)
             self.supabase.table("niveis").update({
@@ -508,14 +508,18 @@ class GeneralCommands(commands.Cog):
         gid = str(ctx.guild.id)
         uid = str(target.id)
 
-        res = self.supabase.table("niveis").select("level").eq("guild_id", gid).eq("user_id", uid).execute()
-        if not res.data:
-            return await ctx.send(f"❌ {target.display_name} não tem registros.")
+        try:
+            res = self.supabase.table("niveis").select("level").eq("guild_id", gid).eq("user_id", uid).execute()
+            if not res.data:
+                return await ctx.send(f"❌ {target.display_name} não tem registros.")
 
-        self.supabase.table("niveis").update({"xp": valor}).eq("guild_id", gid).eq("user_id", uid).execute()
-        self.log_acao(gid, str(ctx.author.id), str(ctx.author), "set_xp", target_id=uid, detalhes={"novo_xp": valor})
-        await ctx.send(f"✅ XP de **{target.display_name}** definido para **{valor}**!")
-        log_info("nSetXP", f"XP de {target} definido para {valor} por {ctx.author}")
+            self.supabase.table("niveis").update({"xp": valor}).eq("guild_id", gid).eq("user_id", uid).execute()
+            self.log_acao(gid, str(ctx.author.id), str(ctx.author), "set_xp", target_id=uid, detalhes={"novo_xp": valor})
+            await ctx.send(f"✅ XP de **{target.display_name}** definido para **{valor}**!")
+            log_info("nSetXP", f"XP de {target} definido para {valor} por {ctx.author}")
+        except Exception as e:
+            await ctx.send("❌ Erro ao definir o XP.")
+            log_erro("nSetXP", e)
 
     @commands.hybrid_command(name="nsetlevel", description="Define o nível de um usuário manualmente")
     @commands.has_permissions(administrator=True)
@@ -529,14 +533,18 @@ class GeneralCommands(commands.Cog):
         gid = str(ctx.guild.id)
         uid = str(target.id)
 
-        res = self.supabase.table("niveis").select("*").eq("guild_id", gid).eq("user_id", uid).execute()
-        if not res.data:
-            return await ctx.send(f"❌ {target.display_name} não tem registros.")
-        
-        self.log_acao(gid, str(ctx.author.id), str(ctx.author), "set_level", target_id=uid, detalhes={"novo_level": valor})
-        self.supabase.table("niveis").update({"level": valor, "xp": 0}).eq("guild_id", gid).eq("user_id", uid).execute()
-        await ctx.send(f"✅ Nível de **{target.display_name}** definido para **{valor}** (XP zerado)!")
-        log_info("nSetLevel", f"Nível de {target} definido para {valor} por {ctx.author}")
+        try:
+            res = self.supabase.table("niveis").select("*").eq("guild_id", gid).eq("user_id", uid).execute()
+            if not res.data:
+                return await ctx.send(f"❌ {target.display_name} não tem registros.")
+
+            self.supabase.table("niveis").update({"level": valor, "xp": 0}).eq("guild_id", gid).eq("user_id", uid).execute()
+            self.log_acao(gid, str(ctx.author.id), str(ctx.author), "set_level", target_id=uid, detalhes={"novo_level": valor})
+            await ctx.send(f"✅ Nível de **{target.display_name}** definido para **{valor}** (XP zerado)!")
+            log_info("nSetLevel", f"Nível de {target} definido para {valor} por {ctx.author}")
+        except Exception as e:
+            await ctx.send("❌ Erro ao definir o nível.")
+            log_erro("nSetLevel", e)
 
 
     @commands.hybrid_command(name="ninfo", description="Exibe informações e versão do bot")
