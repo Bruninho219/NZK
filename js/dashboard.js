@@ -313,6 +313,7 @@ const app = {
         await this.renderYoutubeMonitores(guildId);
         await this.renderAuditLog(guildId);
         await this.renderTwitchMonitores(guildId);
+        await this.renderXpServidorGrafico(guildId);
     },
 
     async renderAuditLog(guildId) {
@@ -954,6 +955,63 @@ row.innerHTML = `
         document.getElementById('stat-voz').innerText = this.formatarVoz(totalVoz);
         document.getElementById('stat-maxlevel').innerText = maxLevel;
         document.getElementById('stat-ativo').innerText = maisAtivo.username || 'N/A';
+    },
+
+    async renderXpServidorGrafico(guildId) {
+        const container = document.getElementById('servidorXpGrafico');
+        if (!container) return;
+
+        const data = await NZKAPI.getXpHistoricoServidor(guildId);
+
+        if (!data.length) {
+            container.innerHTML = '<p style="color:var(--text-muted); text-align:center; padding:20px;">Ainda sem histórico — o snapshot roda 1x por dia, à meia-noite.</p>';
+            return;
+        }
+
+        const labels = data.map(r => r.registrado_em.slice(0, 10));
+        const valores = data.map(r => r.xp_total);
+
+        const canvas = document.createElement('canvas');
+        canvas.id = 'servidorXpChart';
+        canvas.style.width = '100%';
+        canvas.style.maxHeight = '260px';
+        container.innerHTML = '';
+        container.appendChild(canvas);
+
+        if (window._servidorXpChartInstance) {
+            window._servidorXpChartInstance.destroy();
+        }
+
+        window._servidorXpChartInstance = new Chart(canvas, {
+            type: 'line',
+            data: {
+                labels,
+                datasets: [{
+                    label: 'XP total do servidor',
+                    data: valores,
+                    borderColor: '#23a559',
+                    backgroundColor: 'rgba(35, 165, 89, 0.15)',
+                    borderWidth: 2.5,
+                    pointRadius: 3,
+                    fill: true,
+                    tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: {
+                        ticks: { color: '#b5bac1', font: { size: 11 } },
+                        grid: { color: 'rgba(255,255,255,0.05)' }
+                    },
+                    y: {
+                        ticks: { color: '#b5bac1', font: { size: 11 } },
+                        grid: { color: 'rgba(255,255,255,0.05)' }
+                    }
+                }
+            }
+        });
     },
 
     sortLeaderboard(col) {

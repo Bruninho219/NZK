@@ -466,5 +466,22 @@ var NZKAPI = {
             console.error("Erro ao buscar historico:", err);
             return [];
         }
+    },
+
+    async getXpHistoricoServidor(guildId, dias = 30) {
+        try {
+            const limite = new Date();
+            limite.setDate(limite.getDate() - dias);
+            const { data, error } = await sb.from('servidor_xp_historico')
+                .select('xp_total, registrado_em')
+                .eq('guild_id', guildId)
+                .gte('registrado_em', limite.toISOString().slice(0, 10))
+                .order('registrado_em', { ascending: true });
+            if (error) throw error;
+            return data || [];
+        } catch (err) {
+            console.error("Erro ao buscar historico de XP do servidor:", err);
+            return [];
+        }
     }
 };
