@@ -313,7 +313,14 @@ const app = {
         await this.renderYoutubeMonitores(guildId);
         await this.renderAuditLog(guildId);
         await this.renderTwitchMonitores(guildId);
-        await this.renderXpServidorGrafico(guildId);
+
+        // Se a aba Ranking já estiver aberta (ex: trocou de servidor ou clicou
+        // em "Atualizar" sem sair da aba), o gráfico precisa ser atualizado
+        // aqui também — o gatilho do switchTab só cobre a troca de aba em si.
+        const abaRanking = document.getElementById('tab-ranking');
+        if (abaRanking && abaRanking.style.display === 'block') {
+            this.renderXpServidorGrafico(guildId);
+        }
     },
 
     async renderAuditLog(guildId) {
@@ -1186,6 +1193,13 @@ row.innerHTML = `
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         document.getElementById(id).style.display = 'block';
         e.currentTarget.classList.add('active');
+
+        // O gráfico do servidor só pode ser criado com o container já visível
+        // (Chart.js calcula largura/altura como 0 se o pai estiver display:none) —
+        // por isso ele é renderizado aqui, na hora de abrir a aba, não no load.
+        if (id === 'tab-ranking' && this.selectedGuild) {
+            this.renderXpServidorGrafico(this.selectedGuild);
+        }
     }
 };
 
