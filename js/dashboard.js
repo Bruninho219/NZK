@@ -1,626 +1,1144 @@
-import discord
-from logger import log_info, log_erro, log_aviso
-from discord.ext import commands
-from datetime import datetime
-import asyncio
+/* js/dashboard.js */
 
-class GeneralCommands(commands.Cog):
-    def __init__(self, bot):
-        self.bot = bot
-        self.supabase = bot.supabase
+const app = {
+    selectedGuild: "",
+    selectedGuildName: "",
+    _lastLeaderboard: [],
+    _sortLeaderboard: { col: null, asc: true },
+    _leaderboardPage: 1,
 
-    def log_acao(self, gid, actor_id, actor_name, acao, target_id=None, detalhes=None):
-        try:
-            self.supabase.table("audit_log").insert({
-                "guild_id": gid,
-                "actor_id": actor_id,
-                "actor_name": actor_name,
-                "action": acao,
-                "target_id": target_id,
-                "detalhes": detalhes
-            }).execute()
-        except Exception as e:
-            log_erro("audit_log", e)
+    // Servidores que não têm o limite de 3 canais do YouTube (ex: seu próprio servidor)
+    SEM_LIMITE_YOUTUBE: ["602623690206609418"],
 
-    @commands.Cog.listener()
-    async def on_command_error(self, ctx, error):
-        if isinstance(error, commands.MissingPermissions):
-            await ctx.send("❌ Você não tem permissão para usar este comando.")
+    // Neutraliza caracteres HTML perigosos antes de inserir qualquer dado
+    // vindo do banco (nicknames, nomes de cargo/canal, etc.) via innerHTML —
+    // esses dados são controlados pelo usuário do Discord e não são confiáveis.
+    escapeHtml(str) {
+        if (str == null) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    },
 
-    @commands.hybrid_command(name="nrank", description="Mostra seu nível, XP e posição no ranking")
-    async def rank(self, ctx, target: discord.Member = None):
-        target = target or ctx.author
-        try:
-            res = self.supabase.table("niveis").select("*")\
-                .eq("guild_id", str(ctx.guild.id))\
-                .eq("user_id", str(target.id)).execute()
+    async init() {
+        try {
+            const servidores = await NZKAPI.getServidoresAtivos();
+            this.renderServerList(servidores);
+        } catch (err) {
+            document.getElementById('serverList').innerHTML = "<p>Erro ao conectar à base de dados.</p>";
+        }
+    },
 
-            if not res.data:
-                return await ctx.send(f"❌ {target.display_name} ainda não tem registros.")
+    confirmar(mensagem, tituloBotao = "Confirmar") {
+        return new Promise(resolve => {
+            const overlay = document.createElement('div');
+            overlay.style.cssText = 'position:fixed; inset:0; background:rgba(0,0,0,0.65); display:flex; align-items:center; justify-content:center; z-index:9999; padding:20px;';
+            overlay.innerHTML = `
+                <div style="background:var(--sidebar); border-radius:16px; padding:28px; max-width:380px; width:100%; box-shadow:0 20px 50px rgba(0,0,0,0.4); animation:fadeIn 0.2s ease;">
+                    <div style="font-size:14.5px; margin-bottom:22px; line-height:1.6; color:var(--text-main);">${mensagem}</div>
+                    <div style="display:flex; gap:10px; justify-content:flex-end;">
+                        <button class="secondary" style="margin:0; width:auto; font-size:13px; padding:12px 24px;">Cancelar</button>
+                        <button class="danger" style="margin:0; width:auto; font-size:13px; padding:12px 24px;">${tituloBotao}</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(overlay);
 
-            d = res.data[0]
-            xp_prox = (d['level'] * 100) + 75
+            const fechar = (resultado) => {
+                document.body.removeChild(overlay);
+                resolve(resultado);
+            };
 
-            ranking = self.supabase.table("niveis").select("user_id")\
-                .eq("guild_id", str(ctx.guild.id))\
-                .order("level", desc=True)\
-                .order("xp", desc=True)\
-                .execute()
+            overlay.querySelector('.secondary').onclick = () => fechar(false);
+            overlay.querySelector('.danger').onclick = () => fechar(true);
+            overlay.onclick = (e) => { if (e.target === overlay) fechar(false); };
+        });
+    },
 
-            posicao = next((i + 1 for i, r in enumerate(ranking.data) if r['user_id'] == str(target.id)), None)
+    copiarTexto(texto) {
+        navigator.clipboard.writeText(texto).then(() => {
+            this.showToast('📋 Copiado!');
+        }).catch(() => {
+            this.showToast('❌ Não foi possível copiar.', 'error');
+        });
+    },
 
-            medalhas = {1: "🥇", 2: "🥈", 3: "🥉"}
-            posicao_str = medalhas.get(posicao, f"**#{posicao}**") if posicao else "**-**"
+    idCopiavel(id) {
+        if (!id) return '—';
+        const safe = this.escapeHtml(id);
+        return `<code style="cursor:pointer;" title="Clique para copiar" onclick="event.stopPropagation(); app.copiarTexto('${safe}')">${safe} 📋</code>`;
+    },
 
-            embed = discord.Embed(title=f"📊 Rank de {target.display_name}", color=0x5865f2)
-            embed.set_thumbnail(url=target.display_avatar.url)
-            # Formata voz
-            voz_min = d.get('voice_minutes', 0) or 0
-            if voz_min < 60:
-                voz_str = f"{voz_min}m"
-            else:
-                h = voz_min // 60
-                m = voz_min % 60
-                voz_str = f"{h}h {m}m" if m > 0 else f"{h}h"
+    showToast(mensagem, tipo = "success") {
+        const existing = document.querySelector('.nzk-toast');
+        if (existing) existing.remove();
 
-            embed.add_field(name="📈 Nível", value=f"**{d['level']}**", inline=True)
-            embed.add_field(name="⭐ XP", value=f"**{d['xp']}/{xp_prox}**", inline=True)
-            embed.add_field(name="🏆 Posição", value=posicao_str, inline=True)
-            embed.add_field(name="💬 Mensagens", value=f"**{d['msg_count']}**", inline=True)
-            embed.add_field(name="🎙️ Voz", value=f"**{voz_str}**", inline=True)
-            embed.add_field(name="❤️ Reações", value=f"**{d.get('reacoes', 0) or 0}**", inline=True)
+        const toast = document.createElement("div");
+        toast.className = `nzk-toast ${tipo}`;
+        toast.innerHTML = mensagem;
+        document.body.appendChild(toast);
 
-            await ctx.send(embed=embed)
+        setTimeout(() => toast.classList.add("show"), 10);
+        setTimeout(() => {
+            toast.classList.remove("show");
+            setTimeout(() => toast.remove(), 500);
+        }, 3000);
+    },
 
-        except Exception as e:
-            log_erro("nRank", e)
+    showLoading(tbodyId) {
+        document.getElementById(tbodyId).innerHTML = `
+            <tr><td colspan="10" class="loading-cell">
+                <div class="loading-spinner"></div> Carregando...
+            </td></tr>
+        `;
+    },
 
-    @commands.hybrid_command(name="ntop", description="Exibe o Top 5 do servidor")
-    async def ntop(self, ctx):
-        """Mostra o Top 5 do servidor"""
-        try:
-            res = self.supabase.table("niveis").select("user_id, level, xp")\
-                .eq("guild_id", str(ctx.guild.id))\
-                .order("level", desc=True)\
-                .order("xp", desc=True)\
-                .limit(5)\
-                .execute()
+    formatarVoz(minutos) {
+        if (!minutos) return "0m";
+        if (minutos < 60) return `${minutos}m`;
+        const h = Math.floor(minutos / 60);
+        const m = minutos % 60;
+        return m > 0 ? `${h}h ${m}m` : `${h}h`;
+    },
 
-            if not res.data:
-                return await ctx.send("❌ Nenhum usuário registrado ainda.")
+    async renderServerList(servidores) {
+        const list = document.getElementById('serverList');
 
-            medalhas = {1: "🥇", 2: "🥈", 3: "🥉"}
-            embed = discord.Embed(title="🏆 Top 5 do Servidor", color=0x5865f2)
+        const guildData = {
+            "602623690206609418": { name: "Nazarick", icon: "img/nazarick.gif" },
+            "1044253947751309372": { name: "Serv Baharuth", icon: "img/baharuth.png" },
+            "1089351461588176908": { name: "Serv Teocracia Slane", icon: "img/slane2.png" },
+            "100000000": { name: "Test Server", icon: "🧪" }
+        };
 
-            linhas = []
-            for i, entry in enumerate(res.data, start=1):
-                member = ctx.guild.get_member(int(entry['user_id']))
-                nome = member.display_name if member else f"Usuário {entry['user_id']}"
-                posicao = medalhas.get(i, f"**#{i}**")
-                linhas.append(f"{posicao} {nome} — Nível **{entry['level']}** ({entry['xp']} XP)")
+        const priorityOrder = [
+            "602623690206609418",
+            "1044253947751309372",
+            "1089351461588176908"
+        ];
 
-            embed.description = "\n".join(linhas)
-            await ctx.send(embed=embed)
+        servidores.sort((a, b) => {
+            const indexA = priorityOrder.indexOf(a.id);
+            const indexB = priorityOrder.indexOf(b.id);
+            if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+            if (indexA !== -1) return -1;
+            if (indexB !== -1) return 1;
+            const nameA = (guildData[a.id]?.name || "").toLowerCase();
+            const nameB = (guildData[b.id]?.name || "").toLowerCase();
+            return nameA.localeCompare(nameB);
+        });
 
-        except Exception as e:
-            log_erro("nTop", e)
-            await ctx.send("❌ Erro ao buscar o ranking.")
+        // Guarda pra alimentar o trocador rápido de servidor no cabeçalho do editor
+        this._servidoresDisponiveis = servidores.map(srv => ({
+            id: srv.id,
+            name: guildData[srv.id]?.name || "Servidor Ativo",
+            removido: srv.removido_em
+        }));
 
-    @commands.hybrid_command(name="nhelp", description="Lista todos os comandos do bot")
-    async def nhelp(self, ctx):
-        """Lista todos os comandos do bot"""
-        embed = discord.Embed(title="📖 Comandos do Bot", color=0x5865f2)
+        list.innerHTML = servidores.map(srv => {
+            const id = srv.id;
+            const server = guildData[id] || { name: "Servidor Ativo", icon: "🏰" };
+            const removido = srv.removido_em;
+            const diasRemovido = removido
+                ? Math.floor((Date.now() - new Date(removido)) / 86400000)
+                : null;
 
-        embed.add_field(name="👤 Usuário", value=(
-            "`!nRank [@usuário]` — Mostra seu nível, XP e posição no ranking\n"
-            "`!nTop` — Exibe o Top 5 do servidor\n"
-            "`!nHistorico [@usuário]` — Histórico de XP em tabela (30 dias)\n"
-            "`!nHistorico2 [@usuário]` — Histórico de XP em gráfico (30 dias)\n"
-            "`!nPing` — Latência do bot\n"
-            "`!nPing2` — Latência real (ida e volta)\n"
-            "`!nInfo` — Informações e versão do bot\n"
-        ), inline=False)
+            return `
+                <div class="server-card ${removido ? 'server-card-removido' : ''}" onclick="app.loadConfig('${id}', '${server.name}')">
+                    <div class="icon-wrapper">
+                        ${server.icon.includes('/')
+                            ? `<img src="${server.icon}?t=${Date.now()}" class="server-icon-img">`
+                            : `<span class="server-icon">${server.icon}</span>`}
+                    </div>
+                    <h3>${server.name}</h3>
+                    ${this.idCopiavel(id)}
+                    ${removido ? `<div class="server-removido-badge">⚠️ Bot removido há ${diasRemovido}d</div>` : ''}
+                </div>
+            `;
+        }).join('') + `
+            <div class="server-card" onclick="window.location.href='/invite'" style="border: 1px dashed rgba(255,255,255,0.2); background: rgba(255,255,255,0.02);">
+                <div class="icon-wrapper">
+                    <div style="width:55px; height:55px; border-radius:50%; background:var(--success); display:flex; align-items:center; justify-content:center; font-size:30px; font-weight:800; color:white; line-height:1;">+</div>
+                </div>
+                <h3>Convidar o bot pro seu servidor</h3>
+            </div>
+        `;
+    },
 
-        embed.add_field(name="🔧 Admin", value=(
-            "`!nAdmin` — Painel com configurações do servidor\n"
-            "`!nBonus [tipo] [valor]` — Configura bônus de XP (booster/admin)\n"
-            "`!nBonusStack [sim/nao]` —  Define se bônus se somam ou usa o maior\n"
-            "`!nReset [@usuário]` — Reseta níveis (todos ou um usuário específico)\n"
-            "`!nSetXP @usuário valor` — Define o XP de um usuário\n"
-            "`!nSetLevel @usuário valor` — Define o nível de um usuário\n"
-            "`!nStatus` — Atualiza o status do bot\n"
-            "`!nSync` — Sincroniza cargos e canais no banco\n"
-            "`!nSync2` — Atualiza nomes das patentes\n"
-            "`!nFix` — Corrige cargos de todos os membros\n"
-            "`!setchannel` — Define o canal de anúncios\n"
+    renderServerSwitcher() {
+        const el = document.getElementById('serverSwitcher');
+        if (!el) return;
 
-        ), inline=False)
+        const lista = this._servidoresDisponiveis || [];
+        el.innerHTML = lista.map(srv => `
+            <option value="${srv.id}" data-name="${srv.name}" ${srv.id === this.selectedGuild ? 'selected' : ''}>
+                ${srv.removido ? '⚠️ ' : ''}${srv.name}
+            </option>
+        `).join('');
+    },
 
-        embed.set_footer(text="XP: +20 por mensagem (cooldown 15s) • +5 por reação • +15 por minuto em voz\n💡 Todos os comandos também funcionam como /slash")
-        await ctx.send(embed=embed)
+    handleSwitchServer() {
+        const sel = document.getElementById('serverSwitcher');
+        const guildId = sel.value;
+        const guildName = sel.options[sel.selectedIndex].getAttribute('data-name');
+        if (guildId === this.selectedGuild) return;
+        this.loadConfig(guildId, guildName);
+    },
 
-    @commands.hybrid_command(name="nstatus", description="Aplica o status configurado no painel web")
-    @commands.has_permissions(administrator=True)
-    async def update_status(self, ctx):
-        msg = await ctx.send("🔄 Atualizando status...")
+    async loadConfig(guildId, guildName) {
+        this.selectedGuild = guildId;
+        this.selectedGuildName = guildName;
 
-        try:
-            traducoes = {
-                0: "Jogando",
-                2: "Ouvindo",
-                3: "Assistindo",
-                4: "Balãozinho",
-                5: "Competindo"
+        window.scrollTo({ top: 0, behavior: 'instant' });
+
+        history.pushState({ page: "editor", guildId }, "", `#server-${guildId}`);
+
+        document.getElementById('selector').style.display = 'none';
+        document.getElementById('editor').style.display = 'block';
+        document.getElementById('serverTitle').innerText = "Painel";
+
+        this.renderServerSwitcher();
+
+        const statusSection = document.getElementById('statusSection');
+        statusSection.style.display = guildId === "602623690206609418" ? "block" : "none";
+
+        this.renderYoutubeLimiteHint();
+
+        this.showLoading('patenteBody');
+        this.showLoading('leaderboardBody');
+
+        await this.fetchAndRender(guildId);
+        this.iniciarRealtime(guildId);
+        this.iniciarRealtimeAuditLog(guildId);
+    },
+
+    iniciarRealtime(guildId) {
+        // Remove qualquer inscrição anterior antes de criar uma nova
+        // (evita ficar acumulando conexões ao trocar de servidor)
+        if (this._realtimeChannel) {
+            sb.removeChannel(this._realtimeChannel);
+            this._realtimeChannel = null;
+        }
+
+        this._realtimeChannel = sb.channel(`niveis-${guildId}`)
+            .on('postgres_changes', {
+                event: '*',
+                schema: 'public',
+                table: 'niveis',
+                filter: `guild_id=eq.${guildId}`
+            }, () => this.atualizarLeaderboardEmTempoReal())
+            .subscribe((status) => {
+                const badge = document.getElementById('realtimeBadge');
+                if (!badge) return;
+                badge.style.display = (status === 'SUBSCRIBED') ? 'inline-flex' : 'none';
+            });
+    },
+
+    pararRealtime() {
+        if (this._realtimeChannel) {
+            sb.removeChannel(this._realtimeChannel);
+            this._realtimeChannel = null;
+        }
+        const badge = document.getElementById('realtimeBadge');
+        if (badge) badge.style.display = 'none';
+    },
+
+    iniciarRealtimeAuditLog(guildId) {
+        if (this._auditChannel) {
+            sb.removeChannel(this._auditChannel);
+            this._auditChannel = null;
+        }
+
+        this._auditChannel = sb.channel(`audit-log-${guildId}`)
+            .on('postgres_changes', {
+                event: 'INSERT',
+                schema: 'public',
+                table: 'audit_log',
+                filter: `guild_id=eq.${guildId}`
+            }, (payload) => {
+                this.renderAuditLog(guildId);
+                // Avisa mesmo se o admin não estiver com a aba Admin aberta no momento
+                const quem = this.escapeHtml(payload.new?.actor_name || 'Alguém');
+                this.showToast(`📜 ${quem} registrou uma ação no log`);
+            })
+            .subscribe();
+    },
+
+    pararRealtimeAuditLog() {
+        if (this._auditChannel) {
+            sb.removeChannel(this._auditChannel);
+            this._auditChannel = null;
+        }
+    },
+
+    async atualizarLeaderboardEmTempoReal() {
+        if (!this.selectedGuild) return;
+        const data = await NZKAPI.getLeaderboard(this.selectedGuild);
+        this._lastLeaderboard = data;
+        this.renderLeaderboard(data);
+        this.renderEstatisticas(data);
+    },
+
+    async fetchAndRender(guildId) {
+        this.showLoading('patenteBody');
+        this.showLoading('leaderboardBody');
+
+        const data = await Promise.all([
+            NZKAPI.getCargos(guildId),
+            NZKAPI.getPatentes(guildId),
+            NZKAPI.getLeaderboard(guildId),
+            NZKAPI.getCanais(guildId)
+        ]);
+
+        this.renderRoles(data[0]);
+        this.renderChannels(data[3]);
+        this.renderTable(data[1]);
+        this._leaderboardPage = 1;
+        this._lastLeaderboard = data[2];
+        this.renderLeaderboard(data[2]);
+        this.renderEstatisticas(data[2]);
+        this.renderHistoricoSelect(data[2]);
+
+        // Popula selects da aba Admin
+        const opts = '<option value="">-- Selecionar membro --</option>' +
+            data[2].map(u => `<option value="${this.escapeHtml(u.user_id)}">${this.escapeHtml(u.username || u.user_id)}</option>`).join('');
+        ['resetUsuario', 'editUsuario'].forEach(id => {
+            const sel = document.getElementById(id);
+            if (sel) { const cur = sel.value; sel.innerHTML = opts; if (cur) sel.value = cur; }
+        });
+        await this.loadSavedConfigs(guildId);
+        await this.renderYoutubeMonitores(guildId);
+        await this.renderAuditLog(guildId);
+        await this.renderTwitchMonitores(guildId);
+    },
+
+    async renderAuditLog(guildId) {
+        const body = document.getElementById('auditLogBody');
+        if (!body) return;
+
+        const acoesTraduzidas = {
+            reset_server: '💥 Reset total do servidor',
+            reset_user: '🗑️ Reset de usuário',
+            edit_user: '✏️ Edição de nível/XP',
+            set_xp: '⭐ XP definido manualmente',
+            set_level: '📈 Nível definido manualmente'
+        };
+
+        const data = await NZKAPI.getAuditLog(guildId);
+
+        if (!data.length) {
+            body.innerHTML = '<tr><td colspan="4" style="text-align:center; color:var(--text-muted); padding:20px;">Nenhuma ação registrada ainda.</td></tr>';
+            return;
+        }
+
+        body.innerHTML = data.map(log => {
+            const data_fmt = new Date(log.created_at).toLocaleString(NZKI18n?.language || 'pt-BR');
+            const acaoNome = acoesTraduzidas[log.action] || log.action;
+            const alvo = this.idCopiavel(log.target_id);
+            return `
+                <tr>
+                    <td>${data_fmt}</td>
+                    <td>${this.escapeHtml(log.actor_name || log.actor_id)}</td>
+                    <td>${acaoNome}</td>
+                    <td>${alvo}</td>
+                </tr>
+            `;
+        }).join('');
+    },
+
+    async loadSavedConfigs(guildId) {
+        const config = await NZKAPI.getConfigs(guildId);
+        if (config) {
+            if (config.canal_avisos_id) document.getElementById('channelSelect').value = config.canal_avisos_id;
+            if (config.cargo_top1_id) document.getElementById('top1Select').value = config.cargo_top1_id;
+            if (config.status_texto) document.getElementById('statusInput').value = config.status_texto;
+            if (config.tipo_atividade !== null) document.getElementById('statusType').value = config.tipo_atividade;
+            this.renderStatusExpiraInfo(config.status_expira_em || null);
+            document.getElementById('levelupMensagem').value = config.levelup_mensagem || '';
+            document.getElementById('bonusBooster').value = config.bonus_booster || 0;
+            if (config.canal_boost_id) document.getElementById('boostChannel').value = config.canal_boost_id;
+            if (config.canal_boas_vindas_id) document.getElementById('boasVindasChannel').value = config.canal_boas_vindas_id;
+            document.getElementById('boasVindasMensagem').value = config.boas_vindas_mensagem || '';
+            this.cargosEntradaAtuais = config.cargos_entrada || [];
+            this.renderCargosEntradaTable();
+            document.getElementById('boostXp').value = config.bonus_boost_xp || 0;
+            document.getElementById('boostMensagem').value = config.boost_mensagem || '';
+            document.getElementById('bonusAdmin').value = config.bonus_admin || 0;
+            document.getElementById('bonusStack').value = config.bonus_stack === false ? "nao" : "sim";
+            document.getElementById('boostAfetaAdmin').checked = config.boost_afeta_bonus_admin !== false;
+            document.getElementById('xpMensagem').value = config.xp_mensagem ?? 20;
+            document.getElementById('xpReacao').value = config.xp_reacao ?? 5;
+            document.getElementById('xpVozMinuto').value = config.xp_voz_minuto ?? 15;
+        } else {
+            document.getElementById('channelSelect').value = "";
+            document.getElementById('top1Select').value = "";
+            document.getElementById('statusInput').value = "";
+            document.getElementById('statusType').value = "0";
+            document.getElementById('statusExpiraInfo').textContent = "";
+            document.getElementById('levelupMensagem').value = '';
+            document.getElementById('bonusBooster').value = 0;
+            document.getElementById('boostChannel').value = "";
+            document.getElementById('boasVindasChannel').value = "";
+            document.getElementById('boasVindasMensagem').value = "";
+            this.cargosEntradaAtuais = [];
+            this.renderCargosEntradaTable();
+            document.getElementById('boostXp').value = 0;
+            document.getElementById('boostMensagem').value = '';
+            document.getElementById('bonusAdmin').value = 0;
+            document.getElementById('bonusStack').value = "sim";
+            document.getElementById('boostAfetaAdmin').checked = true;
+            document.getElementById('xpMensagem').value = 20;
+            document.getElementById('xpReacao').value = 5;
+            document.getElementById('xpVozMinuto').value = 15;
+        }
+    },
+
+
+
+
+
+    async handleResetarServidor() {
+        if (!(await this.confirmar("⚠️ Isso vai zerar <b>TODOS</b> os níveis e XP do servidor.<br>Tem certeza?", "Zerar tudo"))) return;
+        if (!(await this.confirmar("⚠️ Última confirmação — essa ação <b>não pode ser desfeita</b>!", "Confirmar reset"))) return;
+        const res = await NZKAPI.resetarServidor(this.selectedGuild);
+        if (res.success) {
+            this.showToast("✅ Todos os níveis foram resetados!");
+            NZKAPI.logAcao(this.selectedGuild, "reset_server");
+        } else this.showToast("❌ Erro ao resetar.", "error");
+    },
+
+    async handleResetarUsuario() {
+        const sel = document.getElementById('resetUsuario');
+        if (!sel.value) return this.showToast("Selecione um usuário.", "error");
+        const nome = this.escapeHtml(sel.options[sel.selectedIndex].text);
+        if (!(await this.confirmar(`⚠️ Resetar nível e XP de <b>${nome}</b>?`, "Resetar"))) return;
+        const res = await NZKAPI.resetarUsuario(this.selectedGuild, sel.value);
+        if (res.success) {
+            this.showToast(`✅ ${nome} resetado!`);
+            NZKAPI.logAcao(this.selectedGuild, "reset_user", sel.value);
+        } else this.showToast("❌ Erro ao resetar.", "error");
+    },
+
+    async handleEditarUsuario() {
+        const sel   = document.getElementById('editUsuario');
+        const level = document.getElementById('editLevel').value;
+        const xp    = document.getElementById('editXP').value;
+        if (!sel.value) return this.showToast("Selecione um usuário.", "error");
+        if (level === "" || xp === "") return this.showToast("Preencha nível e XP.", "error");
+        const res = await NZKAPI.editarUsuario(this.selectedGuild, sel.value, level, xp);
+        if (res.success) {
+            this.showToast(`✅ ${this.escapeHtml(sel.options[sel.selectedIndex].text)} atualizado!`);
+            NZKAPI.logAcao(this.selectedGuild, "edit_user", sel.value, { level, xp });
+        } else this.showToast("❌ Erro ao editar.", "error");
+    },
+
+
+    renderYoutubeLimiteHint() {
+        const el = document.getElementById('youtubeLimiteHint');
+        if (!el) return;
+        if (this.SEM_LIMITE_YOUTUBE.includes(this.selectedGuild)) {
+            el.innerHTML = '💡 Aceita <b>@handle</b>, URL completa ou ID <b>UCxxxx</b> — sem limite de canais neste servidor. 👑';
+        } else {
+            el.innerHTML = '💡 Aceita <b>@handle</b>, URL completa ou ID <b>UCxxxx</b> — máximo 5 canais por servidor.';
+        }
+    },
+
+    async renderYoutubeMonitores(guildId) {
+        const data = await NZKAPI.getYoutubeMonitores(guildId);
+        const body = document.getElementById('youtubeBody');
+        if (!body) return;
+
+        if (!data.length) {
+            body.innerHTML = '<tr><td colspan="5" style="text-align:center; color:var(--text-muted); padding:20px;">Nenhum canal monitorado.</td></tr>';
+            return;
+        }
+
+        body.innerHTML = data.map(m => `
+            <tr>
+                <td>${this.escapeHtml(m.youtube_channel_name || m.youtube_channel_id)}</td>
+                <td>${this.idCopiavel(m.youtube_channel_id)}</td>
+                <td>#${this.escapeHtml(m.discord_channel_id)}</td>
+                <td>
+                    <span style="color: ${m.ativo ? 'var(--success)' : 'var(--danger)'}">
+                        ${m.ativo ? '✅ Ativo' : '⏸️ Pausado'}
+                    </span>
+                </td>
+                <td style="display:flex; gap:8px;">
+                    <button class="btn-table-action secondary" onclick="app.toggleYoutube(${m.id}, ${!m.ativo})">
+                        ${m.ativo ? '⏸️ Pausar' : '▶️ Ativar'}
+                    </button>
+                    <button class="btn-table-action danger" onclick="app.deletarYoutube(${m.id})">Excluir</button>
+                </td>
+            </tr>
+        `).join('');
+    },
+
+    async handleAdicionarYoutube() {
+        const entrada     = document.getElementById('youtubeChannelId').value.trim();
+        const channelName = document.getElementById('youtubeChannelName').value.trim();
+        const discordCh   = document.getElementById('youtubeDiscordChannel').value;
+
+        if (!entrada) return this.showToast("Informe o canal do YouTube.", "error");
+        if (!discordCh) return this.showToast("Selecione o canal do Discord.", "error");
+
+        // Limite de 5 (exceto servidores na lista SEM_LIMITE_YOUTUBE)
+        if (!this.SEM_LIMITE_YOUTUBE.includes(this.selectedGuild)) {
+            const atual = await NZKAPI.getYoutubeMonitores(this.selectedGuild);
+            if (atual.length >= 5) return this.showToast("Limite de 5 canais atingido.", "error");
+        }
+
+        this.showToast("🔄 Resolvendo canal...");
+
+        // Resolve @handle, URL ou ID direto
+        const resolvido = await NZKAPI.resolverYoutubeChannelId(entrada);
+        if (!resolvido) return this.showToast("❌ Não foi possível encontrar o canal. Verifique o @handle ou ID.", "error");
+
+        const res = await NZKAPI.salvarYoutubeMonitor({
+            guild_id: this.selectedGuild,
+            youtube_channel_id: resolvido.id,
+            youtube_channel_name: channelName || resolvido.nome || entrada,
+            discord_channel_id: discordCh,
+            ativo: true
+        });
+
+        if (res.success) {
+            this.showToast("▶️ Canal do YouTube adicionado!");
+            document.getElementById('youtubeChannelId').value = '';
+            document.getElementById('youtubeChannelName').value = '';
+            this.renderYoutubeMonitores(this.selectedGuild);
+        } else {
+            this.showToast("❌ Erro ao adicionar.", "error");
+        }
+    },
+
+    async toggleYoutube(id, ativo) {
+        const res = await NZKAPI.toggleYoutubeMonitor(id, ativo);
+        if (res.success) {
+            this.showToast(ativo ? "▶️ Monitor ativado!" : "⏸️ Monitor pausado!");
+            this.renderYoutubeMonitores(this.selectedGuild);
+        }
+    },
+
+    async deletarYoutube(id) {
+        if (!(await this.confirmar("Remover este canal monitorado?", "Remover"))) return;
+        const res = await NZKAPI.deletarYoutubeMonitor(id);
+        if (res.success) {
+            this.showToast("🗑️ Monitor removido.", "error");
+            this.renderYoutubeMonitores(this.selectedGuild);
+        }
+    },
+
+    async renderTwitchMonitores(guildId) {
+        const data = await NZKAPI.getTwitchMonitores(guildId);
+        const body = document.getElementById('twitchBody');
+        if (!body) return;
+
+        if (!data.length) {
+            body.innerHTML = '<tr><td colspan="3" style="text-align:center; color:var(--text-muted); padding:20px;">Nenhum canal monitorado.</td></tr>';
+            return;
+        }
+
+        body.innerHTML = data.map(m => `
+            <tr>
+                <td>
+                    <a href="https://twitch.tv/${encodeURIComponent(m.twitch_username)}" target="_blank" style="color:var(--text-main); text-decoration:none;">
+                        ${this.escapeHtml(m.twitch_username)}
+                    </a>
+                </td>
+                <td>#${this.escapeHtml(m.discord_channel_id)}</td>
+                <td style="display:flex; gap:8px;">
+                    <span style="color: ${m.ativo ? 'var(--success)' : 'var(--danger)'}; align-self:center;">
+                        ${m.ativo ? '✅ Ativo' : '⏸️ Pausado'}
+                    </span>
+                    <button class="btn-table-action secondary" onclick="app.toggleTwitch(${m.id}, ${!m.ativo})">
+                        ${m.ativo ? '⏸️ Pausar' : '▶️ Ativar'}
+                    </button>
+                    <button class="btn-table-action danger" onclick="app.deletarTwitch(${m.id})">Excluir</button>
+                </td>
+            </tr>
+        `).join('');
+    },
+
+    async handleAdicionarTwitch() {
+        const username = document.getElementById('twitchUsername').value.trim().replace(/^@/, '').toLowerCase();
+        const discordCh = document.getElementById('twitchDiscordChannel').value;
+
+        if (!username) return this.showToast("Informe o nome de usuário da Twitch.", "error");
+        if (!discordCh) return this.showToast("Selecione o canal do Discord.", "error");
+
+        const atual = await NZKAPI.getTwitchMonitores(this.selectedGuild);
+        if (atual.length >= 5) return this.showToast("Limite de 5 canais atingido.", "error");
+
+        const res = await NZKAPI.salvarTwitchMonitor({
+            guild_id: this.selectedGuild,
+            twitch_username: username,
+            discord_channel_id: discordCh,
+            ativo: true
+        });
+
+        if (res.success) {
+            this.showToast("💜 Canal da Twitch adicionado!");
+            document.getElementById('twitchUsername').value = '';
+            this.renderTwitchMonitores(this.selectedGuild);
+        } else {
+            this.showToast("❌ Erro ao adicionar.", "error");
+        }
+    },
+
+    async toggleTwitch(id, ativo) {
+        const res = await NZKAPI.toggleTwitchMonitor(id, ativo);
+        if (res.success) {
+            this.showToast(ativo ? "▶️ Monitor ativado!" : "⏸️ Monitor pausado!");
+            this.renderTwitchMonitores(this.selectedGuild);
+        }
+    },
+
+    async deletarTwitch(id) {
+        if (!(await this.confirmar("Remover este canal monitorado?", "Remover"))) return;
+        const res = await NZKAPI.deletarTwitchMonitor(id);
+        if (res.success) {
+            this.showToast("🗑️ Monitor removido.", "error");
+            this.renderTwitchMonitores(this.selectedGuild);
+        }
+    },
+
+    async handleSalvarBoasVindasCanal() {
+        const canal = document.getElementById('boasVindasChannel').value;
+        const cargos = this.cargosEntradaAtuais || [];
+        const res   = await NZKAPI.salvarBoasVindasCanal(this.selectedGuild, canal, cargos);
+        if (res.success) this.showToast("👋 Canal e cargo de boas-vindas salvos!");
+        else this.showToast("❌ Erro ao salvar.", "error");
+    },
+
+    async handleSalvarBoasVindasMensagem() {
+        const msg = document.getElementById('boasVindasMensagem').value;
+        const res = await NZKAPI.salvarBoasVindasMensagem(this.selectedGuild, msg);
+        if (res.success) this.showToast(msg ? "👋 Mensagem de boas-vindas salva!" : "👋 Mensagem removida!");
+        else this.showToast("❌ Erro ao salvar.", "error");
+    },
+
+    handleAdicionarCargoEntrada() {
+        const sel = document.getElementById('cargoEntradaSelect');
+        if (!sel.value) return this.showToast("Selecione um cargo.", "error");
+
+        this.cargosEntradaAtuais = this.cargosEntradaAtuais || [];
+        if (this.cargosEntradaAtuais.length >= 10) return this.showToast("Limite de 10 cargos atingido.", "error");
+        if (this.cargosEntradaAtuais.includes(sel.value)) return this.showToast("Esse cargo já foi adicionado.", "error");
+
+        this.cargosEntradaAtuais.push(sel.value);
+        this.renderCargosEntradaTable();
+        sel.value = "";
+    },
+
+    handleRemoverCargoEntrada(roleId) {
+        this.cargosEntradaAtuais = (this.cargosEntradaAtuais || []).filter(id => id !== roleId);
+        this.renderCargosEntradaTable();
+    },
+
+    renderCargosEntradaTable() {
+        const body = document.getElementById('cargosEntradaBody');
+        if (!body) return;
+
+        const lista = this.cargosEntradaAtuais || [];
+        if (!lista.length) {
+            body.innerHTML = '<tr><td colspan="2" style="text-align:center; color:var(--text-muted); padding:15px;">Nenhum cargo automático configurado.</td></tr>';
+            return;
+        }
+
+        body.innerHTML = lista.map(roleId => {
+            const cargo = (this._cargosDisponiveis || []).find(c => c.role_id === roleId);
+            const nome = this.escapeHtml(cargo ? cargo.role_name : `Cargo removido (${roleId})`);
+            return `
+                <tr>
+                    <td>${nome}</td>
+                    <td><button class="btn-table-action danger" onclick="app.handleRemoverCargoEntrada('${this.escapeHtml(roleId)}')">Excluir</button></td>
+                </tr>
+            `;
+        }).join('');
+    },
+
+    handleTestarBoasVindas() {
+        const mensagem_raw = document.getElementById('boasVindasMensagem').value
+            || "Bem-vindo(a) ao {servidor}, {usuario}!";
+        const mensagem = mensagem_raw
+            .replace("{usuario}", "**[USUÁRIO TESTE]**")
+            .replace("{servidor}", this.selectedGuildName)
+            .replace("{membros}", "**[Nº DE MEMBROS]**");
+
+        const nomes = (this.cargosEntradaAtuais || []).map(roleId => {
+            const cargo = (this._cargosDisponiveis || []).find(c => c.role_id === roleId);
+            return cargo ? this.escapeHtml(cargo.role_name) : null;
+        }).filter(Boolean);
+        const cargoNome = nomes.length ? nomes.join(', ') : null;
+
+        const preview = document.getElementById('boasVindasPreview');
+        preview.innerHTML = `
+            <div style="background:rgba(88,101,242,0.1); border:1px solid rgba(88,101,242,0.3); border-radius:10px; padding:15px; margin-top:10px;">
+                <div style="font-weight:800; color:var(--accent); margin-bottom:8px;">👋 Prévia da mensagem</div>
+                <div style="margin-bottom:8px;">${mensagem}</div>
+                <div style="font-size:11px; color:var(--text-muted);">🖼️ Thumbnail: foto do perfil do usuário</div>
+                ${cargoNome ? `<div style="font-size:11px; color:var(--text-muted); margin-top:4px;">🎭 Cargos atribuídos: <b>${cargoNome}</b></div>` : ''}
+            </div>
+        `;
+    },
+
+    async handleSalvarBoostCanal() {
+        const canal = document.getElementById('boostChannel').value;
+        const xp    = document.getElementById('boostXp').value;
+        const afetaAdmin = document.getElementById('boostAfetaAdmin').checked;
+        const res   = await NZKAPI.salvarBoostCanal(this.selectedGuild, canal, xp, afetaAdmin);
+        if (res.success) this.showToast("💜 Canal e XP de boost salvos!");
+        else this.showToast("❌ Erro ao salvar.", "error");
+    },
+
+    async handleSalvarXpConfig() {
+        const xpMensagem   = document.getElementById('xpMensagem').value;
+        const xpReacao     = document.getElementById('xpReacao').value;
+        const xpVozMinuto  = document.getElementById('xpVozMinuto').value;
+        const res = await NZKAPI.salvarXpConfig(this.selectedGuild, xpMensagem, xpReacao, xpVozMinuto);
+        if (res.success) this.showToast("⭐ Configuração de XP salva!");
+        else this.showToast("❌ Erro ao salvar.", "error");
+    },
+
+    async handleSalvarBoostMensagem() {
+        const mensagem = document.getElementById('boostMensagem').value;
+        const res      = await NZKAPI.salvarBoostMensagem(this.selectedGuild, mensagem);
+        if (res.success) this.showToast(mensagem ? "💜 Mensagem de boost salva!" : "💜 Mensagem removida!");
+        else this.showToast("❌ Erro ao salvar.", "error");
+    },
+
+
+    async handleTestarBoost() {
+        const canal = document.getElementById('boostChannel').value;
+        if (!canal) return this.showToast("Selecione um canal primeiro.", "error");
+
+        const mensagem_raw = document.getElementById('boostMensagem').value
+            || "{usuario} acabou de impulsionar o servidor! Obrigado pelo apoio!";
+        const xp = document.getElementById('boostXp').value || 0;
+
+        const mensagem = mensagem_raw
+            .replace("{usuario}", "**[USUÁRIO TESTE]**")
+            .replace("{servidor}", this.selectedGuildName)
+            .replace("{xp}", xp);
+
+        // Envia preview visual no painel
+        const preview = document.getElementById('boostPreview');
+        preview.innerHTML = `
+            <div style="background:rgba(255,115,250,0.1); border:1px solid rgba(255,115,250,0.3); border-radius:10px; padding:15px; margin-top:10px;">
+                <div style="font-weight:800; color:#ff73fa; margin-bottom:8px;">💜 Novo Impulso! <span style="font-size:11px; color:var(--text-muted);">(prévia)</span></div>
+                <div style="margin-bottom:8px;">${mensagem}</div>
+                ${xp > 0 ? `<div style="font-size:12px; color:var(--success);">🎁 Recompensa: <b>+${xp} XP</b> de bônus!</div>` : ''}
+                <div style="font-size:11px; color:var(--text-muted); margin-top:8px;">🖼️ Thumbnail: foto do perfil do usuário</div>
+            </div>
+        `;
+    },
+
+
+    async handleSalvarLevelupMensagem() {
+        const msg = document.getElementById('levelupMensagem').value;
+        const res = await NZKAPI.salvarLevelupMensagem(this.selectedGuild, msg);
+        if (res.success) this.showToast(msg ? "✅ Mensagem de level up salva!" : "✅ Mensagem padrão restaurada!");
+        else this.showToast("❌ Erro ao salvar.", "error");
+    },
+
+    async handleSalvarBonus() {
+        const booster = document.getElementById('bonusBooster').value;
+        const admin   = document.getElementById('bonusAdmin').value;
+        const stack   = document.getElementById('bonusStack').value === "sim";
+        const res = await NZKAPI.salvarBonus(this.selectedGuild, booster, admin, stack);
+        if (res.success) this.showToast("🎯 Bônus de XP salvo!");
+        else this.showToast("❌ Erro ao salvar bônus.", "error");
+    },
+
+    async handleSalvarStatus() {
+        const texto = document.getElementById('statusInput').value;
+        const tipo = document.getElementById('statusType').value;
+        const horas = parseInt(document.getElementById('statusDuracao').value);
+        if (!this.selectedGuild) return this.showToast("Selecione um servidor primeiro.", "error");
+
+        const expiraEm = horas > 0
+            ? new Date(Date.now() + horas * 60 * 60 * 1000).toISOString()
+            : null;
+
+        const res = await NZKAPI.salvarStatusBot(this.selectedGuild, texto, tipo, expiraEm);
+        if (res.success) {
+            this.showToast("✅ Status salvo com sucesso!");
+            this.renderStatusExpiraInfo(expiraEm);
+        } else {
+            this.showToast("❌ Erro ao salvar status.", "error");
+        }
+    },
+
+    renderStatusExpiraInfo(expiraEm) {
+        const el = document.getElementById('statusExpiraInfo');
+        if (!el) return;
+        if (!expiraEm) {
+            el.textContent = '♾️ Esse status fica valendo até você trocar de novo.';
+            return;
+        }
+        const data = new Date(expiraEm);
+        el.textContent = `⏳ Esse status volta ao padrão em ${data.toLocaleString(NZKI18n?.language || 'pt-BR')}.`;
+    },
+
+    renderRoles(cargos) {
+        this._cargosDisponiveis = cargos;
+        const html = cargos.map(r => {
+            const nome = this.escapeHtml(r.role_name);
+            return `<option value="${this.escapeHtml(r.role_id)}" data-name="${nome}">${nome}</option>`;
+        }).join('');
+        document.getElementById('roleSelect').innerHTML = html;
+        document.getElementById('top1Select').innerHTML = `<option value="">-- Nenhum --</option>` + html;
+        document.getElementById('cargoEntradaSelect').innerHTML = `<option value="">-- Selecionar cargo --</option>` + html;
+    },
+
+    renderChannels(canais) {
+        const opts = canais.map(c => `<option value="${this.escapeHtml(c.channel_id)}"># ${this.escapeHtml(c.channel_name)}</option>`).join('');
+        document.getElementById('channelSelect').innerHTML = `<option value="">-- Selecionar Canal --</option>` + opts;
+        document.getElementById('boostChannel').innerHTML = `<option value="">-- Nenhum --</option>` + opts;
+        document.getElementById('boasVindasChannel').innerHTML = `<option value="">-- Nenhum --</option>` + opts;
+        const ytSel = document.getElementById('youtubeDiscordChannel');
+        if (ytSel) ytSel.innerHTML = `<option value="">-- Selecionar canal --</option>` + opts;
+        const twSel = document.getElementById('twitchDiscordChannel');
+        if (twSel) twSel.innerHTML = `<option value="">-- Selecionar canal --</option>` + opts;
+    },
+
+    renderTable(patentes) {
+        const body = document.getElementById('patenteBody');
+        body.innerHTML = '';
+        patentes.sort((a, b) => a.level_required - b.level_required);
+        patentes.forEach((patente, index) => {
+            const row = document.createElement('tr');
+            row.dataset.id = patente.id;
+            row.innerHTML = `
+                <td>${index + 1}</td>
+                <td>Level ${patente.level_required}</td>
+                <td>${this.escapeHtml(patente.role_name || 'N/A')}</td>
+                <td>${this.idCopiavel(patente.role_id)}</td>
+                <td style="display:flex; gap:8px;">
+                    <button class="btn-table-action secondary" onclick="app.handleEdit('${patente.id}', ${patente.level_required}, '${patente.role_id}')">✏️ Editar</button>
+                    <button class="btn-table-action danger" onclick="app.handleDelete('${patente.id}')">Excluir</button>
+                </td>
+            `;
+            body.appendChild(row);
+        });
+    },
+
+    handleEdit(id, levelAtual, roleIdAtual) {
+        const row = document.querySelector(`tr[data-id="${id}"]`);
+        if (!row) return;
+
+        const sel = document.getElementById('roleSelect');
+        const opcoesRoles = Array.from(sel.options).map(o =>
+            `<option value="${this.escapeHtml(o.value)}" ${o.value === roleIdAtual ? 'selected' : ''}>${this.escapeHtml(o.text)}</option>`
+        ).join('');
+
+row.innerHTML = `
+            <td colspan="4" style="padding: 10px 20px;">
+                <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+					<div style="display: flex; flex-direction: column;">
+						<label style="font-size: 11px;">NÍVEL</label>
+						<input type="number" id="edit-lvl-${id}" value="${levelAtual}" style="width: 80px; margin-top: 4px;">
+					</div>
+
+					<div style="display: flex; flex-direction: column; flex-grow: 1;">
+						<label style="font-size: 11px;">CARGO</label>
+						<select id="edit-role-${id}" style="width: 100%; margin-top: 4px;">${opcoesRoles}</select>
+					</div>
+                </div>
+            </td>
+            <td style="display:flex; gap:8px; padding-top:22px;">
+                <button class="btn-table-action success" onclick="app.handleSaveEdit('${id}')">✅ Salvar</button>
+                <button class="btn-table-action secondary" onclick="app.fetchAndRender(app.selectedGuild)">✖ Cancelar</button>
+            </td>
+        `;
+    },
+
+    async handleSaveEdit(id) {
+        const lvl = document.getElementById(`edit-lvl-${id}`).value;
+        const sel = document.getElementById(`edit-role-${id}`);
+        const roleId = sel.value;
+        const roleName = sel.options[sel.selectedIndex].text;
+
+        if (!lvl) return this.showToast("Informe o nível.", "error");
+
+        try {
+            const { error } = await sb.from('patentes').update({
+                level_required: parseInt(lvl),
+                role_id: roleId,
+                role_name: roleName
+            }).eq('id', id);
+
+            if (error) throw error;
+            this.showToast("✅ Patente atualizada!");
+            this.fetchAndRender(this.selectedGuild);
+        } catch (e) {
+            this.showToast("❌ Erro ao salvar.", "error");
+        }
+    },
+
+    renderLeaderboard(usuarios) {
+        const filtro = document.getElementById('searchLeaderboard')?.value.toLowerCase() || '';
+        const filtrados = filtro
+            ? usuarios.filter(u =>
+                (u.username || '').toLowerCase().includes(filtro) ||
+                (u.user_id || '').includes(filtro))
+            : usuarios;
+
+        const PAGE_SIZE = 20;
+        const totalPaginas = Math.max(1, Math.ceil(filtrados.length / PAGE_SIZE));
+        if (this._leaderboardPage > totalPaginas) this._leaderboardPage = totalPaginas;
+        if (this._leaderboardPage < 1) this._leaderboardPage = 1;
+
+        const inicio = (this._leaderboardPage - 1) * PAGE_SIZE;
+        const pagina = filtrados.slice(inicio, inicio + PAGE_SIZE);
+
+        const coresXP = { 0: 'var(--gold)', 1: 'var(--silver)', 2: 'var(--bronze)' };
+
+        document.getElementById('leaderboardBody').innerHTML = pagina.map((u, iLocal) => {
+            const i = inicio + iLocal; // posição real no ranking geral, não só na página
+            const topClass = i < 3 ? `top-${i + 1}` : '';
+            const xpNecessario = (parseInt(u.level) * 100) + 75;
+            const xpAtual = parseInt(u.xp);
+            const porcentagem = Math.min(Math.max((xpAtual / xpNecessario) * 100, 0), 100).toFixed(0);
+            const corBarra = coresXP[i] || 'var(--accent)';
+
+            return `
+                <tr class="${topClass}">
+                    <td>${i + 1}</td>
+                    <td><b>${this.escapeHtml(u.username || 'Desconhecido')}</b></td>
+                    <td>Lvl ${u.level}</td>
+                    <td>
+                        <span style="font-size: 11px; color: var(--text-muted);">${xpAtual} / ${xpNecessario} XP (${porcentagem}%)</span>
+                        <div class="xp-bar-container" style="margin-top: 4px;">
+                            <div class="xp-bar-fill" style="width: ${porcentagem}%; background: ${corBarra}; box-shadow: 0 0 8px ${corBarra};"></div>
+                        </div>
+                    </td>
+                    <td>${u.msg_count}</td>
+                    <td>${this.formatarVoz(u.voice_minutes)}</td>
+                </tr>
+            `;
+        }).join('');
+
+        this.renderLeaderboardPagination(filtrados.length, totalPaginas);
+    },
+
+    renderLeaderboardPagination(totalItens, totalPaginas) {
+        const el = document.getElementById('leaderboardPagination');
+        if (!el) return;
+
+        if (totalPaginas <= 1) { el.innerHTML = ''; return; }
+
+        el.innerHTML = `
+            <button class="secondary" style="padding:8px 14px; margin:0; ${this._leaderboardPage === 1 ? 'opacity:0.4; cursor:not-allowed;' : ''}" onclick="app.mudarPaginaLeaderboard(-1)" ${this._leaderboardPage === 1 ? 'disabled' : ''}>‹ Anterior</button>
+            <span style="color:var(--text-muted); font-size:13px;">Página ${this._leaderboardPage} de ${totalPaginas} (${totalItens} membros)</span>
+            <button class="secondary" style="padding:8px 14px; margin:0; ${this._leaderboardPage === totalPaginas ? 'opacity:0.4; cursor:not-allowed;' : ''}" onclick="app.mudarPaginaLeaderboard(1)" ${this._leaderboardPage === totalPaginas ? 'disabled' : ''}>Próxima ›</button>
+        `;
+    },
+
+    mudarPaginaLeaderboard(delta) {
+        this._leaderboardPage += delta;
+        this.renderLeaderboard(this._lastLeaderboard);
+    },
+
+    renderEstatisticas(usuarios) {
+        if (!usuarios.length) return;
+        const totalMsgs  = usuarios.reduce((acc, u) => acc + (u.msg_count || 0), 0);
+        const totalVoz   = usuarios.reduce((acc, u) => acc + (u.voice_minutes || 0), 0);
+        const maxLevel   = Math.max(...usuarios.map(u => u.level));
+        const maisAtivo  = usuarios.reduce((a, b) => (a.msg_count > b.msg_count ? a : b));
+
+        document.getElementById('stat-mensagens').innerText = totalMsgs.toLocaleString('pt-BR');
+        document.getElementById('stat-voz').innerText = this.formatarVoz(totalVoz);
+        document.getElementById('stat-maxlevel').innerText = maxLevel;
+        document.getElementById('stat-ativo').innerText = maisAtivo.username || 'N/A';
+    },
+
+    sortLeaderboard(col) {
+        this._leaderboardPage = 1;
+        if (this._sortLeaderboard.col === col) {
+            this._sortLeaderboard.asc = !this._sortLeaderboard.asc;
+        } else {
+            this._sortLeaderboard.col = col;
+            this._sortLeaderboard.asc = false;
+        }
+        const sorted = [...this._lastLeaderboard].sort((a, b) => {
+            const asc = this._sortLeaderboard.asc ? 1 : -1;
+            if (col === 'level') return (a.level - b.level) * asc;
+            if (col === 'xp')    return (a.xp - b.xp) * asc;
+            if (col === 'msg')   return ((a.msg_count || 0) - (b.msg_count || 0)) * asc;
+            if (col === 'voz')   return ((a.voice_minutes || 0) - (b.voice_minutes || 0)) * asc;
+            return 0;
+        });
+        this.renderLeaderboard(sorted);
+    },
+
+    async handleSaveChannel() {
+        if (!(await this.confirmar("Confirmar alteração do canal de avisos?", "Confirmar"))) return;
+        const res = await NZKAPI.salvarConfigCanal(this.selectedGuild, document.getElementById('channelSelect').value);
+        if (res.success) this.showToast("✅ Canal de avisos salvo!");
+        else this.showToast("❌ Erro ao salvar canal.", "error");
+    },
+
+    async handleSaveTop1() {
+        if (!(await this.confirmar("Confirmar alteração do cargo Top 1?", "Confirmar"))) return;
+        const res = await NZKAPI.salvarConfigTop1(this.selectedGuild, document.getElementById('top1Select').value);
+        if (res.success) this.showToast("⭐ Cargo de líder definido!");
+        else this.showToast("❌ Erro ao salvar cargo.", "error");
+    },
+
+    async handleSave() {
+        const lvl = document.getElementById('lvl').value;
+        const sel = document.getElementById('roleSelect');
+        if (!lvl || isNaN(lvl)) return this.showToast("Insira um nível válido.", "error");
+
+        const res = await NZKAPI.salvarPatente({
+            guild_id: this.selectedGuild,
+            level_required: parseInt(lvl),
+            role_id: sel.value,
+            role_name: sel.options[sel.selectedIndex].getAttribute('data-name')
+        });
+
+        if (res.success) {
+            this.showToast("🛡️ Patente adicionada!");
+            document.getElementById('lvl').value = "";
+            this.fetchAndRender(this.selectedGuild);
+        } else {
+            this.showToast("❌ Erro ao adicionar patente.", "error");
+        }
+    },
+
+    async handleDelete(id) {
+        if (await this.confirmar("Deseja realmente excluir esta patente?", "Excluir")) {
+            const res = await NZKAPI.deletarPatente(id);
+            if (res.success) {
+                this.showToast("🗑️ Patente removida.", "error");
+                this.fetchAndRender(this.selectedGuild);
             }
-
-            guild_id = str(ctx.guild.id)
-
-            res = self.supabase.table("servidor_configs") \
-                .select("status_texto, tipo_atividade") \
-                .eq("guild_id", guild_id) \
-                .execute()
-
-            if res.data and res.data[0].get('status_texto'):
-                cfg = res.data[0]
-                texto = cfg['status_texto']
-                tipo_id = int(cfg.get('tipo_atividade') or 0)
-
-                nome_exibicao = traducoes.get(tipo_id, "Status")
-
-                if tipo_id == 4:
-                    atividade = discord.CustomActivity(name=texto)
-                else:
-                    tipo_formatado = discord.ActivityType(tipo_id)
-                    atividade = discord.Activity(type=tipo_formatado, name=texto)
-
-                await self.bot.change_presence(activity=atividade)
-
-                log_info("nStatus", f"Status atualizado: {nome_exibicao} -> {texto} | por {ctx.author}")
-                await msg.edit(content=f"✅ Status atualizado para **{nome_exibicao}**: **{texto}**")
-
-            else:
-                await msg.edit(content="⚠️ Nenhum status configurado para este servidor.")
-
-        except Exception as e:
-            await msg.edit(content=f"❌ Erro ao atualizar status: {e}")
-            log_erro("nStatus", e)
-
-    @commands.hybrid_command(name="setchannel", description="Define este canal como canal de avisos")
-    @commands.has_permissions(administrator=True)
-    async def setchannel(self, ctx):
-        guild_id = str(ctx.guild.id)
-        channel_id = str(ctx.channel.id)
-
-        # Corrigido: atualiza servidor_configs em vez de servidor_cargos
-        self.supabase.table("servidor_configs").upsert({
-            "guild_id": guild_id,
-            "canal_avisos_id": channel_id
-        }).execute()
-
-        await ctx.send(f"✅ Canal de anúncios definido para {ctx.channel.mention}!")
-
-    @commands.hybrid_command(name="nping", description="Mostra a latência do bot")
-    async def ping(self, ctx):
-        latencia = round(self.bot.latency * 1000)
-        embed = discord.Embed(
-            title="🏓 Pong!",
-            description=f"A latência atual é de **{latencia}ms**.",
-            color=0x5865f2
-        )
-        await ctx.send(embed=embed)
-
-    @commands.hybrid_command(name="nping2", description="Mostra a latência real (ida e volta)")
-    async def ping_real(self, ctx):
-        inicio = datetime.now()
-        msg = await ctx.send("🏓 Calculando...")
-        fim = datetime.now()
-
-        duracao = round((fim - inicio).total_seconds() * 1000)
-        await msg.edit(content=f"🏓 **Pong!**\nResposta em: `{duracao}ms` | Gateway: `{round(self.bot.latency * 1000)}ms`")
-
-    @commands.hybrid_command(name="nfix", description="Corrige os cargos de todos os membros conforme o nível")
-    @commands.has_permissions(administrator=True)
-    async def nfix(self, ctx):
-        """Corrige os cargos de todos os membros baseado no nível atual"""
-        guild = ctx.guild
-        gid = str(guild.id)
-        msg = await ctx.send("🔄 Corrigindo cargos, aguarde...")
-        corrigidos = 0
-        sem_cargo = 0
-
-        try:
-            res = self.supabase.table("niveis").select("user_id, level").eq("guild_id", gid).execute()
-
-            res_p = self.supabase.table("patentes").select("role_id, level_required").eq("guild_id", gid).execute()
-            patentes = sorted(res_p.data, key=lambda x: x['level_required'])
-            ids_patentes = {int(p['role_id']) for p in patentes}
-
-            if not patentes:
-                return await msg.edit(content="⚠️ Nenhuma patente cadastrada para este servidor.")
-
-            for entry in res.data:
-                member = guild.get_member(int(entry['user_id']))
-                if not member:
-                    continue
-
-                nivel = entry['level']
-
-                cargo_correto = None
-                for p in patentes:
-                    if p['level_required'] <= nivel:
-                        cargo_correto = guild.get_role(int(p['role_id']))
-
-                cargos_remover = [r for r in member.roles if r.id in ids_patentes and r != cargo_correto]
-                if cargos_remover:
-                    await member.remove_roles(*cargos_remover, reason="nFix: correção de patente")
-
-                if cargo_correto:
-                    await member.add_roles(cargo_correto, reason="nFix: correção de patente")
-                    corrigidos += 1
-                else:
-                    sem_cargo += 1
-
-            await msg.edit(content=f"✅ **nFix concluído!**\n📦 Cargos corrigidos: **{corrigidos}**\n⚪ Sem patente ainda: **{sem_cargo}**")
-
-        except discord.Forbidden:
-            await msg.edit(content="❌ Sem permissão! O cargo do bot precisa estar **acima** das patentes no servidor.")
-        except Exception as e:
-            await msg.edit(content=f"❌ Erro no nFix: {e}")
-            log_erro("nFix", e)
-
-    @commands.hybrid_command(name="nadmin", description="Mostra o painel administrativo do servidor")
-    @commands.has_permissions(administrator=True)
-    async def nadmin(self, ctx):
-        """Painel administrativo do servidor"""
-        gid = str(ctx.guild.id)
-        msg = await ctx.send("🔄 Carregando painel...")
-
-        try:
-            res_cfg = self.supabase.table("servidor_configs")\
-                .select("canal_avisos_id, cargo_top1_id, status_texto, tipo_atividade")\
-                .eq("guild_id", gid)\
-                .execute()
-
-            res_pat = self.supabase.table("patentes")\
-                .select("role_id, role_name, level_required")\
-                .eq("guild_id", gid)\
-                .order("level_required")\
-                .execute()
-
-            embed = discord.Embed(title="⚙️ Painel Administrativo", color=0x5865f2)
-            embed.set_footer(text=f"Servidor: {ctx.guild.name}")
-
-            if res_cfg.data:
-                cfg = res_cfg.data[0]
-
-                canal_id = cfg.get("canal_avisos_id")
-                canal = ctx.guild.get_channel(int(canal_id)) if canal_id else None
-                embed.add_field(
-                    name="📢 Canal de Avisos",
-                    value=canal.mention if canal else "❌ Não configurado",
-                    inline=True
-                )
-
-                top1_id = cfg.get("cargo_top1_id")
-                top1 = ctx.guild.get_role(int(top1_id)) if top1_id else None
-                embed.add_field(
-                    name="👑 Cargo Top 1",
-                    value=top1.mention if top1 else "❌ Não configurado",
-                    inline=True
-                )
-
-                traducoes = {0: "Jogando", 2: "Ouvindo", 3: "Assistindo", 4: "Custom", 5: "Competindo"}
-                tipo_id = int(cfg.get("tipo_atividade") or 0)
-                status_texto = cfg.get("status_texto") or "Não configurado"
-                tipo_nome = traducoes.get(tipo_id, "Desconhecido")
-                embed.add_field(
-                    name="🎮 Status do Bot",
-                    value=f"{tipo_nome}: **{status_texto}**",
-                    inline=False
-                )
-            else:
-                embed.add_field(name="⚠️ Configurações", value="Nenhuma configuração encontrada.", inline=False)
-
-            if res_pat.data:
-                linhas = []
-                for p in res_pat.data:
-                    role = ctx.guild.get_role(int(p['role_id']))
-                    nome = role.mention if role else p.get('role_name', 'Cargo removido')
-                    linhas.append(f"Nível **{p['level_required']}** → {nome}")
-                embed.add_field(name="🎖️ Patentes", value="\n".join(linhas), inline=False)
-            else:
-                embed.add_field(name="🎖️ Patentes", value="❌ Nenhuma patente cadastrada.", inline=False)
-
-            await msg.edit(content=None, embed=embed)
-
-        except Exception as e:
-            await msg.edit(content=f"❌ Erro no nAdmin: {e}")
-            log_erro("nAdmin", e)
-
-
-
-    @commands.hybrid_command(name="nhistorico", description="Histórico de XP em tabela (30 dias)")
-    async def nhistorico(self, ctx, target: discord.Member = None):
-        """Exibe o historico de XP dos ultimos 30 dias em tabela"""
-        target = target or ctx.author
-        gid = str(ctx.guild.id)
-        uid = str(target.id)
-
-        try:
-            from datetime import timedelta
-            limite = (datetime.utcnow() - timedelta(days=30)).isoformat()
-
-            res = self.supabase.table("xp_historico")\
-                .select("xp_total, registrado_em")\
-                .eq("guild_id", gid)\
-                .eq("user_id", uid)\
-                .gte("registrado_em", limite)\
-                .order("registrado_em", desc=False)\
-                .execute()
-
-            if not res.data:
-                return await ctx.send(f"Nenhum historico encontrado para {target.display_name} nos ultimos 30 dias.")
-
-            linhas = []
-            for i, row in enumerate(res.data):
-                data = row['registrado_em'][:10]
-                xp = row['xp_total']
-                if i == 0:
-                    diff = ""
-                else:
-                    anterior = res.data[i - 1]['xp_total']
-                    delta = xp - anterior
-                    diff = f" `(+{delta})`" if delta >= 0 else f" `({delta})`"
-                linhas.append(f"`{data}` -- **{xp} XP**{diff}")
-
-            chunks = [linhas[i:i+10] for i in range(0, len(linhas), 10)]
-
-            separador = "\n"
-            embed = discord.Embed(
-                title=f"Historico de XP -- {target.display_name}",
-                description=separador.join(chunks[0]),
-                color=0x5865f2
-            )
-            embed.set_thumbnail(url=target.display_avatar.url)
-
-            for i, chunk in enumerate(chunks[1:], start=2):
-                embed.add_field(name="\u200b", value=separador.join(chunk), inline=False)
-
-            embed.set_footer(text=f"Ultimos 30 dias - {len(res.data)} registros")
-            await ctx.send(embed=embed)
-
-        except Exception as e:
-            log_erro("nHistorico", e)
-            await ctx.send("Erro ao buscar historico.")
-
-    @commands.hybrid_command(name="nhistorico2", description="Histórico de XP em gráfico (30 dias)")
-    async def nhistorico2(self, ctx, target: discord.Member = None):
-        """Exibe o historico de XP dos ultimos 30 dias em grafico"""
-        target = target or ctx.author
-        gid = str(ctx.guild.id)
-        uid = str(target.id)
-
-        try:
-            import io
-            import matplotlib
-            matplotlib.use('Agg')
-            import matplotlib.pyplot as plt
-            import matplotlib.dates as mdates
-            from datetime import timedelta
-
-            limite = (datetime.utcnow() - timedelta(days=30)).isoformat()
-
-            res = self.supabase.table("xp_historico")\
-                .select("xp_total, registrado_em")\
-                .eq("guild_id", gid)\
-                .eq("user_id", uid)\
-                .gte("registrado_em", limite)\
-                .order("registrado_em", desc=False)\
-                .execute()
-
-            if not res.data:
-                return await ctx.send(f"Nenhum historico encontrado para {target.display_name} nos ultimos 30 dias.")
-
-            datas = [datetime.fromisoformat(row['registrado_em'][:10]) for row in res.data]
-            xps   = [row['xp_total'] for row in res.data]
-
-            fig, ax = plt.subplots(figsize=(10, 4))
-            fig.patch.set_facecolor('#2b2d31')
-            ax.set_facecolor('#313338')
-
-            ax.plot(datas, xps, color='#5865f2', linewidth=2.5, marker='o', markersize=4)
-            ax.fill_between(datas, xps, alpha=0.15, color='#5865f2')
-
-            ax.xaxis.set_major_formatter(mdates.DateFormatter('%d/%m'))
-            ax.xaxis.set_major_locator(mdates.AutoDateLocator())
-            plt.xticks(rotation=45, color='#b5bac1', fontsize=8)
-            plt.yticks(color='#b5bac1', fontsize=8)
-
-            ax.set_title(f"Historico de XP -- {target.display_name}", color='#f2f3f5', fontsize=13, pad=12)
-            ax.set_ylabel("XP", color='#b5bac1', fontsize=9)
-            ax.tick_params(colors='#b5bac1')
-            for spine in ax.spines.values():
-                spine.set_edgecolor('#444')
-
-            ax.grid(True, color='#444', linestyle='--', alpha=0.4)
-            plt.tight_layout()
-
-            buf = io.BytesIO()
-            plt.savefig(buf, format='png', facecolor=fig.get_facecolor())
-            buf.seek(0)
-            plt.close()
-
-            file = discord.File(buf, filename="historico_xp.png")
-            embed = discord.Embed(title=f"Historico de XP -- {target.display_name}", color=0x5865f2)
-            embed.set_image(url="attachment://historico_xp.png")
-            embed.set_footer(text=f"Ultimos 30 dias - {len(res.data)} registros")
-            await ctx.send(embed=embed, file=file)
-
-        except ImportError:
-            await ctx.send("Instale o matplotlib: pip install matplotlib")
-        except Exception as e:
-            log_erro("nHistorico2", e)
-            await ctx.send("Erro ao gerar grafico.")
-
-
-    @commands.hybrid_command(name="nreset", description="Reseta níveis — todos ou de um usuário específico")
-    @commands.has_permissions(administrator=True)
-    async def nreset(self, ctx, target: discord.Member = None):
-        """Reset de XP. Uso: !nReset (todos) | !nReset @usuario"""
-        gid = str(ctx.guild.id)
-
-        if target is None:
-            confirm = await ctx.send("⚠️ Isso vai resetar **todos** os níveis do servidor. Digite `CONFIRMAR` em 15 segundos para prosseguir.")
-            
-            try:
-                msg = await self.bot.wait_for(
-                    "message",
-                    timeout=15,
-                    check=lambda m: m.author == ctx.author and m.channel == ctx.channel and m.content == "CONFIRMAR"
-                )
-                self.supabase.table("niveis").update({
-                    "xp": 0, "level": 0, "msg_count": 0, "voice_minutes": 0, "reacoes": 0
-                }).eq("guild_id", gid).execute()
-                await ctx.send("✅ **Reset completo!** Todos os níveis foram zerados.")
-                self.log_acao(gid, str(ctx.author.id), str(ctx.author), "reset_server")
-
-                log_info("nReset", f"Reset total executado por {ctx.author} no servidor {ctx.guild.name}")
-            except asyncio.TimeoutError:
-                await ctx.send("❌ Reset cancelado — tempo esgotado.")
-        else:
-            uid = str(target.id)
-            self.supabase.table("niveis").update({
-                "xp": 0, "level": 0, "msg_count": 0, "voice_minutes": 0, "reacoes": 0
-            }).eq("guild_id", gid).eq("user_id", uid).execute()
-            await ctx.send(f"✅ Nível de **{target.display_name}** resetado!")
-            self.log_acao(gid, str(ctx.author.id), str(ctx.author), "reset_user", target_id=uid)
-            log_info("nReset", f"Reset de {target} executado por {ctx.author}")
-
-    @commands.hybrid_command(name="nsetxp", description="Define o XP de um usuário manualmente")
-    @commands.has_permissions(administrator=True)
-    async def nsetxp(self, ctx, target: discord.Member = None, valor: int = None):
-        """Define o XP de um usuário. Uso: !nSetXP @usuario 500"""
-        if target is None or valor is None:
-            return await ctx.send("❌ Uso: `!nSetXP @usuario valor`")
-        if valor < 0:
-            return await ctx.send("❌ O valor de XP não pode ser negativo.")
-
-        gid = str(ctx.guild.id)
-        uid = str(target.id)
-
-        try:
-            res = self.supabase.table("niveis").select("level").eq("guild_id", gid).eq("user_id", uid).execute()
-            if not res.data:
-                return await ctx.send(f"❌ {target.display_name} não tem registros.")
-
-            self.supabase.table("niveis").update({"xp": valor}).eq("guild_id", gid).eq("user_id", uid).execute()
-            self.log_acao(gid, str(ctx.author.id), str(ctx.author), "set_xp", target_id=uid, detalhes={"novo_xp": valor})
-            await ctx.send(f"✅ XP de **{target.display_name}** definido para **{valor}**!")
-            log_info("nSetXP", f"XP de {target} definido para {valor} por {ctx.author}")
-        except Exception as e:
-            await ctx.send("❌ Erro ao definir o XP.")
-            log_erro("nSetXP", e)
-
-    @commands.hybrid_command(name="nsetlevel", description="Define o nível de um usuário manualmente")
-    @commands.has_permissions(administrator=True)
-    async def nsetlevel(self, ctx, target: discord.Member = None, valor: int = None):
-        """Define o nível de um usuário. Uso: !nSetLevel @usuario 5"""
-        if target is None or valor is None:
-            return await ctx.send("❌ Uso: `!nSetLevel @usuario valor`")
-        if valor < 0:
-            return await ctx.send("❌ O nível não pode ser negativo.")
-
-        gid = str(ctx.guild.id)
-        uid = str(target.id)
-
-        try:
-            res = self.supabase.table("niveis").select("*").eq("guild_id", gid).eq("user_id", uid).execute()
-            if not res.data:
-                return await ctx.send(f"❌ {target.display_name} não tem registros.")
-
-            self.supabase.table("niveis").update({"level": valor, "xp": 0}).eq("guild_id", gid).eq("user_id", uid).execute()
-            self.log_acao(gid, str(ctx.author.id), str(ctx.author), "set_level", target_id=uid, detalhes={"novo_level": valor})
-            await ctx.send(f"✅ Nível de **{target.display_name}** definido para **{valor}** (XP zerado)!")
-            log_info("nSetLevel", f"Nível de {target} definido para {valor} por {ctx.author}")
-        except Exception as e:
-            await ctx.send("❌ Erro ao definir o nível.")
-            log_erro("nSetLevel", e)
-
-
-    @commands.hybrid_command(name="ninfo", description="Exibe informações e versão do bot")
-    async def ninfo(self, ctx):
-        """Exibe informações sobre o bot"""
-        try:
-            from version import VERSION, BOT_NAME, DESCRIPTION, AUTHOR
-        except ImportError:
-            VERSION, BOT_NAME, DESCRIPTION, AUTHOR = "?", "NZK", "Bot de níveis e XP", "bruninho_219"
-
-        embed = discord.Embed(
-            title=f"🤖 {BOT_NAME}",
-            description=DESCRIPTION,
-            color=0x5865f2
-        )
-        embed.add_field(name="📦 Versão", value=f"`{VERSION}`", inline=True)
-        embed.add_field(name="⚙️ Prefixo", value="`!n`", inline=True)
-        embed.add_field(name="📡 Latência", value=f"`{round(self.bot.latency * 1000)}ms`", inline=True)
-        embed.add_field(name="🥷 Desenvolvido por", value=f"`{AUTHOR}`", inline=True)
-        embed.add_field(name="📖 Ajuda", value="Use `!nHelp` para ver todos os comandos.", inline=False)
-        embed.set_thumbnail(url=self.bot.user.display_avatar.url)
-        embed.set_footer(text=f"Solicitado por {ctx.author.display_name}", icon_url=ctx.author.display_avatar.url)
-        await ctx.send(embed=embed)
-
-    @commands.hybrid_command(name="nbonus", description="Configura ou mostra o bônus de XP (booster/admin)")
-    @commands.has_permissions(administrator=True)
-    async def nbonus(self, ctx, tipo: str = None, valor: int = None):
-        """Configura o bonus de XP. Uso: !nBonus booster 10 | !nBonus admin 10"""
-        gid = str(ctx.guild.id)
-
-        if tipo is None:
-            try:
-                res = self.supabase.table("servidor_configs")                    .select("bonus_booster, bonus_admin, bonus_stack")                    .eq("guild_id", gid).execute()
-
-                cfg = res.data[0] if res.data else {}
-                booster  = cfg.get("bonus_booster", 0) or 0
-                admin    = cfg.get("bonus_admin", 0) or 0
-                stack    = cfg.get("bonus_stack", True)
-                stack_str = "Somar os dois" if stack else "Usar o maior"
-
-                embed = discord.Embed(title="🎯 Configuração de Bônus de XP", color=0x5865f2)
-                embed.add_field(name="🚀 Booster", value=f"**{booster}%**", inline=True)
-                embed.add_field(name="🔧 Admin", value=f"**{admin}%**", inline=True)
-                embed.add_field(name="📊 Quando os dois", value=f"**{stack_str}**", inline=True)
-                embed.set_footer(text="Use !nBonus booster 10 | !nBonus admin 10 | !nBonusStack sim/nao")
-                await ctx.send(embed=embed)
-            except Exception as e:
-                log_erro("nBonus", e)
-            return
-
-        tipo = tipo.lower()
-        if tipo in ("booster", "admin"):
-            if valor is None or valor < 0 or valor > 100:
-                return await ctx.send("❌ Informe um valor entre 0 e 100. Ex: `!nBonus booster 10`")
-            campo = "bonus_booster" if tipo == "booster" else "bonus_admin"
-            self.supabase.table("servidor_configs").upsert({
-                "guild_id": gid, campo: valor
-            }).execute()
-            await ctx.send(f"✅ Bônus de **{tipo}** definido para **{valor}%**!")
-        else:
-            await ctx.send("❌ Tipo inválido. Use `booster` ou `admin`.")
-
-    @commands.hybrid_command(name="nbonusstack", description="Define se os bônus se somam ou usa o maior")
-    @commands.has_permissions(administrator=True)
-    async def nbonus_stack(self, ctx, valor: str = None):
-        """Define se os bônus se somam ou usa o maior. Uso: !nBonusStack sim | !nBonusStack nao"""
-        gid = str(ctx.guild.id)
-        if valor is None or valor.lower() not in ("sim", "nao"):
-            return await ctx.send("❌ Use `!nBonusStack sim` (somar) ou `!nBonusStack nao` (usar o maior).")
-
-        stack = valor.lower() == "sim"
-        self.supabase.table("servidor_configs").upsert({
-            "guild_id": gid, "bonus_stack": stack
-        }).execute()
-        msg = "somados" if stack else "usa o maior"
-        await ctx.send(f"✅ Quando adm + booster: bônus serão **{msg}**!")
-
-async def setup(bot):
-    await bot.add_cog(GeneralCommands(bot))
+        }
+    },
+
+    async refreshData() {
+        await this.fetchAndRender(this.selectedGuild);
+    },
+
+
+    async loadHistorico() {
+        const sel = document.getElementById('historicoSelect');
+        const userId = sel.value;
+        const userName = sel.options[sel.selectedIndex].text;
+        if (!userId) return;
+
+        document.getElementById('historicoGrafico').innerHTML = '<p style="color:var(--text-muted); text-align:center; padding:40px;">Carregando...</p>';
+        document.getElementById('historicoTabela').innerHTML = '';
+
+        const data = await NZKAPI.getHistorico(this.selectedGuild, userId);
+
+        if (!data.length) {
+            document.getElementById('historicoGrafico').innerHTML = '<p style="color:var(--text-muted); text-align:center; padding:40px;">Nenhum histórico encontrado nos últimos 30 dias.<br><small>O snapshot roda todo dia à meia-noite.</small></p>';
+            return;
+        }
+
+        // --- GRÁFICO ---
+        const labels = data.map(r => r.registrado_em.slice(0, 10));
+        const valores = data.map(r => r.xp_total);
+
+        const canvas = document.createElement('canvas');
+        canvas.id = 'historicoChart';
+        canvas.style.width = '100%';
+        canvas.style.maxHeight = '280px';
+        document.getElementById('historicoGrafico').innerHTML = '';
+        document.getElementById('historicoGrafico').appendChild(canvas);
+
+        if (window._historicoChartInstance) {
+            window._historicoChartInstance.destroy();
+        }
+
+        window._historicoChartInstance = new Chart(canvas, {
+            type: 'line',
+            data: {
+                labels,
+                datasets: [{
+                    label: 'XP',
+                    data: valores,
+                    borderColor: '#5865f2',
+                    backgroundColor: 'rgba(88, 101, 242, 0.15)',
+                    borderWidth: 2.5,
+                    pointRadius: 4,
+                    fill: true,
+                    tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    x: {
+                        ticks: { color: '#b5bac1', font: { size: 11 } },
+                        grid: { color: 'rgba(255,255,255,0.05)' }
+                    },
+                    y: {
+                        ticks: { color: '#b5bac1', font: { size: 11 } },
+                        grid: { color: 'rgba(255,255,255,0.05)' }
+                    }
+                }
+            }
+        });
+
+        // --- TABELA ---
+        const linhas = data.map((row, i) => {
+            const data_fmt = row.registrado_em.slice(0, 10);
+            const xp = row.xp_total;
+            const delta = i === 0 ? '' : (() => {
+                const d = xp - data[i - 1].xp_total;
+                return d >= 0
+                    ? `<span style="color:var(--success)">+${d}</span>`
+                    : `<span style="color:var(--danger)">${d}</span>`;
+            })();
+            return `<tr>
+                <td>${data_fmt}</td>
+                <td><b>${xp} XP</b></td>
+                <td>${delta}</td>
+            </tr>`;
+        }).reverse().join('');
+
+        document.getElementById('historicoTabela').innerHTML = linhas;
+    },
+
+    renderHistoricoSelect(usuarios) {
+        const sel = document.getElementById('historicoSelect');
+        sel.innerHTML = '<option value="">-- Selecionar membro --</option>' +
+            usuarios.map(u => `<option value="${this.escapeHtml(u.user_id)}">${this.escapeHtml(u.username || u.user_id)}</option>`).join('');
+    },
+
+    closeEditor() {
+        window.scrollTo({ top: 0, behavior: 'instant' });
+        this.pararRealtime();
+        this.pararRealtimeAuditLog();
+        history.back();
+    },
+
+    switchTab(e, id) {
+        window.scrollTo({ top: 0, behavior: 'instant' });
+        document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(id).style.display = 'block';
+        e.currentTarget.classList.add('active');
+    }
+};
+
+window.addEventListener('DOMContentLoaded', () => {
+    history.replaceState({ page: "home" }, "", "");
+    // app.init() agora é chamado pelo auth.js, só depois do login confirmado
+});
+
+window.addEventListener("popstate", (event) => {
+    if (!event.state || event.state.page === "home") {
+        document.getElementById('selector').style.display = 'block';
+        document.getElementById('editor').style.display = 'none';
+    }
+});
