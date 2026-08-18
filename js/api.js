@@ -284,6 +284,77 @@ var NZKAPI = {
         }
     },
 
+    async getConquistas(guildId) {
+        try {
+            const { data, error } = await sb.from('conquistas').select('*').eq('guild_id', guildId);
+            if (error) throw error;
+            return data || [];
+        } catch (err) {
+            console.error("Erro ao buscar conquistas:", err);
+            return [];
+        }
+    },
+
+    async salvarConquista(payload) {
+        try {
+            const { error } = await sb.from('conquistas').insert([payload]);
+            if (error) throw error;
+            return { success: true };
+        } catch (err) {
+            console.error("Erro ao salvar conquista:", err);
+            return { success: false };
+        }
+    },
+
+    async deletarConquista(id) {
+        try {
+            const { error } = await sb.from('conquistas').delete().eq('id', id);
+            if (error) throw error;
+            return { success: true };
+        } catch (err) {
+            console.error("Erro ao deletar conquista:", err);
+            return { success: false };
+        }
+    },
+
+    async getConquistasUsuarios(guildId) {
+        // Retorna quantas conquistas cada usuário já desbloqueou nesse
+        // servidor — usado pra mostrar um contador no ranking.
+        try {
+            const { data, error } = await sb.from('conquistas_usuario')
+                .select('user_id')
+                .eq('guild_id', guildId);
+            if (error) throw error;
+            const contagem = {};
+            (data || []).forEach(row => {
+                contagem[row.user_id] = (contagem[row.user_id] || 0) + 1;
+            });
+            return contagem;
+        } catch (err) {
+            console.error("Erro ao buscar conquistas dos usuários:", err);
+            return {};
+        }
+    },
+
+    async getConquistasContagem(guildId) {
+        // Retorna quantos usuários já desbloquearam cada conquista —
+        // usado na aba de gerenciamento (admin), pra saber o alcance de cada uma.
+        try {
+            const { data, error } = await sb.from('conquistas_usuario')
+                .select('conquista_id')
+                .eq('guild_id', guildId);
+            if (error) throw error;
+            const contagem = {};
+            (data || []).forEach(row => {
+                contagem[row.conquista_id] = (contagem[row.conquista_id] || 0) + 1;
+            });
+            return contagem;
+        } catch (err) {
+            console.error("Erro ao buscar contagem de conquistas:", err);
+            return {};
+        }
+    },
+
     async resetarServidor(guildId) {
         try {
             const { error } = await sb.from('niveis').update({

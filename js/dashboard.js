@@ -290,7 +290,8 @@ const app = {
             NZKAPI.getCargos(guildId),
             NZKAPI.getPatentes(guildId),
             NZKAPI.getLeaderboard(guildId),
-            NZKAPI.getCanais(guildId)
+            NZKAPI.getCanais(guildId),
+            NZKAPI.getConquistasUsuarios(guildId)
         ]);
 
         this.renderRoles(data[0]);
@@ -298,9 +299,11 @@ const app = {
         this.renderTable(data[1]);
         this._leaderboardPage = 1;
         this._lastLeaderboard = data[2];
+        this._conquistasUsuario = data[4];
         this.renderLeaderboard(data[2]);
         this.renderEstatisticas(data[2]);
         this.renderHistoricoSelect(data[2]);
+        this.renderConquistasTable(guildId);
 
         // Popula selects da aba Admin
         const opts = '<option value="">-- Selecionar membro --</option>' +
@@ -926,6 +929,7 @@ row.innerHTML = `
                     </td>
                     <td>${u.msg_count}</td>
                     <td>${this.formatarVoz(u.voice_minutes)}</td>
+                    <td>${(this._conquistasUsuario && this._conquistasUsuario[u.user_id]) || 0}</td>
                 </tr>
             `;
         }).join('');
@@ -1082,6 +1086,87 @@ row.innerHTML = `
                 this.showToast("🗑️ Patente removida.");
                 this.fetchAndRender(this.selectedGuild);
             }
+        }
+    },
+
+    async renderConquistasTable(guildId) {
+        const body = document.getElementById('conquistasBody');
+        if (!body) return;
+
+        const [conquistas, contagem] = await Promise.all([
+            NZKAPI.getConquistas(guildId),
+            NZKAPI.getConquistasContagem(guildId)
+        ]);
+
+        const rotulosCriterio = {
+            msg_count: "💬 mensagens",
+            voice_minutes: "🎙️ min. de voz",
+            reacoes: "❤️ reações",
+            level: "📈 nível"
+        };
+
+        if (!conquistas.length) {
+            body.innerHTML = '<tr><td colspan="5" style="text-align:center; color:var(--text-muted); padding:20px;">Nenhuma conquista configurada ainda.</td></tr>';
+            return;
+        }
+
+        body.innerHTML = conquistas.map(c => {
+            const rotulo = rotulosCriterio[c.criterio_tipo] || c.criterio_tipo;
+            const qtd = contagem[c.id] || 0;
+            return `
+                <tr>
+                    <td style="font-size:20px; text-align:center;">${this.escapeHtml(c.emoji || '🏆')}</td>
+                    <td>
+                        <b>${this.escapeHtml(c.nome)}</b>
+                        ${c.descricao ? `<div style="font-size:11px; color:var(--text-muted); margin-top:2px;">${this.escapeHtml(c.descricao)}</div>` : ''}
+                    </td>
+                    <td>≥ ${c.criterio_valor} ${this.escapeHtml(rotulo)}</td>
+                    <td>${qtd} ${qtd === 1 ? 'membro' : 'membros'}</td>
+                    <td><button class="btn-table-action danger" onclick="app.handleDeletarConquista('${this.escapeHtml(c.id)}')">Excluir</button></td>
+                </tr>
+            `;
+        }).join('');
+    },
+
+    async handleAdicionarConquista() {
+        const emoji = document.getElementById('conquistaEmoji').value.trim() || '🏆';
+        const nome = document.getElementById('conquistaNome').value.trim();
+        const descricao = document.getElementById('conquistaDescricao').value.trim();
+        const criterioTipo = document.getElementById('conquistaCriterioTipo').value;
+        const criterioValor = document.getElementById('conquistaCriterioValor').value;
+
+        if (!nome) return this.showToast("Informe o nome da conquista.", "error");
+        if (!criterioValor || parseInt(criterioValor) <= 0) return this.showToast("Informe um valor de critério válido.", "error");
+
+        const res = await NZKAPI.salvarConquista({
+            guild_id: this.selectedGuild,
+            emoji,
+            nome,
+            descricao: descricao || null,
+            criterio_tipo: criterioTipo,
+            criterio_valor: parseInt(criterioValor)
+        });
+
+        if (res.success) {
+            this.showToast("🎖️ Conquista adicionada!");
+            document.getElementById('conquistaEmoji').value = "";
+            document.getElementById('conquistaNome').value = "";
+            document.getElementById('conquistaDescricao').value = "";
+            document.getElementById('conquistaCriterioValor').value = "";
+            this.renderConquistasTable(this.selectedGuild);
+        } else {
+            this.showToast("❌ Erro ao adicionar conquista.", "error");
+        }
+    },
+
+    async handleDeletarConquista(id) {
+        if (!(await this.confirmar("Excluir esta conquista? Quem já desbloqueou perde o selo.", "Excluir"))) return;
+        const res = await NZKAPI.deletarConquista(id);
+        if (res.success) {
+            this.showToast("🗑️ Conquista removida.");
+            this.renderConquistasTable(this.selectedGuild);
+        } else {
+            this.showToast("❌ Erro ao excluir conquista.", "error");
         }
     },
 

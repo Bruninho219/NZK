@@ -120,6 +120,57 @@ class Leveling(commands.Cog):
         except Exception as e:
             log_erro("gerenciar_cargo_top1", e)
 
+    async def verificar_conquistas(self, user, guild, gid, uid, valores_atuais, channel=None):
+        """Checa se algum critério de conquista do servidor foi atingido com
+        os valores atuais do usuário (msg_count, voice_minutes, reacoes, level)
+        e concede as que ainda não tinha. v1: sem vínculo de cargo, só o selo
+        (registro em conquistas_usuario) + anúncio opcional no canal."""
+        try:
+            conquistas_res = self.supabase.table("conquistas")\
+                .select("id, nome, emoji, criterio_tipo, criterio_valor")\
+                .eq("guild_id", gid)\
+                .execute()
+
+            if not conquistas_res.data:
+                return
+
+            obtidas_res = self.supabase.table("conquistas_usuario")\
+                .select("conquista_id")\
+                .eq("guild_id", gid)\
+                .eq("user_id", uid)\
+                .execute()
+            ids_obtidas = {c["conquista_id"] for c in (obtidas_res.data or [])}
+
+            novas = [
+                c for c in conquistas_res.data
+                if c["id"] not in ids_obtidas
+                and c["criterio_tipo"] in valores_atuais
+                and valores_atuais[c["criterio_tipo"]] >= c["criterio_valor"]
+            ]
+
+            for c in novas:
+                try:
+                    self.supabase.table("conquistas_usuario").insert({
+                        "guild_id": gid,
+                        "user_id": uid,
+                        "conquista_id": c["id"]
+                    }).execute()
+
+                    log_info("verificar_conquistas", f"{user} desbloqueou '{c['nome']}' em {guild.name}")
+
+                    destino = channel or None
+                    if destino:
+                        emoji = c.get("emoji") or "🏆"
+                        await destino.send(f"{emoji} **{user.mention}** desbloqueou a conquista **{c['nome']}**!")
+                except Exception as e:
+                    # Se a conquista já tiver sido concedida por outra chamada
+                    # concorrente (ex: mensagem + reação quase juntas), o
+                    # UNIQUE(guild_id, user_id, conquista_id) rejeita o insert
+                    # duplicado — não é um erro real, só ignora.
+                    log_erro("verificar_conquistas_insert", e)
+        except Exception as e:
+            log_erro("verificar_conquistas", e)
+
 
     @commands.Cog.listener()
     async def on_guild_remove(self, guild):
@@ -353,6 +404,12 @@ class Leveling(commands.Cog):
                     "voice_minutes": minutos_voz,
                     "reacoes": 1 if tipo == "reacao" else 0
                 }).execute()
+                await self.verificar_conquistas(user, guild, gid, uid, {
+                    "msg_count": 1 if tipo == "mensagem" else 0,
+                    "voice_minutes": minutos_voz,
+                    "reacoes": 1 if tipo == "reacao" else 0,
+                    "level": 0
+                }, channel)
                 return
 
             d = res.data[0]
@@ -373,6 +430,8 @@ class Leveling(commands.Cog):
             }
 
             self.supabase.table("niveis").update(update_data).eq("guild_id", gid).eq("user_id", uid).execute()
+
+            await self.verificar_conquistas(user, guild, gid, uid, update_data, channel)
 
             if novo_level > level_inicial:
                 rid = await self.buscar_cargo_por_nivel(gid, novo_level)

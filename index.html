@@ -149,6 +149,7 @@
             <div class="tab-container">
                 <button class="tab-btn active" onclick="app.switchTab(event, 'tab-config')">⚙️ Configurações</button>
                 <button class="tab-btn" onclick="app.switchTab(event, 'tab-ranking')">🏆 Top 20 Membros</button>
+                <button class="tab-btn" onclick="app.switchTab(event, 'tab-conquistas')">🎖️ Conquistas</button>
                 <button class="tab-btn" onclick="app.switchTab(event, 'tab-historico')">📈 Histórico</button>
                 <button class="tab-btn" onclick="app.switchTab(event, 'tab-admin')">⚠️ Admin</button>
                 <button class="tab-btn" onclick="app.switchTab(event, 'tab-youtube')">▶️ YouTube</button>
@@ -407,12 +408,64 @@
                                 <th class="th-sort" onclick="app.sortLeaderboard('xp')">Progresso ↕</th>
                                 <th class="th-sort" onclick="app.sortLeaderboard('msg')">Mensagens ↕</th>
                                 <th class="th-sort" onclick="app.sortLeaderboard('voz')">Voz ↕</th>
+                                <th>🎖️</th>
                             </tr>
                         </thead>
                         <tbody id="leaderboardBody"></tbody>
                     </table>
                 </div>
                 <div id="leaderboardPagination" style="display:flex; justify-content:center; align-items:center; gap:16px; margin-top:16px;"></div>
+            </div>
+
+            <!-- ABA CONQUISTAS -->
+            <div id="tab-conquistas" class="tab-content" style="display: none;">
+                <div class="section-title">🎖️ Configuração de Conquistas</div>
+                <div class="form-row">
+                    <div class="field" style="flex-grow: 0;">
+                        <label>EMOJI</label>
+                        <input type="text" id="conquistaEmoji" placeholder="🏆" maxlength="4" style="width: 70px; text-align:center;">
+                    </div>
+                    <div class="field">
+                        <label>NOME</label>
+                        <input type="text" id="conquistaNome" placeholder="Ex: Tagarela">
+                    </div>
+                    <div class="field">
+                        <label>DESCRIÇÃO (opcional)</label>
+                        <input type="text" id="conquistaDescricao" placeholder="Ex: Enviou 1000 mensagens">
+                    </div>
+                    <div class="field" style="flex-grow: 0;">
+                        <label>CRITÉRIO</label>
+                        <select id="conquistaCriterioTipo">
+                            <option value="msg_count">💬 Mensagens</option>
+                            <option value="voice_minutes">🎙️ Minutos em voz</option>
+                            <option value="reacoes">❤️ Reações</option>
+                            <option value="level">📈 Nível</option>
+                        </select>
+                    </div>
+                    <div class="field" style="flex-grow: 0;">
+                        <label>VALOR</label>
+                        <input type="number" id="conquistaCriterioValor" min="1" placeholder="Ex: 1000" style="width: 100px;">
+                    </div>
+                    <button onclick="app.handleAdicionarConquista()">+ Adicionar</button>
+                </div>
+                <span style="font-size: 11px; color: var(--text-muted); margin-bottom: 15px; display:block;">
+                    💡 A conquista é concedida automaticamente quando o critério é atingido — sem precisar de comando manual. v1: só selo visual, sem cargo vinculado.
+                </span>
+
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th>Nome</th>
+                                <th>Critério</th>
+                                <th>Desbloqueada por</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="conquistasBody"></tbody>
+                    </table>
+                </div>
             </div>
 
             <!-- ABA ADMIN -->
