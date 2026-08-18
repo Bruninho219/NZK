@@ -38,6 +38,7 @@ class MoraxBot(commands.Bot):
 
     async def setup_hook(self):
         self.atualizar_status_db.start()
+        self.snapshot_xp_diario.start()
 
         modulos = ['cogs.leveling', 'cogs.commands', 'cogs.sync', 'cogs.youtube', 'cogs.twitch']
         for modulo in modulos:
@@ -126,8 +127,72 @@ class MoraxBot(commands.Bot):
         except Exception as e:
             log_erro("atualizar_status_db", e)
 
+    @tasks.loop(time=datetime.time(hour=0, minute=0))
+    async def snapshot_xp_diario(self):
+        """Salva, à meia-noite, o XP acumulado de todos os usuários (xp_historico,
+        um registro por usuário) e o XP total agregado por servidor
+        (servidor_xp_historico, um registro por guild) — restaurada aqui depois
+        de ter ficado pra trás numa reescrita anterior do bot."""
+        try:
+            hoje = datetime.date.today().isoformat()
+
+            existente = self.supabase.table("xp_historico")\
+                .select("id")\
+                .gte("registrado_em", hoje)\
+                .limit(1)\
+                .execute()
+
+            if existente.data:
+                log_aviso("snapshot_xp_diario", "Snapshot de hoje já existe, pulando.")
+                return
+
+            res = self.supabase.table("niveis").select("guild_id, user_id, xp, level").execute()
+
+            if not res.data:
+                log_aviso("snapshot_xp_diario", "Nenhum dado encontrado para snapshot.")
+                return
+
+            # OBS: essa fórmula de XP por nível ((nivel * 100) + 75) também existe
+            # em cogs/leveling.py e cogs/commands.py — se um dia mudar a curva de
+            # XP, precisa atualizar nos 3 lugares (fica registrado aqui de novo
+            # como lembrete, já discutido anteriormente como melhoria futura).
+            def calcular_xp_acumulado(level, xp):
+                total = 0
+                for lvl in range(level):
+                    total += (lvl * 100) + 75
+                return total + xp
+
+            payload_usuarios = []
+            xp_por_servidor = {}
+
+            for row in res.data:
+                xp_total = calcular_xp_acumulado(row["level"], row["xp"])
+                payload_usuarios.append({
+                    "guild_id": row["guild_id"],
+                    "user_id": row["user_id"],
+                    "xp_total": xp_total,
+                })
+                xp_por_servidor[row["guild_id"]] = xp_por_servidor.get(row["guild_id"], 0) + xp_total
+
+            self.supabase.table("xp_historico").insert(payload_usuarios).execute()
+            log_info("snapshot_xp_diario", f"Snapshot salvo para {len(payload_usuarios)} usuários.")
+
+            payload_servidores = [
+                {"guild_id": gid, "xp_total": total}
+                for gid, total in xp_por_servidor.items()
+            ]
+            self.supabase.table("servidor_xp_historico").insert(payload_servidores).execute()
+            log_info("snapshot_xp_diario", f"Snapshot agregado salvo para {len(payload_servidores)} servidores.")
+
+        except Exception as e:
+            log_erro("snapshot_xp_diario", e)
+
     @atualizar_status_db.before_loop
     async def before_status_loop(self):
+        await self.wait_until_ready()
+
+    @snapshot_xp_diario.before_loop
+    async def before_snapshot_loop(self):
         await self.wait_until_ready()
 
 bot = MoraxBot()
