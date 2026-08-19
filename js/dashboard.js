@@ -1287,7 +1287,15 @@ row.innerHTML = `
         window.scrollTo({ top: 0, behavior: 'instant' });
         this.pararRealtime();
         this.pararRealtimeAuditLog();
-        history.back();
+        document.getElementById('editor').style.display = 'none';
+        document.getElementById('selector').style.display = 'block';
+        // Sempre volta pro painel inicial, independente de quantos servidores
+        // foram abertos/trocados nessa sessão — history.back() dependia do
+        // histórico acumulado (cada troca de servidor empilha um estado novo
+        // via pushState em loadConfig), então "Voltar" podia cair no servidor
+        // anterior em vez do painel. replaceState reseta a URL pra raiz sem
+        // empilhar mais um passo de histórico.
+        history.replaceState({ page: "home" }, "", window.location.pathname);
     },
 
     switchTab(e, id) {
