@@ -7,11 +7,9 @@ class Sync(commands.Cog):
         self.bot = bot
         self.supabase = bot.supabase
 
-    @commands.hybrid_command(name="nsync", description="Sincroniza cargos, canais e admins com o banco")
-    @commands.has_permissions(administrator=True)
-    async def nSync(self, ctx):
-        """Sincroniza a lista mestre de cargos, canais e admins respeitando as tabelas com FK"""
-        guild = ctx.guild
+    async def _sincronizar(self, guild):
+        """Lógica principal de sincronização — reaproveitada tanto pelo
+        comando manual !nSync quanto pelo listener automático on_guild_join."""
         gid = str(guild.id)
 
         cargos_data = []
@@ -45,29 +43,51 @@ class Sync(commands.Cog):
                     "user_id": str(member.id)
                 })
 
+        # 🔥 GARANTE A TABELA RAIZ DE SERVIDORES PRIMEIRO (Evita quebra de Foreign Keys)
+        self.supabase.table("servidores").upsert({"guild_id": gid}).execute()
+
+        if cargos_data:
+            self.supabase.table("servidor_cargos").delete().eq("guild_id", gid).execute()
+            self.supabase.table("servidor_cargos").insert(cargos_data).execute()
+
+        if canais_data:
+            self.supabase.table("servidor_canais").delete().eq("guild_id", gid).execute()
+            self.supabase.table("servidor_canais").insert(canais_data).execute()
+
+        self.supabase.table("servidor_admins").delete().eq("guild_id", gid).execute()
+        if admins_data:
+            self.supabase.table("servidor_admins").insert(admins_data).execute()
+
+        return len(cargos_data), len(canais_data), len(admins_data)
+
+    @commands.hybrid_command(name="nsync", description="Sincroniza cargos, canais e admins com o banco")
+    @commands.has_permissions(administrator=True)
+    async def nSync(self, ctx):
+        """Sincroniza a lista mestre de cargos, canais e admins respeitando as tabelas com FK"""
         try:
-            # 🔥 GARANTE A TABELA RAIZ DE SERVIDORES PRIMEIRO (Evita quebra de Foreign Keys)
-            self.supabase.table("servidores").upsert({"guild_id": gid}).execute()
-
-            if cargos_data:
-                self.supabase.table("servidor_cargos").delete().eq("guild_id", gid).execute()
-                self.supabase.table("servidor_cargos").insert(cargos_data).execute()
-
-            if canais_data:
-                self.supabase.table("servidor_canais").delete().eq("guild_id", gid).execute()
-                self.supabase.table("servidor_canais").insert(canais_data).execute()
-
-            self.supabase.table("servidor_admins").delete().eq("guild_id", gid).execute()
-            if admins_data:
-                self.supabase.table("servidor_admins").insert(admins_data).execute()
-
+            n_cargos, n_canais, n_admins = await self._sincronizar(ctx.guild)
             await ctx.send(
-                f"✅ **nSync:** {len(cargos_data)} cargos, {len(canais_data)} canais e "
-                f"{len(admins_data)} admins atualizados com sucesso no banco!"
+                f"✅ **nSync:** {n_cargos} cargos, {n_canais} canais e "
+                f"{n_admins} admins atualizados com sucesso no banco!"
             )
         except Exception as e:
             await ctx.send(f"❌ Erro na integridade do nSync: {e}")
             log_erro("nSync", e)
+
+    @commands.Cog.listener()
+    async def on_guild_join(self, guild):
+        """Roda a sincronização automaticamente assim que o bot entra num
+        servidor novo — sem precisar de !nSync manual. Importante pro painel
+        web já funcionar de cara (lista de admins, cargos e canais prontos)."""
+        try:
+            n_cargos, n_canais, n_admins = await self._sincronizar(guild)
+            log_info(
+                "auto_sync_on_join",
+                f"Sincronização automática em {guild.name} ({guild.id}): "
+                f"{n_cargos} cargos, {n_canais} canais, {n_admins} admins"
+            )
+        except Exception as e:
+            log_erro("auto_sync_on_join", e)
 
     @commands.hybrid_command(name="nsync2", description="Atualiza os nomes de exibição das patentes")
     @commands.has_permissions(administrator=True)

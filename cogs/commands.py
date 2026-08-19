@@ -106,6 +106,59 @@ class GeneralCommands(commands.Cog):
             log_erro("nTop", e)
             await ctx.send("❌ Erro ao buscar o ranking.")
 
+    @commands.hybrid_command(name="nconquistas", description="Mostra as conquistas desbloqueadas por você (ou por alguém)")
+    async def nconquistas(self, ctx, target: discord.Member = None):
+        """Lista as conquistas que o usuário já desbloqueou nesse servidor"""
+        target = target or ctx.author
+        gid = str(ctx.guild.id)
+        uid = str(target.id)
+
+        try:
+            res = self.supabase.table("conquistas_usuario")\
+                .select("obtida_em, conquistas(nome, emoji, descricao, criterio_tipo, criterio_valor)")\
+                .eq("guild_id", gid)\
+                .eq("user_id", uid)\
+                .order("obtida_em", desc=False)\
+                .execute()
+
+            if not res.data:
+                return await ctx.send(f"{target.display_name} ainda não desbloqueou nenhuma conquista neste servidor.")
+
+            rotulos_criterio = {
+                "msg_count": "mensagens",
+                "voice_minutes": "min. de voz",
+                "reacoes": "reações",
+                "level": "nível"
+            }
+
+            linhas = []
+            for row in res.data:
+                c = row.get("conquistas") or {}
+                if not c:
+                    continue
+                emoji = c.get("emoji") or "🏆"
+                nome = c.get("nome", "Conquista")
+                rotulo = rotulos_criterio.get(c.get("criterio_tipo"), c.get("criterio_tipo", ""))
+                valor = c.get("criterio_valor", "")
+                data_fmt = row["obtida_em"][:10]
+                linha = f"{emoji} **{nome}** — {valor} {rotulo} · `{data_fmt}`"
+                if c.get("descricao"):
+                    linha += f"\n   ↳ {c['descricao']}"
+                linhas.append(linha)
+
+            embed = discord.Embed(
+                title=f"🎖️ Conquistas de {target.display_name}",
+                description="\n".join(linhas),
+                color=0x5865f2
+            )
+            embed.set_thumbnail(url=target.display_avatar.url)
+            embed.set_footer(text=f"{len(linhas)} conquista(s) desbloqueada(s)")
+            await ctx.send(embed=embed)
+
+        except Exception as e:
+            log_erro("nConquistas", e)
+            await ctx.send("❌ Erro ao buscar conquistas.")
+
     @commands.hybrid_command(name="nhelp", description="Lista todos os comandos do bot")
     async def nhelp(self, ctx):
         """Lista todos os comandos do bot"""
@@ -114,6 +167,7 @@ class GeneralCommands(commands.Cog):
         embed.add_field(name="👤 Usuário", value=(
             "`!nRank [@usuário]` — Mostra seu nível, XP e posição no ranking\n"
             "`!nTop` — Exibe o Top 5 do servidor\n"
+            "`!nConquistas [@usuário]` — Mostra as conquistas desbloqueadas\n"
             "`!nHistorico [@usuário]` — Histórico de XP em tabela (30 dias)\n"
             "`!nHistorico2 [@usuário]` — Histórico de XP em gráfico (30 dias)\n"
             "`!nPing` — Latência do bot\n"
