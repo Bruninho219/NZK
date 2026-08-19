@@ -107,7 +107,10 @@ const app = {
     async renderServerList(servidores) {
         const list = document.getElementById('serverList');
 
-        const guildData = {
+        // Fallback só pra servidores que ainda não passaram por !nSync depois
+        // dessa atualização — nome/ícone agora vêm de verdade do Discord
+        // (gravados pelo sync.py), sem precisar editar essa lista à mão.
+        const guildDataFallback = {
             "602623690206609418": { name: "Nazarick", icon: "img/nazarick.gif" },
             "1044253947751309372": { name: "Serv Baharuth", icon: "img/baharuth.png" },
             "1089351461588176908": { name: "Serv Teocracia Slane", icon: "img/slane2.png" },
@@ -120,40 +123,48 @@ const app = {
             "1089351461588176908"
         ];
 
+        const nomeDe = (srv) => srv.nome_servidor || guildDataFallback[srv.id]?.name || "Servidor Ativo";
+        const iconeDe = (srv) => srv.icon_url || guildDataFallback[srv.id]?.icon || "🏰";
+
         servidores.sort((a, b) => {
             const indexA = priorityOrder.indexOf(a.id);
             const indexB = priorityOrder.indexOf(b.id);
             if (indexA !== -1 && indexB !== -1) return indexA - indexB;
             if (indexA !== -1) return -1;
             if (indexB !== -1) return 1;
-            const nameA = (guildData[a.id]?.name || "").toLowerCase();
-            const nameB = (guildData[b.id]?.name || "").toLowerCase();
-            return nameA.localeCompare(nameB);
+            return nomeDe(a).toLowerCase().localeCompare(nomeDe(b).toLowerCase());
         });
 
         // Guarda pra alimentar o trocador rápido de servidor no cabeçalho do editor
         this._servidoresDisponiveis = servidores.map(srv => ({
             id: srv.id,
-            name: guildData[srv.id]?.name || "Servidor Ativo",
+            name: nomeDe(srv),
             removido: srv.removido_em
         }));
 
         list.innerHTML = servidores.map(srv => {
             const id = srv.id;
-            const server = guildData[id] || { name: "Servidor Ativo", icon: "🏰" };
+            const nome = nomeDe(srv);
+            const icone = iconeDe(srv);
             const removido = srv.removido_em;
             const diasRemovido = removido
                 ? Math.floor((Date.now() - new Date(removido)) / 86400000)
                 : null;
 
+            // Só o "id" (sempre um snowflake numérico) vai pro onclick — o
+            // nome nunca é interpolado ali. Nome de servidor agora vem do
+            // Discord (não é mais fixo no código), então colocar direto
+            // dentro de um onclick="...('${nome}')" seria arriscado: um nome
+            // com aspas quebraria o JavaScript. loadConfig() resolve o nome
+            // sozinho a partir de _servidoresDisponiveis.
             return `
-                <div class="server-card ${removido ? 'server-card-removido' : ''}" onclick="app.loadConfig('${id}', '${server.name}')">
+                <div class="server-card ${removido ? 'server-card-removido' : ''}" onclick="app.loadConfig('${id}')">
                     <div class="icon-wrapper">
-                        ${server.icon.includes('/')
-                            ? `<img src="${server.icon}?t=${Date.now()}" class="server-icon-img">`
-                            : `<span class="server-icon">${server.icon}</span>`}
+                        ${icone.includes('/')
+                            ? `<img src="${icone}${icone.includes('?') ? '&' : '?'}t=${Date.now()}" class="server-icon-img">`
+                            : `<span class="server-icon">${icone}</span>`}
                     </div>
-                    <h3>${server.name}</h3>
+                    <h3>${this.escapeHtml(nome)}</h3>
                     ${this.idCopiavel(id)}
                     ${removido ? `<div class="server-removido-badge">⚠️ Bot removido há ${diasRemovido}d</div>` : ''}
                 </div>
@@ -173,11 +184,14 @@ const app = {
         if (!el) return;
 
         const lista = this._servidoresDisponiveis || [];
-        el.innerHTML = lista.map(srv => `
-            <option value="${srv.id}" data-name="${srv.name}" ${srv.id === this.selectedGuild ? 'selected' : ''}>
-                ${srv.removido ? '⚠️ ' : ''}${srv.name}
+        el.innerHTML = lista.map(srv => {
+            const nome = this.escapeHtml(srv.name);
+            return `
+            <option value="${this.escapeHtml(srv.id)}" data-name="${nome}" ${srv.id === this.selectedGuild ? 'selected' : ''}>
+                ${srv.removido ? '⚠️ ' : ''}${nome}
             </option>
-        `).join('');
+        `;
+        }).join('');
     },
 
     handleSwitchServer() {
@@ -189,6 +203,10 @@ const app = {
     },
 
     async loadConfig(guildId, guildName) {
+        if (guildName === undefined) {
+            const encontrado = (this._servidoresDisponiveis || []).find(s => s.id === guildId);
+            guildName = encontrado ? encontrado.name : "Servidor Ativo";
+        }
         this.selectedGuild = guildId;
         this.selectedGuildName = guildName;
 

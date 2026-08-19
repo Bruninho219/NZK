@@ -39,6 +39,7 @@ class MoraxBot(commands.Bot):
     async def setup_hook(self):
         self.atualizar_status_db.start()
         self.snapshot_xp_diario.start()
+        self.limpar_servidores_removidos.start()
 
         modulos = ['cogs.leveling', 'cogs.commands', 'cogs.sync', 'cogs.youtube', 'cogs.twitch']
         for modulo in modulos:
@@ -187,12 +188,71 @@ class MoraxBot(commands.Bot):
         except Exception as e:
             log_erro("snapshot_xp_diario", e)
 
+    # Ordem importa: tabelas "filhas" primeiro, "servidores" por último —
+    # respeita as foreign keys sem depender de ON DELETE CASCADE no banco.
+    TABELAS_DEPENDENTES_DE_SERVIDOR = [
+        "audit_log",
+        "level_ups",
+        "xp_historico",
+        "servidor_xp_historico",
+        "conquistas_usuario",
+        "conquistas",
+        "patentes",
+        "servidor_configs",
+        "servidor_cargos",
+        "servidor_canais",
+        "youtube_monitores",
+        "twitch_monitores",
+        "servidor_admins",
+        "niveis",
+        "usuarios",
+    ]
+
+    @tasks.loop(time=datetime.time(hour=0, minute=10))
+    async def limpar_servidores_removidos(self):
+        """Roda 1x/dia (10min depois do snapshot, pra não disputar recursos
+        no mesmo minuto) e apaga de vez os dados de servidores de onde o bot
+        foi removido há mais de 7 dias — prazo de 'arrependimento' pra
+        readicionar o bot sem perder nada. Cumpre o que a Política de
+        Privacidade já promete ('dados podem ser limpos periodicamente')."""
+        try:
+            limite = (datetime.datetime.now(datetime.timezone.utc)
+                      - datetime.timedelta(days=7)).isoformat()
+
+            res = self.supabase.table("servidores")\
+                .select("guild_id")\
+                .not_.is_("removido_em", "null")\
+                .lt("removido_em", limite)\
+                .execute()
+
+            if not res.data:
+                return
+
+            for row in res.data:
+                gid = row["guild_id"]
+                try:
+                    for tabela in self.TABELAS_DEPENDENTES_DE_SERVIDOR:
+                        self.supabase.table(tabela).delete().eq("guild_id", gid).execute()
+
+                    self.supabase.table("servidores").delete().eq("guild_id", gid).execute()
+
+                    log_info("limpar_servidores_removidos", f"Dados do servidor {gid} apagados (removido há mais de 7 dias).")
+                except Exception as e:
+                    log_erro("limpar_servidores_removidos_guild", e)
+
+        except Exception as e:
+            log_erro("limpar_servidores_removidos", e)
+
     @atualizar_status_db.before_loop
     async def before_status_loop(self):
         await self.wait_until_ready()
 
     @snapshot_xp_diario.before_loop
     async def before_snapshot_loop(self):
+        await self.wait_until_ready()
+
+    @limpar_servidores_removidos.before_loop
+    async def before_limpar_loop(self):
         await self.wait_until_ready()
 
 bot = MoraxBot()

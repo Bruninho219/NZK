@@ -44,7 +44,11 @@ class Sync(commands.Cog):
                 })
 
         # 🔥 GARANTE A TABELA RAIZ DE SERVIDORES PRIMEIRO (Evita quebra de Foreign Keys)
-        self.supabase.table("servidores").upsert({"guild_id": gid}).execute()
+        self.supabase.table("servidores").upsert({
+            "guild_id": gid,
+            "nome_servidor": guild.name,
+            "icon_url": str(guild.icon.url) if guild.icon else None
+        }).execute()
 
         if cargos_data:
             self.supabase.table("servidor_cargos").delete().eq("guild_id", gid).execute()
