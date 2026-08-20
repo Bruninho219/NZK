@@ -40,8 +40,8 @@ const app = {
         const painel = document.getElementById('suporteModoPanel');
         if (!painel) return;
         try {
-            const souDono = await NZKAPI.souDono();
-            if (!souDono) return;
+            this._souDono = await NZKAPI.souDono();
+            if (!this._souDono) return;
             painel.style.display = 'block';
             this.renderSuporteAtivo();
         } catch (err) {
@@ -281,6 +281,9 @@ const app = {
         document.getElementById('selector').style.display = 'none';
         document.getElementById('editor').style.display = 'block';
         document.getElementById('serverTitle').innerText = "Painel";
+
+        const painelSuporte = document.getElementById('suporteModoPanel');
+        if (painelSuporte) painelSuporte.style.display = 'none';
 
         this.renderServerSwitcher();
 
@@ -1379,5 +1382,8 @@ window.addEventListener("popstate", (event) => {
     if (!event.state || event.state.page === "home") {
         document.getElementById('selector').style.display = 'block';
         document.getElementById('editor').style.display = 'none';
+
+        const painelSuporte = document.getElementById('suporteModoPanel');
+        if (painelSuporte && app._souDono) painelSuporte.style.display = 'block';
     }
 });
