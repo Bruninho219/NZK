@@ -30,6 +30,70 @@ const app = {
         } catch (err) {
             document.getElementById('serverList').innerHTML = "<p>Erro ao conectar à base de dados.</p>";
         }
+        this.iniciarModoSuporte();
+    },
+
+    async iniciarModoSuporte() {
+        // O painel só é mostrado se o RPC confirmar que é o dono do bot —
+        // isso é só UX (esconder/mostrar), a segurança de verdade está no
+        // RLS (is_guild_admin), então não tem risco em checar isso no client.
+        const painel = document.getElementById('suporteModoPanel');
+        if (!painel) return;
+        try {
+            const souDono = await NZKAPI.souDono();
+            if (!souDono) return;
+            painel.style.display = 'block';
+            this.renderSuporteAtivo();
+        } catch (err) {
+            console.error("Erro ao checar modo suporte:", err);
+        }
+    },
+
+    async renderSuporteAtivo() {
+        const el = document.getElementById('suporteListaAtiva');
+        if (!el) return;
+        const ativos = await NZKAPI.getSuporteAtivo();
+        if (!ativos.length) {
+            el.innerHTML = 'Nenhum acesso de suporte ativo no momento.';
+            return;
+        }
+        el.innerHTML = ativos.map(a => `
+            <div style="display:flex; justify-content:space-between; align-items:center; padding:6px 0; border-top:1px solid rgba(255,255,255,0.08);">
+                <span>${this.idCopiavel(a.guild_id)} <span style="opacity:0.7;">— ativo desde ${new Date(a.ativado_em).toLocaleString('pt-BR')}</span></span>
+                <button class="btn-table-action danger" onclick="app.handleDesativarSuporte('${this.escapeHtml(a.guild_id)}')">Desativar</button>
+            </div>
+        `).join('');
+    },
+
+    async handleAtivarSuporte() {
+        const input = document.getElementById('suporteGuildIdInput');
+        const guildId = input.value.trim();
+        if (!guildId || !/^\d+$/.test(guildId)) {
+            return this.showToast("Informe um ID de servidor válido (só números).", "error");
+        }
+
+        const res = await NZKAPI.ativarSuporte(guildId);
+        if (res.success) {
+            this.showToast("🔧 Suporte ativado!");
+            input.value = "";
+            this.renderSuporteAtivo();
+            // Recarrega a lista de servidores — o RLS já libera esse guild_id
+            // agora, então ele passa a aparecer automaticamente.
+            const servidores = await NZKAPI.getServidoresAtivos();
+            this.renderServerList(servidores);
+        } else {
+            this.showToast("❌ Erro ao ativar suporte — confirma se o ID do servidor existe.", "error");
+        }
+    },
+
+    async handleDesativarSuporte(guildId) {
+        const res = await NZKAPI.desativarSuporte(guildId);
+        if (res.success) {
+            this.showToast("Suporte desativado.");
+            this.renderSuporteAtivo();
+        } else {
+            this.showToast("❌ Erro ao desativar suporte.", "error");
+        }
     },
 
     confirmar(mensagem, tituloBotao = "Confirmar") {
@@ -1287,15 +1351,7 @@ row.innerHTML = `
         window.scrollTo({ top: 0, behavior: 'instant' });
         this.pararRealtime();
         this.pararRealtimeAuditLog();
-        document.getElementById('editor').style.display = 'none';
-        document.getElementById('selector').style.display = 'block';
-        // Sempre volta pro painel inicial, independente de quantos servidores
-        // foram abertos/trocados nessa sessão — history.back() dependia do
-        // histórico acumulado (cada troca de servidor empilha um estado novo
-        // via pushState em loadConfig), então "Voltar" podia cair no servidor
-        // anterior em vez do painel. replaceState reseta a URL pra raiz sem
-        // empilhar mais um passo de histórico.
-        history.replaceState({ page: "home" }, "", window.location.pathname);
+        history.back();
     },
 
     switchTab(e, id) {

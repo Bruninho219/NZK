@@ -55,6 +55,52 @@ var NZKAPI = {
         }
     },
 
+    async souDono() {
+        try {
+            const { data, error } = await sb.rpc('is_bot_owner');
+            if (error) throw error;
+            return !!data;
+        } catch (err) {
+            console.error("Erro ao verificar dono do bot:", err);
+            return false;
+        }
+    },
+
+    async getSuporteAtivo() {
+        try {
+            const { data, error } = await sb.from('suporte_acesso')
+                .select('guild_id, ativado_em')
+                .order('ativado_em', { ascending: false });
+            if (error) throw error;
+            return data || [];
+        } catch (err) {
+            console.error("Erro ao buscar acessos de suporte:", err);
+            return [];
+        }
+    },
+
+    async ativarSuporte(guildId) {
+        try {
+            const { error } = await sb.from('suporte_acesso').upsert({ guild_id: guildId });
+            if (error) throw error;
+            return { success: true };
+        } catch (err) {
+            console.error("Erro ao ativar suporte:", err);
+            return { success: false };
+        }
+    },
+
+    async desativarSuporte(guildId) {
+        try {
+            const { error } = await sb.from('suporte_acesso').delete().eq('guild_id', guildId);
+            if (error) throw error;
+            return { success: true };
+        } catch (err) {
+            console.error("Erro ao desativar suporte:", err);
+            return { success: false };
+        }
+    },
+
     async getCargos(guildId) {
         try {
             const { data, error } = await sb.from('servidor_cargos')

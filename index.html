@@ -4,30 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NZK | Admin Dashboard</title>
-    
-	<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔥</text></svg>">
-    
-	<!--
-	<link id="favicon" rel="icon" type="icon/png" href="icon_1.png">
-	<script>
-		// Carrega a animação do favicon
-		function animarFavicon() {
-			const frames = ['icon_1.png', 'icon_2.png', 'icon_3.png', 'icon_4.png'];
-			let index = 0;
-			const favicon = document.getElementById('favicon');
-
-			// Altera o href do favicon a cada 200 milissegundos
-			setInterval(() => {
-				index = (index + 1) % frames.length;
-				favicon.href = frames[index];
-			}, 200);
-		}
-		// Inicia a animação quando a página carrega
-		window.onload = animarFavicon;
-	</script>
-	-->
-	
-	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔥</text></svg>">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8816082473901477" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -145,6 +123,18 @@
 			<span id="userBadge" style="font-size: 13px; color: var(--text-muted); display: flex; align-items: center; gap: 8px;"></span>
 			<button id="btnLogout" class="secondary" style="padding: 8px 16px; font-size: 12px; margin: 0;" data-i18n="btn.logout">Sair</button>
 		</div>
+
+        <div id="suporteModoPanel" style="display:none; background:rgba(88,101,242,0.08); border:1px solid rgba(88,101,242,0.25); border-radius:12px; padding:18px; margin-bottom:20px;">
+            <div style="font-weight:800; color:var(--accent); margin-bottom:10px; font-size:13px;">🔧 Modo Suporte — acesso temporário a qualquer servidor</div>
+            <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end; margin-bottom:12px;">
+                <div style="flex-grow:1; min-width:220px;">
+                    <label style="font-size:11px; color:var(--text-muted); font-weight:800;">ID DO SERVIDOR</label>
+                    <input type="text" id="suporteGuildIdInput" placeholder="Ex: 602623690206609418" style="width:100%; box-sizing:border-box; margin-top:4px;">
+                </div>
+                <button class="success" style="width:auto; margin:0;" onclick="app.handleAtivarSuporte()">Ativar suporte</button>
+            </div>
+            <div id="suporteListaAtiva" style="font-size:12px; color:var(--text-muted);"></div>
+        </div>
 
         <div id="selector">
             <h1>✨ Meus Servidores Ativos</h1>
