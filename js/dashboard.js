@@ -323,6 +323,22 @@ const app = {
         this.iniciarRealtimeAuditLog(guildId);
     },
 
+    setRealtimeStatus(conectado) {
+        const dot = document.getElementById('realtimeDot');
+        const badge = document.getElementById('realtimeBadge');
+        if (!dot || !badge) return;
+
+        if (conectado) {
+            dot.style.background = 'var(--success)';
+            dot.style.boxShadow = '0 0 6px var(--success)';
+            badge.style.background = 'rgba(35,165,89,0.12)';
+        } else {
+            dot.style.background = 'var(--text-muted)';
+            dot.style.boxShadow = '0 0 4px var(--text-muted)';
+            badge.style.background = 'rgba(255,255,255,0.08)';
+        }
+    },
+
     iniciarRealtime(guildId) {
         // Remove qualquer inscrição anterior antes de criar uma nova
         // (evita ficar acumulando conexões ao trocar de servidor)
@@ -330,6 +346,7 @@ const app = {
             sb.removeChannel(this._realtimeChannel);
             this._realtimeChannel = null;
         }
+        this.setRealtimeStatus(false);
 
         const channel = sb.channel(`niveis-${guildId}`)
             .on('postgres_changes', {
@@ -342,12 +359,9 @@ const app = {
                 // O canal antigo pode disparar um status "CLOSED" tardio
                 // (assíncrono) já depois de termos criado o canal novo.
                 // Ignoramos callbacks de canais que não são mais o atual
-                // pra evitar o badge sumir e reaparecer ao trocar de servidor.
+                // pra evitar o badge piscar ao trocar de servidor.
                 if (this._realtimeChannel !== channel) return;
-
-                const badge = document.getElementById('realtimeBadge');
-                if (!badge) return;
-                badge.style.display = (status === 'SUBSCRIBED') ? 'inline-flex' : 'none';
+                this.setRealtimeStatus(status === 'SUBSCRIBED');
             });
 
         this._realtimeChannel = channel;
@@ -358,8 +372,7 @@ const app = {
             sb.removeChannel(this._realtimeChannel);
             this._realtimeChannel = null;
         }
-        const badge = document.getElementById('realtimeBadge');
-        if (badge) badge.style.display = 'none';
+        this.setRealtimeStatus(false);
     },
 
     iniciarRealtimeAuditLog(guildId) {
