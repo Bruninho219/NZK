@@ -248,14 +248,32 @@ const app = {
         if (!el) return;
 
         const lista = this._servidoresDisponiveis || [];
-        el.innerHTML = lista.map(srv => {
-            const nome = this.escapeHtml(srv.name);
-            return `
-            <option value="${this.escapeHtml(srv.id)}" data-name="${nome}" ${srv.id === this.selectedGuild ? 'selected' : ''}>
-                ${srv.removido ? '⚠️ ' : ''}${nome}
-            </option>
-        `;
-        }).join('');
+
+        // Assinatura simples da lista atual, pra saber se precisa reconstruir
+        // as <option> de verdade ou só marcar qual está selecionada.
+        const assinatura = lista.map(s => s.id).join(',');
+
+        if (el.dataset.assinatura !== assinatura) {
+            // Reconstrói as opções só quando a lista de servidores realmente
+            // muda (ex: primeiro carregamento, ou suporte ativado/desativado).
+            el.innerHTML = lista.map(srv => {
+                const nome = this.escapeHtml(srv.name);
+                return `
+                <option value="${this.escapeHtml(srv.id)}" data-name="${nome}">
+                    ${srv.removido ? '⚠️ ' : ''}${nome}
+                </option>
+            `;
+            }).join('');
+            el.dataset.assinatura = assinatura;
+        }
+
+        // Só troca qual opção está marcada — não recria nenhum <option>.
+        // Recriar todo o <select> de dentro do próprio evento "change" dele
+        // (troca via o switcher) causava um glitch visual determinístico no
+        // Chrome/Windows: o rótulo antigo "fantasma" ficava sobreposto ao
+        // novo por um frame, ainda com o navegador processando o fechamento
+        // do dropdown nativo daquele mesmo evento.
+        el.value = this.selectedGuild;
     },
 
     handleSwitchServer() {
