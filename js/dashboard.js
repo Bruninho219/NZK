@@ -331,7 +331,7 @@ const app = {
             this._realtimeChannel = null;
         }
 
-        this._realtimeChannel = sb.channel(`niveis-${guildId}`)
+        const channel = sb.channel(`niveis-${guildId}`)
             .on('postgres_changes', {
                 event: '*',
                 schema: 'public',
@@ -339,10 +339,18 @@ const app = {
                 filter: `guild_id=eq.${guildId}`
             }, () => this.atualizarLeaderboardEmTempoReal())
             .subscribe((status) => {
+                // O canal antigo pode disparar um status "CLOSED" tardio
+                // (assíncrono) já depois de termos criado o canal novo.
+                // Ignoramos callbacks de canais que não são mais o atual
+                // pra evitar o badge sumir e reaparecer ao trocar de servidor.
+                if (this._realtimeChannel !== channel) return;
+
                 const badge = document.getElementById('realtimeBadge');
                 if (!badge) return;
                 badge.style.display = (status === 'SUBSCRIBED') ? 'inline-flex' : 'none';
             });
+
+        this._realtimeChannel = channel;
     },
 
     pararRealtime() {
