@@ -280,7 +280,12 @@ const app = {
 
         document.getElementById('selector').style.display = 'none';
         document.getElementById('editor').style.display = 'block';
-        document.getElementById('serverTitle').innerText = "Painel";
+        // serverTitle já é "Painel" estático no HTML e nada mais muda esse
+        // texto — reatribuir innerText aqui recriava o nó de texto do zero a
+        // cada troca de servidor sem necessidade, e isso disparava o
+        // MutationObserver do i18n.js, que retraduz a página inteira (todas
+        // as tabelas incluídas) a cada mudança de nó. Esse reflow pesado e
+        // desnecessário era o que causava o tremor ao trocar de servidor.
 
         const painelSuporte = document.getElementById('suporteModoPanel');
         if (painelSuporte) painelSuporte.style.display = 'none';
