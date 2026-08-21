@@ -1,6 +1,7 @@
 import discord
 from discord.ext import commands
 from logger import log_info, log_erro
+from checks import is_admin_or_owner
 
 class Sync(commands.Cog):
     def __init__(self, bot):
@@ -65,7 +66,7 @@ class Sync(commands.Cog):
         return len(cargos_data), len(canais_data), len(admins_data)
 
     @commands.hybrid_command(name="nsync", description="Sincroniza cargos, canais e admins com o banco")
-    @commands.has_permissions(administrator=True)
+    @is_admin_or_owner()
     async def nSync(self, ctx):
         """Sincroniza a lista mestre de cargos, canais e admins respeitando as tabelas com FK"""
         try:
@@ -94,7 +95,7 @@ class Sync(commands.Cog):
             log_erro("auto_sync_on_join", e)
 
     @commands.hybrid_command(name="nsync2", description="Atualiza os nomes de exibição das patentes")
-    @commands.has_permissions(administrator=True)
+    @is_admin_or_owner()
     async def nSync2(self, ctx):
         """Atualiza os nomes de exibição na tabela patentes puxando da tabela mestre servidor_cargos"""
         gid = str(ctx.guild.id)

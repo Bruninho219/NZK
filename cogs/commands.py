@@ -3,6 +3,7 @@ from logger import log_info, log_erro, log_aviso
 from discord.ext import commands
 from datetime import datetime, timezone
 import asyncio
+from checks import is_admin_or_owner
 
 class GeneralCommands(commands.Cog):
     def __init__(self, bot):
@@ -24,7 +25,7 @@ class GeneralCommands(commands.Cog):
 
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error):
-        if isinstance(error, commands.MissingPermissions):
+        if isinstance(error, (commands.MissingPermissions, commands.CheckFailure)):
             await ctx.send("❌ Você não tem permissão para usar este comando.")
 
     @commands.hybrid_command(name="nrank", description="Mostra seu nível, XP e posição no ranking")
@@ -194,7 +195,7 @@ class GeneralCommands(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.hybrid_command(name="nstatus", description="Aplica o status configurado no painel web")
-    @commands.has_permissions(administrator=True)
+    @is_admin_or_owner()
     async def update_status(self, ctx):
         msg = await ctx.send("🔄 Atualizando status...")
 
@@ -240,7 +241,7 @@ class GeneralCommands(commands.Cog):
             log_erro("nStatus", e)
 
     @commands.hybrid_command(name="setchannel", description="Define este canal como canal de avisos")
-    @commands.has_permissions(administrator=True)
+    @is_admin_or_owner()
     async def setchannel(self, ctx):
         guild_id = str(ctx.guild.id)
         channel_id = str(ctx.channel.id)
@@ -273,7 +274,7 @@ class GeneralCommands(commands.Cog):
         await msg.edit(content=f"🏓 **Pong!**\nResposta em: `{duracao}ms` | Gateway: `{round(self.bot.latency * 1000)}ms`")
 
     @commands.hybrid_command(name="nfix", description="Corrige os cargos de todos os membros conforme o nível")
-    @commands.has_permissions(administrator=True)
+    @is_admin_or_owner()
     async def nfix(self, ctx):
         """Corrige os cargos de todos os membros baseado no nível atual"""
         guild = ctx.guild
@@ -323,7 +324,7 @@ class GeneralCommands(commands.Cog):
             log_erro("nFix", e)
 
     @commands.hybrid_command(name="nadmin", description="Mostra o painel administrativo do servidor")
-    @commands.has_permissions(administrator=True)
+    @is_admin_or_owner()
     async def nadmin(self, ctx):
         """Painel administrativo do servidor"""
         gid = str(ctx.guild.id)
@@ -518,7 +519,7 @@ class GeneralCommands(commands.Cog):
 
 
     @commands.hybrid_command(name="nreset", description="Reseta níveis — todos ou de um usuário específico")
-    @commands.has_permissions(administrator=True)
+    @is_admin_or_owner()
     async def nreset(self, ctx, target: discord.Member = None):
         """Reset de XP. Uso: !nReset (todos) | !nReset @usuario"""
         gid = str(ctx.guild.id)
@@ -551,7 +552,7 @@ class GeneralCommands(commands.Cog):
             log_info("nReset", f"Reset de {target} executado por {ctx.author}")
 
     @commands.hybrid_command(name="nsetxp", description="Define o XP de um usuário manualmente")
-    @commands.has_permissions(administrator=True)
+    @is_admin_or_owner()
     async def nsetxp(self, ctx, target: discord.Member = None, valor: int = None):
         """Define o XP de um usuário. Uso: !nSetXP @usuario 500"""
         if target is None or valor is None:
@@ -576,7 +577,7 @@ class GeneralCommands(commands.Cog):
             log_erro("nSetXP", e)
 
     @commands.hybrid_command(name="nsetlevel", description="Define o nível de um usuário manualmente")
-    @commands.has_permissions(administrator=True)
+    @is_admin_or_owner()
     async def nsetlevel(self, ctx, target: discord.Member = None, valor: int = None):
         """Define o nível de um usuário. Uso: !nSetLevel @usuario 5"""
         if target is None or valor is None:
@@ -624,7 +625,7 @@ class GeneralCommands(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.hybrid_command(name="nbonus", description="Configura ou mostra o bônus de XP (booster/admin)")
-    @commands.has_permissions(administrator=True)
+    @is_admin_or_owner()
     async def nbonus(self, ctx, tipo: str = None, valor: int = None):
         """Configura o bonus de XP. Uso: !nBonus booster 10 | !nBonus admin 10"""
         gid = str(ctx.guild.id)
@@ -662,7 +663,7 @@ class GeneralCommands(commands.Cog):
             await ctx.send("❌ Tipo inválido. Use `booster` ou `admin`.")
 
     @commands.hybrid_command(name="nbonusstack", description="Define se os bônus se somam ou usa o maior")
-    @commands.has_permissions(administrator=True)
+    @is_admin_or_owner()
     async def nbonus_stack(self, ctx, valor: str = None):
         """Define se os bônus se somam ou usa o maior. Uso: !nBonusStack sim | !nBonusStack nao"""
         gid = str(ctx.guild.id)
