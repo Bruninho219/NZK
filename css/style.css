@@ -19,6 +19,18 @@
 }
 
 /* --- BASE --- */
+/* Reserva o espaço da scrollbar vertical sempre, mesmo quando o conteúdo
+   ainda não precisa dela. Sem isso, toda vez que a altura da página muda
+   rápido (ex: troca de servidor no select, que mostra loading e depois
+   carrega os dados), a barra de rolagem aparece/some e a página inteira
+   "pula" de largura — o efeito de tremor que o usuário reportou.
+   scrollbar-gutter cobre os navegadores modernos; overflow-y: scroll é o
+   fallback pra quem ainda não suporta. */
+html {
+    overflow-y: scroll;
+    scrollbar-gutter: stable;
+}
+
 body { 
     font-family: 'Inter', sans-serif; 
     background: var(--bg); 
