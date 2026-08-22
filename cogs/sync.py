@@ -69,6 +69,7 @@ class Sync(commands.Cog):
     @is_admin_or_owner()
     async def nSync(self, ctx):
         """Sincroniza a lista mestre de cargos, canais e admins respeitando as tabelas com FK"""
+        await ctx.defer()  # várias chamadas sequenciais ao banco — evita timeout de 3s do slash
         try:
             n_cargos, n_canais, n_admins = await self._sincronizar(ctx.guild)
             await ctx.send(
@@ -98,6 +99,12 @@ class Sync(commands.Cog):
     @is_admin_or_owner()
     async def nSync2(self, ctx):
         """Atualiza os nomes de exibição na tabela patentes puxando da tabela mestre servidor_cargos"""
+        # defer() confirma a interação na hora (o Discord só dá 3s pra isso em
+        # slash commands) e libera até 15min pra terminar de fato — sem isso,
+        # servidores com muitos cargos (loop abaixo é sequencial) estouravam
+        # o prazo e o Discord mostrava "O aplicativo não respondeu".
+        await ctx.defer()
+
         gid = str(ctx.guild.id)
         try:
             res_cargos = self.supabase.table("servidor_cargos").select("role_id, role_name").eq("guild_id", gid).execute()
