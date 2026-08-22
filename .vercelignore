@@ -15,9 +15,6 @@ instalacao.txt
 .env
 logs/
 
-# Dado de usuário que não deveria estar público (resolver depois, mas já não sobe daqui em diante)
-bkp.txt
-
 # Arquivos de projeto locais
 .vscode/
 .git/
