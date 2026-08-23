@@ -213,16 +213,32 @@ class Leveling(commands.Cog):
                 return
 
             c = cfg.data[0]
+        except Exception as e:
+            log_erro("on_member_join_config", e)
+            return
 
-            # Cargos automáticos ao entrar
-            cargos_ids = c.get("cargos_entrada") or []
-            if cargos_ids:
+        # Cargos automáticos ao entrar — em try separado: se o cargo do bot
+        # estiver ABAIXO de algum cargo configurado na hierarquia do
+        # servidor, o Discord recusa com 403 Forbidden. Isso não pode
+        # impedir a mensagem de boas-vindas de ser enviada logo abaixo.
+        cargos_ids = c.get("cargos_entrada") or []
+        if cargos_ids:
+            try:
                 cargos = [guild.get_role(int(rid)) for rid in cargos_ids]
                 cargos = [r for r in cargos if r]
                 if cargos:
                     await member.add_roles(*cargos, reason="Cargo automático de entrada")
+            except discord.Forbidden:
+                log_aviso(
+                    "on_member_join_cargos",
+                    f"Sem permissão pra atribuir cargo de entrada em {guild.name} ({gid}) — "
+                    f"o cargo do bot precisa estar ACIMA dos cargos de entrada na hierarquia."
+                )
+            except Exception as e:
+                log_erro("on_member_join_cargos", e)
 
-            # Mensagem de boas-vindas
+        # Mensagem de boas-vindas — independente do resultado da parte acima.
+        try:
             canal_id = c.get("canal_boas_vindas_id")
             if canal_id:
                 canal = guild.get_channel(int(canal_id))
@@ -240,9 +256,8 @@ class Leveling(commands.Cog):
                     embed.set_author(name=member.display_name, icon_url=member.display_avatar.url)
                     embed.set_footer(text=f"Membro #{guild.member_count}")
                     await canal.send(embed=embed)
-
         except Exception as e:
-            log_erro("on_member_join", e)
+            log_erro("on_member_join_boasvindas", e)
 
     @commands.Cog.listener()
     async def on_member_update(self, before, after):
