@@ -323,22 +323,6 @@ const app = {
         this.iniciarRealtimeAuditLog(guildId);
     },
 
-    setRealtimeStatus(conectado) {
-        const dot = document.getElementById('realtimeDot');
-        const badge = document.getElementById('realtimeBadge');
-        if (!dot || !badge) return;
-
-        if (conectado) {
-            dot.style.background = 'var(--success)';
-            dot.style.boxShadow = '0 0 6px var(--success)';
-            badge.style.background = 'rgba(35,165,89,0.12)';
-        } else {
-            dot.style.background = 'var(--text-muted)';
-            dot.style.boxShadow = '0 0 4px var(--text-muted)';
-            badge.style.background = 'rgba(255,255,255,0.08)';
-        }
-    },
-
     iniciarRealtime(guildId) {
         // Remove qualquer inscrição anterior antes de criar uma nova
         // (evita ficar acumulando conexões ao trocar de servidor)
@@ -346,9 +330,8 @@ const app = {
             sb.removeChannel(this._realtimeChannel);
             this._realtimeChannel = null;
         }
-        this.setRealtimeStatus(false);
 
-        const channel = sb.channel(`niveis-${guildId}`)
+        this._realtimeChannel = sb.channel(`niveis-${guildId}`)
             .on('postgres_changes', {
                 event: '*',
                 schema: 'public',
@@ -356,15 +339,10 @@ const app = {
                 filter: `guild_id=eq.${guildId}`
             }, () => this.atualizarLeaderboardEmTempoReal())
             .subscribe((status) => {
-                // O canal antigo pode disparar um status "CLOSED" tardio
-                // (assíncrono) já depois de termos criado o canal novo.
-                // Ignoramos callbacks de canais que não são mais o atual
-                // pra evitar o badge piscar ao trocar de servidor.
-                if (this._realtimeChannel !== channel) return;
-                this.setRealtimeStatus(status === 'SUBSCRIBED');
+                const badge = document.getElementById('realtimeBadge');
+                if (!badge) return;
+                badge.style.display = (status === 'SUBSCRIBED') ? 'inline-flex' : 'none';
             });
-
-        this._realtimeChannel = channel;
     },
 
     pararRealtime() {
@@ -372,7 +350,8 @@ const app = {
             sb.removeChannel(this._realtimeChannel);
             this._realtimeChannel = null;
         }
-        this.setRealtimeStatus(false);
+        const badge = document.getElementById('realtimeBadge');
+        if (badge) badge.style.display = 'none';
     },
 
     iniciarRealtimeAuditLog(guildId) {
@@ -512,6 +491,8 @@ const app = {
             document.getElementById('xpMensagem').value = config.xp_mensagem ?? 20;
             document.getElementById('xpReacao').value = config.xp_reacao ?? 5;
             document.getElementById('xpVozMinuto').value = config.xp_voz_minuto ?? 15;
+            document.getElementById('cooldownMensagem').value = config.cooldown_mensagem_segundos ?? 15;
+            document.getElementById('cooldownReacao').value = config.cooldown_reacao_segundos ?? 5;
         } else {
             document.getElementById('channelSelect').value = "";
             document.getElementById('top1Select').value = "";
@@ -533,6 +514,8 @@ const app = {
             document.getElementById('xpMensagem').value = 20;
             document.getElementById('xpReacao').value = 5;
             document.getElementById('xpVozMinuto').value = 15;
+            document.getElementById('cooldownMensagem').value = 15;
+            document.getElementById('cooldownReacao').value = 5;
         }
     },
 
@@ -840,6 +823,14 @@ const app = {
         const xpVozMinuto  = document.getElementById('xpVozMinuto').value;
         const res = await NZKAPI.salvarXpConfig(this.selectedGuild, xpMensagem, xpReacao, xpVozMinuto);
         if (res.success) this.showToast("⭐ Configuração de XP salva!");
+        else this.showToast("❌ Erro ao salvar.", "error");
+    },
+
+    async handleSalvarCooldowns() {
+        const cooldownMensagem = document.getElementById('cooldownMensagem').value;
+        const cooldownReacao   = document.getElementById('cooldownReacao').value;
+        const res = await NZKAPI.salvarCooldowns(this.selectedGuild, cooldownMensagem, cooldownReacao);
+        if (res.success) this.showToast("⏱️ Cooldown salvo!");
         else this.showToast("❌ Erro ao salvar.", "error");
     },
 
