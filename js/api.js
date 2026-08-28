@@ -256,6 +256,21 @@ var NZKAPI = {
         }
     },
 
+    async salvarCooldowns(guildId, cooldownMensagem, cooldownReacao) {
+        try {
+            const { error } = await sb.from('servidor_configs').upsert({
+                guild_id: guildId,
+                cooldown_mensagem_segundos: parseInt(cooldownMensagem) || 15,
+                cooldown_reacao_segundos: parseInt(cooldownReacao) || 5
+            }, { onConflict: 'guild_id' });
+            if (error) throw error;
+            return { success: true };
+        } catch (err) {
+            console.error("Erro ao salvar cooldowns:", err);
+            return { success: false };
+        }
+    },
+
     async salvarBoostCanal(guildId, canalBoostId, bonusBoostXp, afetaBonusAdmin) {
         try {
             const { error } = await sb.from('servidor_configs').upsert({
