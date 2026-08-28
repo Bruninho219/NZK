@@ -318,25 +318,21 @@ const app = {
         this.showLoading('patenteBody');
         this.showLoading('leaderboardBody');
 
-        await this.fetchAndRender(guildId);
+        // fetchAndRender popula vários campos/tabelas — um erro em qualquer
+        // parte dele (ex: elemento HTML que não existe mais, dado inesperado
+        // do banco) não pode impedir o realtime de iniciar logo abaixo. Isso
+        // já aconteceu antes: um campo faltando quebrou fetchAndRender e,
+        // como consequência silenciosa, o indicador de tempo real parava de
+        // funcionar também, sem nenhum erro visível pro usuário.
+        try {
+            await this.fetchAndRender(guildId);
+        } catch (err) {
+            console.error("Erro ao carregar dados do servidor:", err);
+            this.showToast("❌ Alguns dados podem não ter carregado — veja o console.", "error");
+        }
+
         this.iniciarRealtime(guildId);
         this.iniciarRealtimeAuditLog(guildId);
-    },
-
-    setRealtimeStatus(conectado) {
-        const dot = document.getElementById('realtimeDot');
-        const badge = document.getElementById('realtimeBadge');
-        if (!dot || !badge) return;
-
-        if (conectado) {
-            dot.style.background = 'var(--success)';
-            dot.style.boxShadow = '0 0 6px var(--success)';
-            badge.style.background = 'rgba(35,165,89,0.12)';
-        } else {
-            dot.style.background = 'var(--text-muted)';
-            dot.style.boxShadow = '0 0 4px var(--text-muted)';
-            badge.style.background = 'rgba(255,255,255,0.08)';
-        }
     },
 
     iniciarRealtime(guildId) {
@@ -346,6 +342,7 @@ const app = {
             sb.removeChannel(this._realtimeChannel);
             this._realtimeChannel = null;
         }
+
         this.setRealtimeStatus(false);
 
         const channel = sb.channel(`niveis-${guildId}`)
@@ -356,15 +353,28 @@ const app = {
                 filter: `guild_id=eq.${guildId}`
             }, () => this.atualizarLeaderboardEmTempoReal())
             .subscribe((status) => {
-                // O canal antigo pode disparar um status "CLOSED" tardio
-                // (assíncrono) já depois de termos criado o canal novo.
-                // Ignoramos callbacks de canais que não são mais o atual
-                // pra evitar o badge piscar ao trocar de servidor.
+                // Ignora callback de um canal antigo que já foi trocado —
+                // evita que o status do servidor anterior sobrescreva o do
+                // servidor atual (chega atrasado, de forma assíncrona).
                 if (this._realtimeChannel !== channel) return;
                 this.setRealtimeStatus(status === 'SUBSCRIBED');
             });
 
         this._realtimeChannel = channel;
+    },
+
+    setRealtimeStatus(conectado) {
+        // Badge fica sempre visível no layout (nunca alterna display:none),
+        // só a cor muda — evita o elemento sumir/reaparecer e "empurrar"
+        // o título/switcher do lado, que gerava um flash visual ao trocar
+        // de servidor.
+        const badge = document.getElementById('realtimeBadge');
+        const dot = document.getElementById('realtimeDot');
+        if (!badge || !dot) return;
+        const cor = conectado ? 'var(--success)' : 'var(--danger)';
+        badge.style.background = conectado ? 'rgba(35,165,89,0.12)' : 'rgba(237,66,69,0.12)';
+        dot.style.background = cor;
+        dot.style.boxShadow = `0 0 6px ${cor}`;
     },
 
     pararRealtime() {
@@ -489,50 +499,68 @@ const app = {
         }).join('');
     },
 
+    // Define .value (ou .checked) só se o elemento existir — um campo que
+    // não existe mais no HTML (ou ainda não foi adicionado) não pode quebrar
+    // o preenchimento de todos os outros campos desta função.
+    setVal(id, valor) {
+        const el = document.getElementById(id);
+        if (el) el.value = valor;
+    },
+
+    setChecked(id, valor) {
+        const el = document.getElementById(id);
+        if (el) el.checked = valor;
+    },
+
     async loadSavedConfigs(guildId) {
         const config = await NZKAPI.getConfigs(guildId);
         if (config) {
-            if (config.canal_avisos_id) document.getElementById('channelSelect').value = config.canal_avisos_id;
-            if (config.cargo_top1_id) document.getElementById('top1Select').value = config.cargo_top1_id;
-            if (config.status_texto) document.getElementById('statusInput').value = config.status_texto;
-            if (config.tipo_atividade !== null) document.getElementById('statusType').value = config.tipo_atividade;
+            if (config.canal_avisos_id) this.setVal('channelSelect', config.canal_avisos_id);
+            if (config.cargo_top1_id) this.setVal('top1Select', config.cargo_top1_id);
+            if (config.status_texto) this.setVal('statusInput', config.status_texto);
+            if (config.tipo_atividade !== null) this.setVal('statusType', config.tipo_atividade);
             this.renderStatusExpiraInfo(config.status_expira_em || null);
-            document.getElementById('levelupMensagem').value = config.levelup_mensagem || '';
-            document.getElementById('bonusBooster').value = config.bonus_booster || 0;
-            if (config.canal_boost_id) document.getElementById('boostChannel').value = config.canal_boost_id;
-            if (config.canal_boas_vindas_id) document.getElementById('boasVindasChannel').value = config.canal_boas_vindas_id;
-            document.getElementById('boasVindasMensagem').value = config.boas_vindas_mensagem || '';
+            this.setVal('levelupMensagem', config.levelup_mensagem || '');
+            this.setVal('bonusBooster', config.bonus_booster || 0);
+            if (config.canal_boost_id) this.setVal('boostChannel', config.canal_boost_id);
+            if (config.canal_boas_vindas_id) this.setVal('boasVindasChannel', config.canal_boas_vindas_id);
+            this.setVal('boasVindasMensagem', config.boas_vindas_mensagem || '');
             this.cargosEntradaAtuais = config.cargos_entrada || [];
             this.renderCargosEntradaTable();
-            document.getElementById('boostXp').value = config.bonus_boost_xp || 0;
-            document.getElementById('boostMensagem').value = config.boost_mensagem || '';
-            document.getElementById('bonusAdmin').value = config.bonus_admin || 0;
-            document.getElementById('bonusStack').value = config.bonus_stack === false ? "nao" : "sim";
-            document.getElementById('boostAfetaAdmin').checked = config.boost_afeta_bonus_admin !== false;
-            document.getElementById('xpMensagem').value = config.xp_mensagem ?? 20;
-            document.getElementById('xpReacao').value = config.xp_reacao ?? 5;
-            document.getElementById('xpVozMinuto').value = config.xp_voz_minuto ?? 15;
+            this.setVal('boostXp', config.bonus_boost_xp || 0);
+            this.setVal('boostMensagem', config.boost_mensagem || '');
+            this.setVal('bonusAdmin', config.bonus_admin || 0);
+            this.setVal('bonusStack', config.bonus_stack === false ? "nao" : "sim");
+            this.setChecked('boostAfetaAdmin', config.boost_afeta_bonus_admin !== false);
+            this.setVal('xpMensagem', config.xp_mensagem ?? 20);
+            this.setVal('xpReacao', config.xp_reacao ?? 5);
+            this.setVal('xpVozMinuto', config.xp_voz_minuto ?? 15);
+            this.setVal('cooldownMensagem', config.cooldown_mensagem_segundos ?? 15);
+            this.setVal('cooldownReacao', config.cooldown_reacao_segundos ?? 5);
         } else {
-            document.getElementById('channelSelect').value = "";
-            document.getElementById('top1Select').value = "";
-            document.getElementById('statusInput').value = "";
-            document.getElementById('statusType').value = "0";
-            document.getElementById('statusExpiraInfo').textContent = "";
-            document.getElementById('levelupMensagem').value = '';
-            document.getElementById('bonusBooster').value = 0;
-            document.getElementById('boostChannel').value = "";
-            document.getElementById('boasVindasChannel').value = "";
-            document.getElementById('boasVindasMensagem').value = "";
+            this.setVal('channelSelect', "");
+            this.setVal('top1Select', "");
+            this.setVal('statusInput', "");
+            this.setVal('statusType', "0");
+            const statusExpiraInfo = document.getElementById('statusExpiraInfo');
+            if (statusExpiraInfo) statusExpiraInfo.textContent = "";
+            this.setVal('levelupMensagem', '');
+            this.setVal('bonusBooster', 0);
+            this.setVal('boostChannel', "");
+            this.setVal('boasVindasChannel', "");
+            this.setVal('boasVindasMensagem', "");
             this.cargosEntradaAtuais = [];
             this.renderCargosEntradaTable();
-            document.getElementById('boostXp').value = 0;
-            document.getElementById('boostMensagem').value = '';
-            document.getElementById('bonusAdmin').value = 0;
-            document.getElementById('bonusStack').value = "sim";
-            document.getElementById('boostAfetaAdmin').checked = true;
-            document.getElementById('xpMensagem').value = 20;
-            document.getElementById('xpReacao').value = 5;
-            document.getElementById('xpVozMinuto').value = 15;
+            this.setVal('boostXp', 0);
+            this.setVal('boostMensagem', '');
+            this.setVal('bonusAdmin', 0);
+            this.setVal('bonusStack', "sim");
+            this.setChecked('boostAfetaAdmin', true);
+            this.setVal('xpMensagem', 20);
+            this.setVal('xpReacao', 5);
+            this.setVal('xpVozMinuto', 15);
+            this.setVal('cooldownMensagem', 15);
+            this.setVal('cooldownReacao', 5);
         }
     },
 
@@ -840,6 +868,14 @@ const app = {
         const xpVozMinuto  = document.getElementById('xpVozMinuto').value;
         const res = await NZKAPI.salvarXpConfig(this.selectedGuild, xpMensagem, xpReacao, xpVozMinuto);
         if (res.success) this.showToast("⭐ Configuração de XP salva!");
+        else this.showToast("❌ Erro ao salvar.", "error");
+    },
+
+    async handleSalvarCooldowns() {
+        const cooldownMensagem = document.getElementById('cooldownMensagem').value;
+        const cooldownReacao   = document.getElementById('cooldownReacao').value;
+        const res = await NZKAPI.salvarCooldowns(this.selectedGuild, cooldownMensagem, cooldownReacao);
+        if (res.success) this.showToast("⏱️ Cooldown salvo!");
         else this.showToast("❌ Erro ao salvar.", "error");
     },
 

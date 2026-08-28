@@ -151,9 +151,9 @@
                 </div>
                 <div style="display: flex; align-items: center; gap: 10px;">
                     <h2 id="serverTitle" style="margin: 0;">Painel</h2>
-                    <select id="serverSwitcher" onchange="app.handleSwitchServer()" style="padding: 10px 14px; font-size: 15px; font-weight: 700; width: 220px;"></select>
-                    <span id="realtimeBadge" title="Atualizações em tempo real ativas" data-i18n-title="realtime.title" style="display:inline-flex; align-items:center; justify-content:center; background:rgba(255,255,255,0.08); padding:8px; border-radius:50%; transition: background 0.3s ease;">
-                        <span id="realtimeDot" style="width:7px; height:7px; border-radius:50%; background:var(--text-muted); box-shadow:0 0 4px var(--text-muted); transition: background 0.3s ease, box-shadow 0.3s ease;"></span>
+                    <select id="serverSwitcher" onchange="app.handleSwitchServer()" style="padding: 10px 14px; font-size: 15px; font-weight: 700; max-width: 220px;"></select>
+                    <span id="realtimeBadge" title="Atualizações em tempo real ativas" data-i18n-title="realtime.title" style="display:inline-flex; align-items:center; justify-content:center; background:rgba(237,66,69,0.12); padding:8px; border-radius:50%; transition: background 0.3s ease;">
+                        <span id="realtimeDot" style="width:7px; height:7px; border-radius:50%; background:var(--danger); box-shadow:0 0 6px var(--danger); transition: background 0.3s ease, box-shadow 0.3s ease;"></span>
                     </span>
                 </div>
             </div>
@@ -242,7 +242,7 @@
                 </div>
 
                 <div class="form-row">
-                    <div class="field">
+                    <div class="field" style="flex-grow: 0;">
                         <label>🎭 CARGO AUTOMÁTICO AO ENTRAR</label>
                         <select id="cargoEntradaSelect"><option value="">-- Selecionar cargo --</option></select>
                     </div>
@@ -313,20 +313,35 @@
                 <div id="boostPreview"></div>
                 <div class="section-title" style="margin-top: 30px;">⭐ XP por Ação</div>
                 <div class="form-row">
-                    <div class="field">
+                    <div class="field" style="flex-grow: 0;">
                         <label>💬 POR MENSAGEM</label>
                         <input type="number" id="xpMensagem" min="0" value="20" style="width: 100px;">
                     </div>
-                    <div class="field">
+                    <div class="field" style="flex-grow: 0;">
                         <label>❤️ POR REAÇÃO</label>
                         <input type="number" id="xpReacao" min="0" value="5" style="width: 100px;">
                     </div>
-                    <div class="field">
+                    <div class="field" style="flex-grow: 0;">
                         <label>🎙️ POR MINUTO EM VOZ</label>
                         <input type="number" id="xpVozMinuto" min="0" value="15" style="width: 100px;">
                     </div>
                     <button class="success" onclick="app.handleSalvarXpConfig()" style="height: 46px;">Salvar XP</button>
                 </div>
+                <div class="section-title" style="margin-top: 30px;">⏱️ Cooldown de XP</div>
+                <div class="form-row">
+                    <div class="field" style="flex-grow: 0;">
+                        <label>💬 ENTRE MENSAGENS (segundos)</label>
+                        <input type="number" id="cooldownMensagem" min="0" value="15" style="width: 120px;">
+                    </div>
+                    <div class="field" style="flex-grow: 0;">
+                        <label>❤️ ENTRE REAÇÕES NA MESMA MENSAGEM (segundos)</label>
+                        <input type="number" id="cooldownReacao" min="0" value="5" style="width: 120px;">
+                    </div>
+                    <button class="success" onclick="app.handleSalvarCooldowns()" style="height: 46px;">Salvar Cooldown</button>
+                </div>
+                <span style="font-size: 11px; color: var(--text-muted); margin-top: -20px; margin-bottom: 15px; display:block;">
+                    💡 Tempo mínimo que a mesma pessoa precisa esperar entre uma mensagem/reação e outra pra continuar ganhando XP — evita farm por spam.
+                </span>
                 <div class="section-title" style="margin-top: 30px;">🎯 Bônus de XP</div>
                 <div class="form-row">
                     <div class="field">
