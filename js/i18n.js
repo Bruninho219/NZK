@@ -27,6 +27,13 @@
             [/^Cargo removido \((.+)\)$/, "Role removed ($1)"],
             [/^⏳ Esse status volta ao padrão em (.+)\.$/, "⏳ This status returns to default at $1."],
             [/^Selecione um membro para ver o histórico\.$/, "Select a member to view history."],
+            [/^— ativo desde (.+)$/, "— active since $1"],
+            [/^✅ (.+) resetado!$/, "✅ $1 reset!"],
+            [/^✅ (.+) atualizado!$/, "✅ $1 updated!"],
+            [/^📜 (.+) registrou uma ação no log$/, "📜 $1 recorded an action in the log"],
+            [/^Página (\d+) de (\d+) \((\d+) membros\)$/, "Page $1 of $2 ($3 members)"],
+            [/^(\d+) membro$/, "$1 member"],
+            [/^(\d+) membros$/, "$1 members"],
             [/^\+\s*(\d+) XP$/, "+$1 XP"]
         ],
         "es-ES": [
@@ -36,6 +43,13 @@
             [/^Cargo removido \((.+)\)$/, "Rol eliminado ($1)"],
             [/^⏳ Esse status volta ao padrão em (.+)\.$/, "⏳ Este estado vuelve al valor predeterminado en $1."],
             [/^Selecione um membro para ver o histórico\.$/, "Selecciona un miembro para ver el historial."],
+            [/^— ativo desde (.+)$/, "— activo desde $1"],
+            [/^✅ (.+) resetado!$/, "✅ ¡$1 restablecido!"],
+            [/^✅ (.+) atualizado!$/, "✅ ¡$1 actualizado!"],
+            [/^📜 (.+) registrou uma ação no log$/, "📜 $1 registró una acción en el registro"],
+            [/^Página (\d+) de (\d+) \((\d+) membros\)$/, "Página $1 de $2 ($3 miembros)"],
+            [/^(\d+) membro$/, "$1 miembro"],
+            [/^(\d+) membros$/, "$1 miembros"],
             [/^\+\s*(\d+) XP$/, "+$1 XP"]
         ],
         "fr-FR": [
@@ -45,15 +59,29 @@
             [/^Cargo removido \((.+)\)$/, "Rôle supprimé ($1)"],
             [/^⏳ Esse status volta ao padrão em (.+)\.$/, "⏳ Ce statut revient à sa valeur par défaut à $1."],
             [/^Selecione um membro para ver o histórico\.$/, "Sélectionnez un membre pour voir l'historique."],
+            [/^— ativo desde (.+)$/, "— actif depuis $1"],
+            [/^✅ (.+) resetado!$/, "✅ $1 réinitialisé !"],
+            [/^✅ (.+) atualizado!$/, "✅ $1 mis à jour !"],
+            [/^📜 (.+) registrou uma ação no log$/, "📜 $1 a enregistré une action dans le journal"],
+            [/^Página (\d+) de (\d+) \((\d+) membros\)$/, "Page $1 sur $2 ($3 membres)"],
+            [/^(\d+) membro$/, "$1 membre"],
+            [/^(\d+) membros$/, "$1 membres"],
             [/^\+\s*(\d+) XP$/, "+$1 XP"]
         ],
         "ja-JP": [
-            [/^⚠️ Bot removido há (\d+)d$/, "⚠️ Botが削除されました: $1日"],
+            [/^⚠️ Bot removido há (\d+)d$/, "⚠️ Botが削除されてから$1日"],
             [/^Lvl (\d+)$/, "レベル $1"],
             [/^Level (\d+)$/, "レベル $1"],
-            [/^Cargo removido \((.+)\)$/, "ロールが削除されました ($1)"],
-            [/^⏳ Esse status volta ao padrão em (.+)\.$/, "⏳ このステータスは $1 にデフォルトに戻ります。"],
-            [/^Selecione um membro para ver o histórico\.$/, "履歴を表示するにはメンバーを選択してください。"],
+            [/^Cargo removido \((.+)\)$/, "ロールを削除しました ($1)"],
+            [/^⏳ Esse status volta ao padrão em (.+)\.$/, "⏳ このステータスは $1 にデフォルトへ戻ります。"],
+            [/^Selecione um membro para ver o histórico\.$/, "履歴を表示するメンバーを選択してください。"],
+            [/^— ativo desde (.+)$/, "— $1 から有効"],
+            [/^✅ (.+) resetado!$/, "✅ $1 をリセットしました！"],
+            [/^✅ (.+) atualizado!$/, "✅ $1 を更新しました！"],
+            [/^📜 (.+) registrou uma ação no log$/, "📜 $1 が操作をログに記録しました"],
+            [/^Página (\d+) de (\d+) \((\d+) membros\)$/, "$1 / $2 ページ（$3人）"],
+            [/^(\d+) membro$/, "$1人"],
+            [/^(\d+) membros$/, "$1人"],
             [/^\+\s*(\d+) XP$/, "+$1 XP"]
         ]
     };
@@ -173,7 +201,7 @@
     }
 
     function setLanguage(language) {
-        if (!DICTS[language]) return;
+        if (!DICTS[language] || Object.keys(DICTS[language]).length === 0) return;
         currentLanguage = language;
         localStorage.setItem(STORAGE_KEY, language);
         translate();
