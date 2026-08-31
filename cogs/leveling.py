@@ -3,9 +3,12 @@ from logger import log_info, log_erro, log_aviso
 from discord.ext import commands, tasks
 import datetime
 
-# xp_cooldown: cooldowns reais duram só 5-15s, então qualquer entrada mais
-# velha que isso já está "morta" — só ocupando memória pra sempre.
-LIMPEZA_XP_COOLDOWN_SEGUNDOS = 60
+# xp_cooldown: antes, cooldowns eram fixos em 15s/5s no código, então 60s de
+# folga era suficiente. Agora que são configuráveis por servidor (podem ser
+# maiores), uma folga generosa evita apagar uma entrada de cooldown ainda
+# válida antes da hora — o que faria o cooldown configurado "não funcionar"
+# de verdade acima desse limite, silenciosamente.
+LIMPEZA_XP_COOLDOWN_SEGUNDOS = 3600
 
 # voice_tracker: uma sessão de voz normal dura o tempo que durar (não é pra
 # limpar por idade). Esse limite é só uma válvula de segurança pra entradas
@@ -13,12 +16,21 @@ LIMPEZA_XP_COOLDOWN_SEGUNDOS = 60
 # de voz, ou o membro saiu do servidor sem disparar o evento de saída de voz).
 LIMPEZA_VOICE_TRACKER_HORAS = 12
 
+# Cooldown de mensagem/reação são checados a cada evento (potencialmente
+# várias vezes por segundo em servidor movimentado) — por isso o valor
+# configurado por servidor fica em cache, revalidado só a cada 60s, em vez
+# de consultar o banco em toda mensagem/reação.
+CONFIG_COOLDOWN_CACHE_TTL_SEGUNDOS = 60
+COOLDOWN_MENSAGEM_PADRAO = 15
+COOLDOWN_REACAO_PADRAO = 5
+
 class Leveling(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.supabase = bot.supabase
         self.voice_tracker = {}
         self.xp_cooldown = {}  # {"msg_uid" ou "reacao_uid": datetime}
+        self._config_cooldown_cache = {}  # {guild_id: {"data": (msg, reacao), "ts": datetime}}
         self.limpar_caches.start()
 
     def cog_unload(self):
@@ -68,6 +80,31 @@ class Leveling(commands.Cog):
             }).execute()
         except Exception as e:
             log_erro("garantir_servidor_e_usuario", e)
+
+    async def obter_cooldowns(self, gid: str):
+        """Retorna (cooldown_mensagem, cooldown_reacao) em segundos pro
+        servidor, com cache de 60s — evita consultar o banco a cada
+        mensagem/reação, já que esses eventos podem ser muito frequentes."""
+        agora = datetime.datetime.now()
+        cache = self._config_cooldown_cache.get(gid)
+        if cache and (agora - cache["ts"]).total_seconds() < CONFIG_COOLDOWN_CACHE_TTL_SEGUNDOS:
+            return cache["data"]
+
+        cooldown_msg, cooldown_reacao = COOLDOWN_MENSAGEM_PADRAO, COOLDOWN_REACAO_PADRAO
+        try:
+            res = self.supabase.table("servidor_configs")\
+                .select("cooldown_mensagem_segundos, cooldown_reacao_segundos")\
+                .eq("guild_id", gid).execute()
+            if res.data:
+                cfg = res.data[0]
+                cooldown_msg = int(cfg.get("cooldown_mensagem_segundos") or COOLDOWN_MENSAGEM_PADRAO)
+                cooldown_reacao = int(cfg.get("cooldown_reacao_segundos") or COOLDOWN_REACAO_PADRAO)
+        except Exception as e:
+            log_erro("obter_cooldowns", e)
+
+        resultado = (cooldown_msg, cooldown_reacao)
+        self._config_cooldown_cache[gid] = {"data": resultado, "ts": agora}
+        return resultado
 
     async def buscar_cargo_por_nivel(self, guild_id, nivel_atual):
         try:
@@ -314,7 +351,8 @@ class Leveling(commands.Cog):
 
         uid = str(message.author.id)
         agora = datetime.datetime.now()
-        if uid in self.xp_cooldown and (agora - self.xp_cooldown[uid]).total_seconds() < 15:
+        cooldown_msg, _ = await self.obter_cooldowns(str(message.guild.id))
+        if uid in self.xp_cooldown and (agora - self.xp_cooldown[uid]).total_seconds() < cooldown_msg:
             return
 
         self.xp_cooldown[uid] = agora
@@ -331,7 +369,8 @@ class Leveling(commands.Cog):
 
         rk = f"react_{user.id}_{reaction.message.id}"
         agora = datetime.datetime.now()
-        if rk in self.xp_cooldown and (agora - self.xp_cooldown[rk]).total_seconds() < 5:
+        _, cooldown_reacao = await self.obter_cooldowns(str(reaction.message.guild.id))
+        if rk in self.xp_cooldown and (agora - self.xp_cooldown[rk]).total_seconds() < cooldown_reacao:
             return
 
         self.xp_cooldown[rk] = agora
