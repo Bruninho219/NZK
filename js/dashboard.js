@@ -525,8 +525,8 @@ const app = {
             if (config.canal_boost_id) this.setVal('boostChannel', config.canal_boost_id);
             if (config.canal_boas_vindas_id) this.setVal('boasVindasChannel', config.canal_boas_vindas_id);
             this.setVal('boasVindasMensagem', config.boas_vindas_mensagem || '');
-            this.cargosEntradaAtuais = config.cargos_entrada || [];
-            this.renderCargosEntradaTable();
+			this.cargosEntradaAtuais = Array.isArray(config.cargos_entrada) ? config.cargos_entrada.map(String) : [];
+			this.renderCargosEntradaTable();
             this.setVal('boostXp', config.bonus_boost_xp || 0);
             this.setVal('boostMensagem', config.boost_mensagem || '');
             this.setVal('bonusAdmin', config.bonus_admin || 0);
@@ -788,23 +788,113 @@ const app = {
         else this.showToast("❌ Erro ao salvar.", "error");
     },
 
-    handleAdicionarCargoEntrada() {
-        const sel = document.getElementById('cargoEntradaSelect');
-        if (!sel.value) return this.showToast("Selecione um cargo.", "error");
+	async handleAdicionarCargoEntrada() {
+		const sel = document.getElementById('cargoEntradaSelect');
+		const roleId = sel.value;
 
-        this.cargosEntradaAtuais = this.cargosEntradaAtuais || [];
-        if (this.cargosEntradaAtuais.length >= 10) return this.showToast("Limite de 10 cargos atingido.", "error");
-        if (this.cargosEntradaAtuais.includes(sel.value)) return this.showToast("Esse cargo já foi adicionado.", "error");
+		if (!roleId) {
+			return this.showToast("Selecione um cargo.", "error");
+		}
 
-        this.cargosEntradaAtuais.push(sel.value);
-        this.renderCargosEntradaTable();
-        sel.value = "";
-    },
+		this.cargosEntradaAtuais = Array.isArray(this.cargosEntradaAtuais)
+			? [...this.cargosEntradaAtuais].map(String)
+			: [];
 
-    handleRemoverCargoEntrada(roleId) {
-        this.cargosEntradaAtuais = (this.cargosEntradaAtuais || []).filter(id => id !== roleId);
-        this.renderCargosEntradaTable();
-    },
+		if (this.cargosEntradaAtuais.length >= 10) {
+			return this.showToast("Limite de 10 cargos atingido.", "error");
+		}
+
+		if (this.cargosEntradaAtuais.includes(String(roleId))) {
+			return this.showToast("Esse cargo já foi adicionado.", "error");
+		}
+
+		const anterior = [...this.cargosEntradaAtuais];
+
+		this.cargosEntradaAtuais.push(String(roleId));
+
+		// Atualiza a tabela imediatamente
+		this.renderCargosEntradaTable();
+
+		// Limpa o select
+		sel.value = "";
+
+		const canal = document.getElementById('boasVindasChannel')?.value || "";
+
+		try {
+			const res = await NZKAPI.salvarBoasVindasCanal(
+				this.selectedGuild,
+				canal,
+				this.cargosEntradaAtuais
+			);
+
+			if (!res?.success) {
+				throw new Error("Falha ao salvar cargo automático.");
+			}
+
+			this.showToast("✅ Cargo automático adicionado!");
+		} catch (err) {
+			console.error("Erro ao adicionar cargo automático:", err);
+
+			// Se falhar no banco, desfaz a alteração local
+			this.cargosEntradaAtuais = anterior;
+			this.renderCargosEntradaTable();
+
+			this.showToast(
+				"❌ Erro ao salvar o cargo automático.",
+				"error"
+			);
+		}
+	},
+
+	async handleRemoverCargoEntrada(roleId) {
+		this.cargosEntradaAtuais = Array.isArray(this.cargosEntradaAtuais)
+			? [...this.cargosEntradaAtuais].map(String)
+			: [];
+
+		const roleIdStr = String(roleId);
+		const anterior = [...this.cargosEntradaAtuais];
+
+		const novaLista = this.cargosEntradaAtuais.filter(
+			id => id !== roleIdStr
+		);
+
+		// O cargo já não estava na lista
+		if (novaLista.length === anterior.length) {
+			return;
+		}
+
+		this.cargosEntradaAtuais = novaLista;
+
+		// Atualiza a tabela imediatamente
+		this.renderCargosEntradaTable();
+
+		const canal = document.getElementById('boasVindasChannel')?.value || "";
+
+		try {
+			const res = await NZKAPI.salvarBoasVindasCanal(
+				this.selectedGuild,
+				canal,
+				this.cargosEntradaAtuais
+			);
+
+			if (!res?.success) {
+				throw new Error("Falha ao remover cargo automático.");
+			}
+
+			this.showToast("🗑️ Cargo automático removido.");
+		} catch (err) {
+			console.error("Erro ao remover cargo automático:", err);
+
+			// Se falhar no banco, restaura a lista anterior
+			this.cargosEntradaAtuais = anterior;
+			this.renderCargosEntradaTable();
+
+			this.showToast(
+				"❌ Erro ao remover o cargo automático.",
+				"error"
+			);
+		}
+	},
 
     renderCargosEntradaTable() {
         const body = document.getElementById('cargosEntradaBody');
