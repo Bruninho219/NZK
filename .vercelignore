@@ -1,4 +1,4 @@
-# Bot Python — não faz sentido no deploy estático do dashboard
+# Bot Python
 *.py
 cogs/
 __pycache__/
@@ -11,7 +11,7 @@ requirements.bat
 start2.bat
 instalacao.txt
 
-# Segredos e logs (redundante com .gitignore, mas não custa garantir aqui também)
+# Segredos e logs
 .env
 logs/
 
