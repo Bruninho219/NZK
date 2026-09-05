@@ -63,6 +63,30 @@ const app = {
 		document.getElementById('globalConfig').style.display = 'block';
 
 		this.renderConfiguracoesGlobais();
+		await this.carregarBotConfigGlobal();
+	},
+
+	async carregarBotConfigGlobal() {
+		const config = await NZKAPI.getBotConfig();
+
+		if (!config) {
+			this.setVal('statusInput', '');
+			this.setVal('statusType', '0');
+			this.renderStatusExpiraInfo(null);
+			return;
+		}
+
+		this.setVal('statusInput', config.status_texto || '');
+		this.setVal(
+			'statusType',
+			config.tipo_atividade !== null
+				? config.tipo_atividade
+				: 0
+		);
+
+		this.renderStatusExpiraInfo(
+			config.status_expira_em || null
+		);
 	},
 	
 	async fecharConfiguracoesGlobais() {
@@ -771,9 +795,6 @@ const app = {
         if (config) {
             if (config.canal_avisos_id) this.setVal('channelSelect', config.canal_avisos_id);
             if (config.cargo_top1_id) this.setVal('top1Select', config.cargo_top1_id);
-            if (config.status_texto) this.setVal('statusInput', config.status_texto);
-            if (config.tipo_atividade !== null) this.setVal('statusType', config.tipo_atividade);
-            this.renderStatusExpiraInfo(config.status_expira_em || null);
             this.setVal('levelupMensagem', config.levelup_mensagem || '');
             this.setVal('bonusBooster', config.bonus_booster || 0);
             if (config.canal_boost_id) this.setVal('boostChannel', config.canal_boost_id);
