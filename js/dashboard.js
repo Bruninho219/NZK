@@ -232,9 +232,9 @@ const app = {
 				else
 				{
 					if(tipo === 'comum')
-						badgeTipo = '<div class="server-type-badge server-type-premium">🌐</div>';
+						badgeTipo = '<div class="server-type-badge server-type-comum">🌐</div>';
 					else
-						badgeTipo = '<div class="server-type-badge server-type-premium">➖</div>';
+						badgeTipo = '<div class="server-type-badge server-type-comum">➖</div>';
 				}
 			}
 
