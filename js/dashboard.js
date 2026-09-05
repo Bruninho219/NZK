@@ -1782,7 +1782,7 @@ row.innerHTML = `
 
     async handleDeletarConquista(id) {
         if (!(await this.confirmar("Excluir esta conquista? Quem já desbloqueou perde o selo.", "Excluir"))) return;
-        const res = await NZKAPI.deletarConquista(id);
+        const res = await NZKAPI.deletarConquista(this.selectedGuild, id);
         if (res.success) {
             this.showToast("🗑️ Conquista removida.");
             this.renderConquistasTable(this.selectedGuild);

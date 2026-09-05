@@ -408,16 +408,21 @@ var NZKAPI = {
         }
     },
 
-    async deletarConquista(id) {
-        try {
-            const { error } = await sb.from('conquistas').delete().eq('id', id);
-            if (error) throw error;
-            return { success: true };
-        } catch (err) {
-            console.error("Erro ao deletar conquista:", err);
-            return { success: false };
-        }
-    },
+	async deletarConquista(guildId, id) {
+		try {
+			const { error } = await sb
+				.from('conquistas')
+				.delete()
+				.eq('guild_id', guildId)
+				.eq('id', id);
+
+			if (error) throw error;
+			return { success: true };
+		} catch (err) {
+			console.error("Erro ao deletar conquista:", err);
+			return { success: false };
+		}
+	},
 
     async getConquistasUsuarios(guildId) {
         // Retorna quantas conquistas cada usuário já desbloqueou nesse
