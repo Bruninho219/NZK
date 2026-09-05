@@ -815,10 +815,6 @@ const app = {
         } else {
             this.setVal('channelSelect', "");
             this.setVal('top1Select', "");
-            this.setVal('statusInput', "");
-            this.setVal('statusType', "0");
-            const statusExpiraInfo = document.getElementById('statusExpiraInfo');
-            if (statusExpiraInfo) statusExpiraInfo.textContent = "";
             this.setVal('levelupMensagem', '');
             this.setVal('bonusBooster', 0);
             this.setVal('boostChannel', "");
@@ -1360,24 +1356,35 @@ const app = {
         else this.showToast("❌ Erro ao salvar bônus.", "error");
     },
 
-    async handleSalvarStatus() {
-        const texto = document.getElementById('statusInput').value;
-        const tipo = document.getElementById('statusType').value;
-        const horas = parseInt(document.getElementById('statusDuracao').value);
-        if (!this.selectedGuild) return this.showToast("Selecione um servidor primeiro.", "error");
+	async handleSalvarStatus() {
+		const texto = document.getElementById('statusInput').value;
+		const tipo = document.getElementById('statusType').value;
+		const horas = parseInt(
+			document.getElementById('statusDuracao').value
+		);
 
-        const expiraEm = horas > 0
-            ? new Date(Date.now() + horas * 60 * 60 * 1000).toISOString()
-            : null;
+		const expiraEm = horas > 0
+			? new Date(
+				Date.now() + horas * 60 * 60 * 1000
+			).toISOString()
+			: null;
 
-        const res = await NZKAPI.salvarStatusBot(this.selectedGuild, texto, tipo, expiraEm);
-        if (res.success) {
-            this.showToast("✅ Status salvo com sucesso!");
-            this.renderStatusExpiraInfo(expiraEm);
-        } else {
-            this.showToast("❌ Erro ao salvar status.", "error");
-        }
-    },
+		const res = await NZKAPI.salvarStatusBot(
+			texto,
+			tipo,
+			expiraEm
+		);
+
+		if (res.success) {
+			this.showToast("✅ Status salvo com sucesso!");
+			this.renderStatusExpiraInfo(expiraEm);
+		} else {
+			this.showToast(
+				"❌ Erro ao salvar status.",
+				"error"
+			);
+		}
+	},
 
     renderStatusExpiraInfo(expiraEm) {
         const el = document.getElementById('statusExpiraInfo');

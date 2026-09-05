@@ -172,6 +172,76 @@
 				<p>Carregando servidores...</p>
 			</div>
 
+			<div id="statusSection">
+				<div class="section-title" style="margin-top: 30px;">
+					🤖 Status Global do Bot
+				</div>
+
+				<p style="color:var(--text-muted); margin-bottom:20px;">
+					Define o status exibido pelo NZK em todos os servidores.
+				</p>
+
+				<div class="form-row" style="align-items: flex-start;">
+
+					<div class="field" style="flex-grow: 1;">
+						<label>TIPO DE ATIVIDADE</label>
+
+						<select id="statusType">
+							<option value="0">Jogando</option>
+							<option value="2">Ouvindo</option>
+							<option value="3">Assistindo</option>
+							<option value="4">Balãozinho</option>
+							<option value="5">Competindo</option>
+						</select>
+					</div>
+
+					<div class="field" style="flex-grow: 1;">
+						<label>DURAÇÃO</label>
+
+						<select id="statusDuracao">
+							<option value="6">6 horas</option>
+							<option value="12">12 horas</option>
+							<option value="24" selected>24 horas</option>
+							<option value="36">36 horas</option>
+							<option value="0">Para sempre</option>
+						</select>
+					</div>
+
+					<div class="field" style="flex-grow: 3;">
+						<label>TEXTO DO STATUS</label>
+
+						<div style="display: flex; gap: 10px;">
+							<input
+								type="text"
+								id="statusInput"
+								placeholder="Ex: 🛡️ Protegendo Nazarick"
+								data-i18n-placeholder="placeholder.status"
+								style="flex-grow: 1;"
+							>
+
+							<button
+								class="success"
+								onclick="app.handleSalvarStatus()"
+								style="width: 150px; background: #5865F2;"
+							>
+								Salvar
+							</button>
+						</div>
+
+						<span
+							id="statusExpiraInfo"
+							style="
+								font-size: 11px;
+								color: var(--text-muted);
+								margin-top: 4px;
+								display: block;
+							"
+						></span>
+					</div>
+
+				</div>
+			</div>
+
 		</div>
 		
 		<div id="selector">
@@ -233,41 +303,7 @@
                         <button class="success" onclick="app.handleSaveTop1()" style="margin-top: 8px; width: 100%; background: var(--accent);">Definir Cargo Líder</button>
                     </div>
                 </div>
-
-                <div id="statusSection">
-                    <div class="section-title" style="margin-top: 30px;">🤖 Status do Bot</div>
-                    <div class="form-row" style="align-items: flex-start;">
-                        <div class="field" style="flex-grow: 1;">
-                            <label>TIPO DE ATIVIDADE</label>
-                            <select id="statusType">
-                                <option value="0">Jogando</option>
-                                <option value="2">Ouvindo</option>
-                                <option value="3">Assistindo</option>
-                                <option value="4">Balãozinho</option>
-                                <option value="5">Competindo</option>
-                            </select>
-                        </div>
-                        <div class="field" style="flex-grow: 1;">
-                            <label>DURAÇÃO</label>
-                            <select id="statusDuracao">
-                                <option value="6">6 horas</option>
-                                <option value="12">12 horas</option>
-                                <option value="24" selected>24 horas</option>
-                                <option value="36">36 horas</option>
-                                <option value="0">Para sempre</option>
-                            </select>
-                        </div>
-                        <div class="field" style="flex-grow: 3;">
-                            <label>TEXTO DO STATUS</label>
-                            <div style="display: flex; gap: 10px;">
-                                <input type="text" id="statusInput" placeholder="Ex: 🛡️ Protegendo Nazarick" data-i18n-placeholder="placeholder.status" style="flex-grow: 1;">
-                                <button class="success" onclick="app.handleSalvarStatus()" style="width: 150px; background: #5865F2;">Salvar</button>
-                            </div>
-                            <span id="statusExpiraInfo" style="font-size: 11px; color: var(--text-muted); margin-top: 4px; display: block;"></span>
-                        </div>
-                    </div>
-                </div>
-
+				
                 <div class="section-title" style="margin-top: 30px;">⬆️ Mensagem de Level Up</div>
                 <div class="form-row">
 				    <div class="field" style="width: 100%;">
