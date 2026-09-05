@@ -229,7 +229,6 @@ const app = {
             const diasRemovido = removido
                 ? Math.floor((Date.now() - new Date(removido)) / 86400000)
                 : null;
-			const tipo = srv.tipo || 'comum';
 
 			const tipo = srv.tipo || 'comum';
 
