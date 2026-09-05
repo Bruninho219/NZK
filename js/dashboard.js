@@ -202,11 +202,12 @@ const app = {
         });
 
         // Guarda pra alimentar o trocador rápido de servidor no cabeçalho do editor
-        this._servidoresDisponiveis = servidores.map(srv => ({
-            id: srv.id,
-            name: nomeDe(srv),
-            removido: srv.removido_em
-        }));
+		this._servidoresDisponiveis = servidores.map(srv => ({
+			id: srv.id,
+			name: nomeDe(srv),
+			removido: srv.removido_em,
+			tipo: srv.tipo || 'comum'
+		}));
 
         list.innerHTML = servidores.map(srv => {
             const id = srv.id;
