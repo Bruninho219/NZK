@@ -1056,7 +1056,11 @@ const app = {
     },
 
     async toggleTwitch(id, ativo) {
-        const res = await NZKAPI.toggleTwitchMonitor(id, ativo);
+        const res = await NZKAPI.toggleTwitchMonitor(
+			this.selectedGuild,
+			id,
+			ativo
+		);
         if (res.success) {
             this.showToast(ativo ? "▶️ Monitor ativado!" : "⏸️ Monitor pausado!");
             this.renderTwitchMonitores(this.selectedGuild);
@@ -1065,8 +1069,11 @@ const app = {
 
     async deletarTwitch(id) {
         if (!(await this.confirmar("Remover este canal monitorado?", "Remover"))) return;
-        const res = await NZKAPI.deletarTwitchMonitor(id);
-        if (res.success) {
+        const res = await NZKAPI.deletarTwitchMonitor(
+			this.selectedGuild,
+			id
+		);
+				if (res.success) {
             this.showToast("🗑️ Monitor removido.");
             this.renderTwitchMonitores(this.selectedGuild);
         }
