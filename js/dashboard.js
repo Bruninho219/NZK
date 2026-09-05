@@ -704,18 +704,53 @@ const app = {
         }
 
         body.innerHTML = data.map(log => {
-            const data_fmt = new Date(log.created_at).toLocaleString(NZKI18n?.language || 'pt-BR');
-            const acaoNome = acoesTraduzidas[log.action] || log.action;
-            const alvo = this.idCopiavel(log.target_id);
-            return `
-                <tr>
-                    <td>${data_fmt}</td>
-                    <td>${this.escapeHtml(log.actor_name || log.actor_id)}</td>
-                    <td>${acaoNome}</td>
-                    <td>${alvo}</td>
-                </tr>
-            `;
-        }).join('');
+			const data_fmt = new Date(log.created_at)
+				.toLocaleString(NZKI18n?.language || 'pt-BR');
+
+			const acaoNome = acoesTraduzidas[log.action] || log.action;
+
+			const atorNome = this.escapeHtml(
+				log.actor_name || 'Desconhecido'
+			);
+
+			const atorId = log.actor_id
+				? this.idCopiavel(log.actor_id)
+				: '<span style="color:var(--text-muted);">—</span>';
+
+			const alvoNome = this.escapeHtml(
+				log.target_name || 'Desconhecido'
+			);
+
+			const alvoId = log.target_id
+				? this.idCopiavel(log.target_id)
+				: '<span style="color:var(--text-muted);">—</span>';
+
+			return `
+				<tr>
+					<td>${data_fmt}</td>
+
+					<td>
+						<div>${atorNome}</div>
+						<div style="margin-top:4px; font-size:11px;">
+							${atorId}
+						</div>
+					</td>
+
+					<td>${acaoNome}</td>
+
+					<td>
+						${log.target_id ? `
+							<div>${alvoNome}</div>
+							<div style="margin-top:4px; font-size:11px;">
+								${alvoId}
+							</div>
+						` : `
+							<span style="color:var(--text-muted);">—</span>
+						`}
+					</td>
+				</tr>
+			`;
+		}).join('');
     },
 
     // Define .value (ou .checked) só se o elemento existir — um campo que
