@@ -40,20 +40,25 @@ var NZKAPI = {
     },
 
     async getServidoresAtivos() {
-        try {
-            const { data, error } = await sb.from('servidores').select('guild_id, removido_em, nome_servidor, icon_url');
-            if (error) throw error;
-            return data.map(item => ({
-                id: item.guild_id,
-                removido_em: item.removido_em,
-                nome_servidor: item.nome_servidor,
-                icon_url: item.icon_url
-            }));
-        } catch (err) {
-            console.error("Erro ao buscar servidores:", err);
-            return [];
-        }
-    },
+		try {
+			const { data, error } = await sb
+				.from('servidores')
+				.select('guild_id, removido_em, nome_servidor, icon_url, tipo');
+
+			if (error) throw error;
+
+			return data.map(item => ({
+				id: item.guild_id,
+				removido_em: item.removido_em,
+				nome_servidor: item.nome_servidor,
+				icon_url: item.icon_url,
+				tipo: item.tipo || 'comum'
+			}));
+		} catch (err) {
+			console.error("Erro ao buscar servidores:", err);
+			return [];
+		}
+	},
 
     async souDono() {
         try {

@@ -168,8 +168,10 @@ const app = {
         return m > 0 ? `${h}h ${m}m` : `${h}h`;
     },
 
-    async renderServerList(servidores) {
-        const list = document.getElementById('serverList');
+	async renderServerList(servidores) {
+		console.log('Servidores recebidos do Supabase:', servidores);
+
+		const list = document.getElementById('serverList');
 
         // Fallback só pra servidores que ainda não passaram por !nSync depois
         // dessa atualização — nome/ícone agora vêm de verdade do Discord
