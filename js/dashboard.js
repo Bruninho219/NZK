@@ -968,7 +968,7 @@ const app = {
         if (!username) return this.showToast("Informe o nome de usuário da Twitch.", "error");
         if (!discordCh) return this.showToast("Selecione o canal do Discord.", "error");
 
-		const plano = this.getPlanoServidor();
+        const plano = this.getPlanoServidor();
 		const limite = plano.twitch;
 
 		if (limite !== Infinity) {
