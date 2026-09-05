@@ -144,7 +144,36 @@
             </div>
             <div id="suporteListaAtiva" style="font-size:12px; color:var(--text-muted);"></div>
         </div>
+		
+		<!-- CONFIGURAÇÕES GLOBAIS -->
+		<div id="globalConfig" style="display:none;">
 
+			<div class="editor-header">
+				<div style="display:flex; gap:10px;">
+					<button class="secondary" onclick="app.fecharConfiguracoesGlobais()">
+						⬅ Voltar
+					</button>
+				</div>
+
+				<h2 style="margin:0;">
+					⚙️ Configurações Globais
+				</h2>
+			</div>
+
+			<div class="section-title">
+				🏰 Classificação dos Servidores
+			</div>
+
+			<p style="color:var(--text-muted); margin-bottom:20px;">
+				Classificação atual dos servidores conectados ao NZK.
+			</p>
+
+			<div id="globalServerList">
+				<p>Carregando servidores...</p>
+			</div>
+
+		</div>
+		
 		<div id="editor" style="display: none;">
 			<div style="display:flex; align-items:center; justify-content:space-between; gap:15px; flex-wrap:wrap; margin-bottom:30px;">
 				<h1 style="margin:0;">✨ Meus Servidores Ativos</h1>
