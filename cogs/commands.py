@@ -522,11 +522,6 @@ class GeneralCommands(commands.Cog):
                     "p_user_id": uid
                 }
             ).execute()
-            print("DEBUG nHistorico2:", {
-                "guild_id": gid,
-                "user_id": uid,
-                "data": res.data
-            })
 
             if not res.data:
                 return await ctx.send(
