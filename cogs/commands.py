@@ -522,10 +522,16 @@ class GeneralCommands(commands.Cog):
                     "p_user_id": uid
                 }
             ).execute()
+            print("DEBUG nHistorico2:", {
+                "guild_id": gid,
+                "user_id": uid,
+                "data": res.data
+            })
 
-            return await ctx.send(
-                f"Nenhum histórico encontrado para {target.display_name}."
-            )
+            if not res.data:
+                return await ctx.send(
+                    f"Nenhum histórico encontrado para {target.display_name}."
+                )
 
             datas = [datetime.fromisoformat(row['registrado_em'][:10]) for row in res.data]
             xps   = [row['xp_total'] for row in res.data]
