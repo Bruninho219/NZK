@@ -836,6 +836,22 @@ const app = {
 				`💡 Aceita <b>@handle</b>, URL completa ou ID <b>UCxxxx</b> — máximo ${limite} canais por servidor.`;
 		}
 	},
+	
+	renderTwitchLimiteHint() {
+		const el = document.getElementById('twitchLimiteHint');
+		if (!el) return;
+
+		const plano = this.getPlanoServidor();
+		const limite = plano.twitch;
+
+		if (limite === Infinity) {
+			el.innerHTML =
+				'💡 Informe só o nome de usuário da Twitch (sem @, sem URL) — sem limite de canais neste servidor. 👑';
+		} else {
+			el.innerHTML =
+				`💡 Informe só o nome de usuário da Twitch (sem @, sem URL) — máximo ${limite} canais por servidor.`;
+		}
+	},
 
     async renderYoutubeMonitores(guildId) {
         const data = await NZKAPI.getYoutubeMonitores(guildId);

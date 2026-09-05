@@ -649,7 +649,12 @@
                     <button class="success" style="width: auto; align-self: flex-end;" onclick="app.handleAdicionarTwitch()">+ Adicionar</button>
                 </div>
                 <span style="font-size: 11px; color: var(--text-muted); margin-bottom: 15px; display:block;">
-                    💡 Informe só o nome de usuário da Twitch (sem @, sem URL) — máximo 5 canais por servidor.
+                    <span
+						id="twitchLimiteHint"
+						style="font-size: 11px; color:var(--text-muted); margin-bottom:15px; display:block;"
+					>
+						💡 Informe só o nome de usuário da Twitch (sem @, sem URL).
+					</span>
                 </span>
                 <div class="table-wrapper">
                     <table>
