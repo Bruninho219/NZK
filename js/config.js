@@ -6,4 +6,4 @@ var CONFIG = {
 	YOUTUBE_API_KEY: "AIzaSyBn6tCewgOy7mjeeA5LEDqZ6BUElvDplfc"
 };
 
-window.NZK_VERSION = "0.10.13.0";
+window.NZK_VERSION = "0.10.13.1";

@@ -216,6 +216,15 @@ const app = {
             const diasRemovido = removido
                 ? Math.floor((Date.now() - new Date(removido)) / 86400000)
                 : null;
+			const tipo = srv.tipo || 'comum';
+
+			let badgeTipo = '';
+
+			if (tipo === 'adm') {
+				badgeTipo = '<div class="server-type-badge server-type-adm">👑 ADM</div>';
+			} else if (tipo === 'premium') {
+				badgeTipo = '<div class="server-type-badge server-type-premium">💎 PREMIUM</div>';
+			}
 
             // Só o "id" (sempre um snowflake numérico) vai pro onclick — o
             // nome nunca é interpolado ali. Nome de servidor agora vem do
@@ -230,10 +239,11 @@ const app = {
                             ? `<img src="${icone}${icone.includes('?') ? '&' : '?'}t=${Date.now()}" class="server-icon-img">`
                             : `<span class="server-icon">${icone}</span>`}
                     </div>
-                    <h3>${this.escapeHtml(nome)}</h3>
-                    ${this.idCopiavel(id)}
-                    ${removido ? `<div class="server-removido-badge">⚠️ Bot removido há ${diasRemovido}d</div>` : ''}
-                </div>
+						<h3>${this.escapeHtml(nome)}</h3>
+						${badgeTipo}
+						${this.idCopiavel(id)}
+						${removido ? `<div class="server-removido-badge">⚠️ Bot removido há ${diasRemovido}d</div>` : ''}
+					</div>
             `;
         }).join('') + `
             <div class="server-card" onclick="window.location.href='/invite'" style="border: 1px dashed rgba(255,255,255,0.2); background: rgba(255,255,255,0.02);">
