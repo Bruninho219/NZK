@@ -167,22 +167,45 @@ var NZKAPI = {
             return null;
         }
     },
+	
+	async getBotConfig() {
+		try {
+			const { data, error } = await sb
+				.from('bot_config')
+				.select('status_texto, tipo_atividade, status_expira_em')
+				.eq('id', 1)
+				.maybeSingle();
 
-    async salvarStatusBot(guildId, textoStatus, tipoAtividade, expiraEm) {
-        try {
-            const { error } = await sb.from('servidor_configs').upsert({
-                guild_id: guildId,
-                status_texto: textoStatus,
-                tipo_atividade: parseInt(tipoAtividade),
-                status_expira_em: expiraEm
-            }, { onConflict: 'guild_id' });
-            if (error) throw error;
-            return { success: true };
-        } catch (err) {
-            console.error("Erro ao salvar status:", err);
-            return { success: false };
-        }
-    },
+			if (error) throw error;
+
+			return data || null;
+
+		} catch (err) {
+			console.error("Erro ao buscar configuração global do bot:", err);
+			return null;
+		}
+	},
+
+	async salvarStatusBot(textoStatus, tipoAtividade, expiraEm) {
+		try {
+			const { error } = await sb
+				.from('bot_config')
+				.update({
+					status_texto: textoStatus || null,
+					tipo_atividade: parseInt(tipoAtividade),
+					status_expira_em: expiraEm || null
+				})
+				.eq('id', 1);
+
+			if (error) throw error;
+
+			return { success: true };
+
+		} catch (err) {
+			console.error("Erro ao salvar status global:", err);
+			return { success: false };
+		}
+	},
 
     async salvarConfigCanal(guildId, channelId) {
         try {
@@ -196,7 +219,7 @@ var NZKAPI = {
             return { success: false };
         }
     },
-
+	
     async salvarConfigTop1(guildId, roleId) {
         try {
             const { error } = await sb.from('servidor_configs').upsert({
