@@ -4,25 +4,19 @@ var sb = supabase.createClient(CONFIG.URL, CONFIG.KEY);
 var NZKAPI = {
 
     async logAcao(guildId, acao, targetId, detalhes) {
-        try {
-            const { data: { session } } = await sb.auth.getSession();
-            if (!session) return;
-            const meta = session.user.user_metadata || {};
-            const actorId = meta.provider_id || meta.sub;
-            const actorName = meta.full_name || meta.name || 'Admin';
-            const { error } = await sb.from('audit_log').insert({
-                guild_id: guildId,
-                actor_id: actorId,
-                actor_name: actorName,
-                action: acao,
-                target_id: targetId || null,
-                detalhes: detalhes || null
-            });
-            if (error) throw error;
-        } catch (err) {
-            console.error("Erro ao registrar log de auditoria:", err);
-        }
-    },
+		try {
+			const { error } = await sb.from('audit_log').insert({
+				guild_id: guildId,
+				action: acao,
+				target_id: targetId || null,
+				detalhes: detalhes || null
+			});
+
+			if (error) throw error;
+		} catch (err) {
+			console.error("Erro ao registrar log de auditoria:", err);
+		}
+	},
 
     async getAuditLog(guildId) {
         try {
