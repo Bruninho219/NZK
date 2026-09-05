@@ -28,7 +28,21 @@ const app = {
 			const servidores = await NZKAPI.getServidoresAtivos();
 
 			const planos = await NZKAPI.getPlanosConfig();
-			console.log('Planos recebidos do Supabase:', planos);
+
+			this.PLANOS = {};
+
+			planos.forEach(plano => {
+				this.PLANOS[plano.tipo] = {
+					patentes: plano.patentes ?? Infinity,
+					cargosEntrada: plano.cargos_entrada ?? Infinity,
+					youtube: plano.youtube ?? Infinity,
+					twitch: plano.twitch ?? Infinity,
+					conquistas: plano.conquistas ?? Infinity,
+					historicoDias: plano.historico_dias ?? Infinity
+				};
+			});
+
+			console.log('Planos recebidos do Supabase:', this.PLANOS);
 
 			this.renderServerList(servidores);
 		} catch (err) {
@@ -157,6 +171,19 @@ const app = {
 			`;
 
 		}).join('');
+	},
+	
+	getTipoServidor(guildId = this.selectedGuild) {
+		const servidor = (this._servidoresDisponiveis || [])
+			.find(s => s.id === guildId);
+
+		return servidor?.tipo || 'comum';
+	},
+
+	getPlanoServidor(guildId = this.selectedGuild) {
+		const tipo = this.getTipoServidor(guildId);
+
+		return this.PLANOS?.[tipo] || this.PLANOS?.comum || {};
 	},
 	
 	async salvarTipoServidor(guildId) {
@@ -520,6 +547,12 @@ const app = {
 
         this.iniciarRealtime(guildId);
         this.iniciarRealtimeAuditLog(guildId);
+		
+		console.log(
+		'Plano atual:',
+		this.getTipoServidor(guildId),
+		this.getPlanoServidor(guildId)
+	);
     },
 
     iniciarRealtime(guildId) {
