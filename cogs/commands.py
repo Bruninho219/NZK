@@ -183,15 +183,18 @@ class GeneralCommands(commands.Cog):
             "`!nReset [@usuário]` — Reseta níveis (todos ou um usuário específico)\n"
             "`!nSetXP @usuário valor` — Define o XP de um usuário\n"
             "`!nSetLevel @usuário valor` — Define o nível de um usuário\n"
-            "`!nStatus` — Atualiza o status do bot\n"
             "`!nSync` — Sincroniza cargos e canais no banco\n"
             "`!nSync2` — Atualiza nomes das patentes\n"
             "`!nFix` — Corrige cargos de todos os membros\n"
             "`!setchannel` — Define o canal de anúncios\n"
 
         ), inline=False)
-
-        embed.set_footer(text="XP: +20 por mensagem (cooldown 15s) • +5 por reação • +15 por minuto em voz\n💡 Todos os comandos também funcionam como /slash")
+        embed.add_field(name="👑 Owner", value=(
+            "`!nStatus` — Atualiza o status global do bot\n"
+        ), inline=False)
+        embed.set_footer(
+            text="Os valores de XP e cooldown podem variar conforme a configuração do servidor.\n💡 Todos os comandos também funcionam como /slash"
+        )
         await ctx.send(embed=embed)
 
     @commands.hybrid_command(
