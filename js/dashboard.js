@@ -1515,10 +1515,7 @@ row.innerHTML = `
         const plano = this.getPlanoServidor(guildId);
 		const dias = plano.historicoDias;
 
-		const data = await NZKAPI.getXpHistoricoServidor(
-			guildId,
-			dias
-		);
+		const data = await NZKAPI.getXpHistoricoServidor(guildId);
 
         if (!data.length) {
             container.innerHTML = '<p style="color:var(--text-muted); text-align:center; padding:20px;">Ainda sem histórico — o snapshot roda 1x por dia, à meia-noite.</p>';

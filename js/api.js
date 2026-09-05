@@ -611,25 +611,14 @@ var NZKAPI = {
 		}
 	},
 
-	async getXpHistoricoServidor(guildId, dias = 30) {
+	async getXpHistoricoServidor(guildId) {
 		try {
-			let query = sb
-				.from('servidor_xp_historico')
-				.select('xp_total, registrado_em')
-				.eq('guild_id', guildId);
-
-			if (dias !== null && dias !== Infinity) {
-				const limite = new Date();
-				limite.setDate(limite.getDate() - dias);
-
-				query = query.gte(
-					'registrado_em',
-					limite.toISOString().slice(0, 10)
-				);
-			}
-
-			const { data, error } = await query
-				.order('registrado_em', { ascending: true });
+			const { data, error } = await sb.rpc(
+				'get_servidor_xp_historico_limitado',
+				{
+					p_guild_id: guildId
+				}
+			);
 
 			if (error) throw error;
 
