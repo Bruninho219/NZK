@@ -12,3 +12,10 @@ def is_admin_or_owner():
             return True
         return ctx.author.guild_permissions.administrator
     return commands.check(predicate)
+
+def is_owner():
+    """Libera o comando somente para o dono definido em OWNER_ID (.env)."""
+    async def predicate(ctx):
+        return OWNER_ID is not None and ctx.author.id == OWNER_ID
+
+    return commands.check(predicate)

@@ -3,7 +3,7 @@ from logger import log_info, log_erro, log_aviso
 from discord.ext import commands
 from datetime import datetime, timezone
 import asyncio
-from checks import is_admin_or_owner
+from checks import is_admin_or_owner, is_owner
 
 class GeneralCommands(commands.Cog):
     def __init__(self, bot):
@@ -198,7 +198,7 @@ class GeneralCommands(commands.Cog):
     name="nstatus",
     description="Aplica o status global configurado no painel web"
 )
-    @is_admin_or_owner()
+    @is_owner()
     async def update_status(self, ctx):
         msg = await ctx.send("🔄 Atualizando status...")
 
@@ -386,28 +386,32 @@ class GeneralCommands(commands.Cog):
                     value=top1.mention if top1 else "❌ Não configurado",
                     inline=True
                 )
-
-                traducoes = {
-                    0: "Jogando",
-                    2: "Ouvindo",
-                    3: "Assistindo",
-                    4: "Custom",
-                    5: "Competindo"
-                }
-
-                bot_cfg = res_bot.data[0] if res_bot.data else {}
-
-                tipo_id = int(bot_cfg.get("tipo_atividade") or 0)
-                status_texto = bot_cfg.get("status_texto") or "Não configurado"
-                tipo_nome = traducoes.get(tipo_id, "Desconhecido")
-
+            else:
                 embed.add_field(
-                    name="🎮 Status Global do Bot",
-                    value=f"{tipo_nome}: **{status_texto}**",
+                    name="⚠️ Configurações",
+                    value="Nenhuma configuração encontrada.",
                     inline=False
                 )
-            else:
-                embed.add_field(name="⚠️ Configurações", value="Nenhuma configuração encontrada.", inline=False)
+
+            traducoes = {
+                0: "Jogando",
+                2: "Ouvindo",
+                3: "Assistindo",
+                4: "Custom",
+                5: "Competindo"
+            }
+
+            bot_cfg = res_bot.data[0] if res_bot.data else {}
+
+            tipo_id = int(bot_cfg.get("tipo_atividade") or 0)
+            status_texto = bot_cfg.get("status_texto") or "Não configurado"
+            tipo_nome = traducoes.get(tipo_id, "Desconhecido")
+
+            embed.add_field(
+                name="🎮 Status Global do Bot",
+                value=f"{tipo_nome}: **{status_texto}**",
+                inline=False
+            )
 
             if res_pat.data:
                 linhas = []
