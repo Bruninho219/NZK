@@ -1059,8 +1059,17 @@ const app = {
 			? [...this.cargosEntradaAtuais].map(String)
 			: [];
 
-		if (this.cargosEntradaAtuais.length >= 10) {
-			return this.showToast("Limite de 10 cargos atingido.", "error");
+		const plano = this.getPlanoServidor();
+		const limite = plano.cargosEntrada;
+
+		if (
+			limite !== Infinity &&
+			this.cargosEntradaAtuais.length >= limite
+		) {
+			return this.showToast(
+				`Limite de ${limite} cargos atingido.`,
+				"error"
+			);
 		}
 
 		if (this.cargosEntradaAtuais.includes(String(roleId))) {
