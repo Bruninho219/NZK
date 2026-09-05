@@ -240,7 +240,7 @@ const app = {
                             : `<span class="server-icon">${icone}</span>`}
                     </div>
 						<h3>${this.escapeHtml(nome)}</h3>
-						${badgeTipo}
+						${badgeTipo}<br>
 						${this.idCopiavel(id)}
 						${removido ? `<div class="server-removido-badge">⚠️ Bot removido há ${diasRemovido}d</div>` : ''}
 					</div>
