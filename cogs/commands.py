@@ -387,12 +387,22 @@ class GeneralCommands(commands.Cog):
                     inline=True
                 )
 
-                traducoes = {0: "Jogando", 2: "Ouvindo", 3: "Assistindo", 4: "Custom", 5: "Competindo"}
-                tipo_id = int(cfg.get("tipo_atividade") or 0)
-                status_texto = cfg.get("status_texto") or "Não configurado"
+                traducoes = {
+                    0: "Jogando",
+                    2: "Ouvindo",
+                    3: "Assistindo",
+                    4: "Custom",
+                    5: "Competindo"
+                }
+
+                bot_cfg = res_bot.data[0] if res_bot.data else {}
+
+                tipo_id = int(bot_cfg.get("tipo_atividade") or 0)
+                status_texto = bot_cfg.get("status_texto") or "Não configurado"
                 tipo_nome = traducoes.get(tipo_id, "Desconhecido")
+
                 embed.add_field(
-                    name="🎮 Status do Bot",
+                    name="🎮 Status Global do Bot",
                     value=f"{tipo_nome}: **{status_texto}**",
                     inline=False
                 )
