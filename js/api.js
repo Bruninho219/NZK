@@ -188,16 +188,30 @@ var NZKAPI = {
 
 	async salvarStatusBot(textoStatus, tipoAtividade, expiraEm) {
 		try {
-			const { error } = await sb
+			const { data, error } = await sb
 				.from('bot_config')
 				.update({
 					status_texto: textoStatus || null,
 					tipo_atividade: parseInt(tipoAtividade),
 					status_expira_em: expiraEm || null
 				})
-				.eq('id', 1);
+				.eq('id', 1)
+				.select();
+
+			console.log('bot_config UPDATE:', {
+				data,
+				error
+			});
 
 			if (error) throw error;
+
+			if (!data || data.length === 0) {
+				console.error(
+					'bot_config: nenhuma linha foi alterada. Possível bloqueio por RLS.'
+				);
+
+				return { success: false };
+			}
 
 			return { success: true };
 
