@@ -1,7 +1,7 @@
 import discord
-from logger import log_info, log_erro, log_aviso
+from logger import log_info, log_erro
 from discord.ext import commands
-from datetime import datetime, timezone
+from datetime import datetime
 import asyncio
 from checks import is_admin_or_owner, is_owner
 

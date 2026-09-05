@@ -197,12 +197,7 @@ var NZKAPI = {
 				})
 				.eq('id', 1)
 				.select();
-
-			console.log('bot_config UPDATE:', {
-				data,
-				error
-			});
-
+			
 			if (error) throw error;
 
 			if (!data || data.length === 0) {
@@ -375,16 +370,21 @@ var NZKAPI = {
         }
     },
 
-    async deletarPatente(id) {
-        try {
-            const { error } = await sb.from('patentes').delete().eq('id', id);
-            if (error) throw error;
-            return { success: true };
-        } catch (err) {
-            console.error("Erro ao deletar patente:", err);
-            return { success: false };
-        }
-    },
+	async deletarPatente(guildId, id) {
+		try {
+			const { error } = await sb
+				.from('patentes')
+				.delete()
+				.eq('guild_id', guildId)
+				.eq('id', id);
+
+			if (error) throw error;
+			return { success: true };
+		} catch (err) {
+			console.error("Erro ao deletar patente:", err);
+			return { success: false };
+		}
+	},
 
     async getConquistas(guildId) {
         try {

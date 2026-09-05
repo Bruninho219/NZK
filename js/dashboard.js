@@ -38,9 +38,7 @@ const app = {
 					historicoDias: plano.historico_dias ?? Infinity
 				};
 			});
-
-			console.log('Planos recebidos do Supabase:', this.PLANOS);
-
+			
 			this.renderServerList(servidores);
 		} catch (err) {
 			document.getElementById('serverList').innerHTML =
@@ -386,8 +384,6 @@ const app = {
     },
 
 	async renderServerList(servidores) {
-		console.log('Servidores recebidos do Supabase:', servidores);
-
 		const list = document.getElementById('serverList');
 
         // Fallback só pra servidores que ainda não passaram por !nSync depois
@@ -544,10 +540,7 @@ const app = {
         if (painelSuporte) painelSuporte.style.display = 'none';
 
         this.renderServerSwitcher();
-
-        const statusSection = document.getElementById('statusSection');
-        statusSection.style.display = guildId === "602623690206609418" ? "block" : "none";
-
+		
         this.renderYoutubeLimiteHint();
 		this.renderTwitchLimiteHint();
 		this.renderCargosEntradaLimiteHint();
@@ -568,14 +561,8 @@ const app = {
             this.showToast("❌ Alguns dados podem não ter carregado — veja o console.", "error");
         }
 
-        this.iniciarRealtime(guildId);
-        this.iniciarRealtimeAuditLog(guildId);
-		
-		console.log(
-		'Plano atual:',
-		this.getTipoServidor(guildId),
-		this.getPlanoServidor(guildId)
-	);
+    this.iniciarRealtime(guildId);
+    this.iniciarRealtimeAuditLog(guildId);
     },
 
     iniciarRealtime(guildId) {
@@ -1701,7 +1688,7 @@ row.innerHTML = `
 
     async handleDelete(id) {
         if (await this.confirmar("Deseja realmente excluir esta patente?", "Excluir")) {
-            const res = await NZKAPI.deletarPatente(id);
+            const res = await NZKAPI.deletarPatente(this.selectedGuild, id);
             if (res.success) {
                 this.showToast("🗑️ Patente removida.");
                 this.fetchAndRender(this.selectedGuild);
