@@ -526,7 +526,8 @@ const app = {
 
         this.renderYoutubeLimiteHint();
 		this.renderTwitchLimiteHint();
-
+		this.renderCargosEntradaLimiteHint();
+		
         this.showLoading('patenteBody');
         this.showLoading('leaderboardBody');
 
