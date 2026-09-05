@@ -23,15 +23,21 @@ const app = {
             .replace(/'/g, '&#39;');
     },
 
-    async init() {
-        try {
-            const servidores = await NZKAPI.getServidoresAtivos();
-            this.renderServerList(servidores);
-        } catch (err) {
-            document.getElementById('serverList').innerHTML = "<p>Erro ao conectar à base de dados.</p>";
-        }
-        this.iniciarModoSuporte();
-    },
+	async init() {
+		try {
+			const servidores = await NZKAPI.getServidoresAtivos();
+
+			const planos = await NZKAPI.getPlanosConfig();
+			console.log('Planos recebidos do Supabase:', planos);
+
+			this.renderServerList(servidores);
+		} catch (err) {
+			document.getElementById('serverList').innerHTML =
+				"<p>Erro ao conectar à base de dados.</p>";
+		}
+
+		this.iniciarModoSuporte();
+	},
 
 	async abrirConfiguracoesGlobais() {
 		if (!this._souDono) {

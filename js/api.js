@@ -626,6 +626,22 @@ var NZKAPI = {
             return [];
         }
     },
+
+	async getPlanosConfig() {
+		try {
+			const { data, error } = await sb
+				.from('planos_config')
+				.select('*');
+
+			if (error) throw error;
+
+			return data || [];
+		} catch (err) {
+			console.error("Erro ao buscar configurações dos planos:", err);
+			return [];
+		}
+	},
+
 	async salvarTipoServidor(guildId, tipo) {
 		try {
 			const { error } = await sb
