@@ -194,7 +194,10 @@ class GeneralCommands(commands.Cog):
         embed.set_footer(text="XP: +20 por mensagem (cooldown 15s) • +5 por reação • +15 por minuto em voz\n💡 Todos os comandos também funcionam como /slash")
         await ctx.send(embed=embed)
 
-    @commands.hybrid_command(name="nstatus", description="Aplica o status configurado no painel web")
+    @commands.hybrid_command(
+    name="nstatus",
+    description="Aplica o status global configurado no painel web"
+)
     @is_admin_or_owner()
     async def update_status(self, ctx):
         msg = await ctx.send("🔄 Atualizando status...")
@@ -208,36 +211,51 @@ class GeneralCommands(commands.Cog):
                 5: "Competindo"
             }
 
-            guild_id = str(ctx.guild.id)
-
-            res = self.supabase.table("servidor_configs") \
+            res = self.supabase.table("bot_config") \
                 .select("status_texto, tipo_atividade") \
-                .eq("guild_id", guild_id) \
+                .eq("id", 1) \
                 .execute()
 
-            if res.data and res.data[0].get('status_texto'):
+            if res.data and res.data[0].get("status_texto"):
                 cfg = res.data[0]
-                texto = cfg['status_texto']
-                tipo_id = int(cfg.get('tipo_atividade') or 0)
+
+                texto = cfg["status_texto"]
+                tipo_id = int(
+                    cfg.get("tipo_atividade")
+                    if cfg.get("tipo_atividade") is not None
+                    else 0
+                )
 
                 nome_exibicao = traducoes.get(tipo_id, "Status")
 
                 if tipo_id == 4:
                     atividade = discord.CustomActivity(name=texto)
                 else:
-                    tipo_formatado = discord.ActivityType(tipo_id)
-                    atividade = discord.Activity(type=tipo_formatado, name=texto)
+                    atividade = discord.Activity(
+                        type=discord.ActivityType(tipo_id),
+                        name=texto
+                    )
 
                 await self.bot.change_presence(activity=atividade)
 
-                log_info("nStatus", f"Status atualizado: {nome_exibicao} -> {texto} | por {ctx.author}")
-                await msg.edit(content=f"✅ Status atualizado para **{nome_exibicao}**: **{texto}**")
+                log_info(
+                    "nStatus",
+                    f"Status atualizado: {nome_exibicao} -> {texto} | por {ctx.author}"
+                )
 
+                await msg.edit(
+                    content=f"✅ Status atualizado para **{nome_exibicao}**: **{texto}**"
+                )
+            
             else:
-                await msg.edit(content="⚠️ Nenhum status configurado para este servidor.")
-
+                await msg.edit(
+                    content="⚠️ Nenhum status global configurado."
+                )
+        
         except Exception as e:
-            await msg.edit(content=f"❌ Erro ao atualizar status: {e}")
+            await msg.edit(
+                content=f"❌ Erro ao atualizar status: {e}"
+            )
             log_erro("nStatus", e)
 
     @commands.hybrid_command(name="setchannel", description="Define este canal como canal de avisos")
