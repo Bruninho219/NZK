@@ -439,7 +439,7 @@ class GeneralCommands(commands.Cog):
 
         try:
             res = self.supabase.rpc(
-                "get_xp_historico_limitado",
+                "get_xp_historico_bot",
                 {
                     "p_guild_id": gid,
                     "p_user_id": uid
@@ -515,20 +515,17 @@ class GeneralCommands(commands.Cog):
             matplotlib.use('Agg')
             import matplotlib.pyplot as plt
             import matplotlib.dates as mdates
-            from datetime import timedelta
+            res = self.supabase.rpc(
+                "get_xp_historico_bot",
+                {
+                    "p_guild_id": gid,
+                    "p_user_id": uid
+                }
+            ).execute()
 
-            limite = (datetime.now(timezone.utc) - timedelta(days=30)).isoformat()
-
-            res = self.supabase.table("xp_historico")\
-                .select("xp_total, registrado_em")\
-                .eq("guild_id", gid)\
-                .eq("user_id", uid)\
-                .gte("registrado_em", limite)\
-                .order("registrado_em", desc=False)\
-                .execute()
-
-            if not res.data:
-                return await ctx.send(f"Nenhum historico encontrado para {target.display_name} nos ultimos 30 dias.")
+            return await ctx.send(
+                f"Nenhum histórico encontrado para {target.display_name}."
+            )
 
             datas = [datetime.fromisoformat(row['registrado_em'][:10]) for row in res.data]
             xps   = [row['xp_total'] for row in res.data]
@@ -562,7 +559,9 @@ class GeneralCommands(commands.Cog):
             file = discord.File(buf, filename="historico_xp.png")
             embed = discord.Embed(title=f"Historico de XP -- {target.display_name}", color=0x5865f2)
             embed.set_image(url="attachment://historico_xp.png")
-            embed.set_footer(text=f"Ultimos 30 dias - {len(res.data)} registros")
+            embed.set_footer(
+                text=f"{len(res.data)} registros"
+            )
             await ctx.send(embed=embed, file=file)
 
         except ImportError:
