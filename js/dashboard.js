@@ -33,6 +33,10 @@ const app = {
         this.iniciarModoSuporte();
     },
 
+	async abrirConfiguracoesGlobais() {
+		this.showToast("⚙️ Configurações Globais — em construção!");
+	},
+
     async iniciarModoSuporte() {
         // O painel só é mostrado se o RPC confirmar que é o dono do bot —
         // isso é só UX (esconder/mostrar), a segurança de verdade está no
@@ -56,10 +60,6 @@ const app = {
             console.error("Erro ao checar modo suporte:", err);
         }
     },
-	
-	async abrirConfiguracoesGlobais() {
-		this.showToast("⚙️ Configurações Globais — em construção!");
-	},
 
     async renderSuporteAtivo() {
         const el = document.getElementById('suporteListaAtiva');
