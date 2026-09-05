@@ -592,26 +592,15 @@ var NZKAPI = {
         }
     },
 
-	async getHistorico(guildId, userId, dias = 30) {
+	async getHistorico(guildId, userId) {
 		try {
-			let query = sb
-				.from('xp_historico')
-				.select('xp_total, registrado_em')
-				.eq('guild_id', guildId)
-				.eq('user_id', userId);
-
-			if (dias !== null && dias !== Infinity) {
-				const limite = new Date();
-				limite.setDate(limite.getDate() - dias);
-
-				query = query.gte(
-					'registrado_em',
-					limite.toISOString()
-				);
-			}
-
-			const { data, error } = await query
-				.order('registrado_em', { ascending: true });
+			const { data, error } = await sb.rpc(
+				'get_xp_historico_limitado',
+				{
+					p_guild_id: guildId,
+					p_user_id: userId
+				}
+			);
 
 			if (error) throw error;
 

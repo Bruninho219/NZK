@@ -1760,13 +1760,11 @@ row.innerHTML = `
 		
 		const plano = this.getPlanoServidor();
 		const dias = plano.historicoDias;
-
+		
 		const data = await NZKAPI.getHistorico(
 			this.selectedGuild,
-			userId,
-			dias
+			userId
 		);
-
 		const periodoTexto = dias === Infinity
 			? 'no histórico disponível'
 			: `nos últimos ${dias} dias`;
