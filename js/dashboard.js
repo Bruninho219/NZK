@@ -224,9 +224,10 @@ const app = {
 				badgeTipo = '<div class="server-type-badge server-type-adm">👑 ADM</div>';
 			} else if (tipo === 'premium') {
 				badgeTipo = '<div class="server-type-badge server-type-premium">💎 PREMIUM</div>';
-			else if (tipo === 'comum') {
+			}
+			} else if (tipo === 'comum') {
 				badgeTipo = '<div class="server-type-badge server-type-premium">🌐</div>';
-			}}
+			}
 
             // Só o "id" (sempre um snowflake numérico) vai pro onclick — o
             // nome nunca é interpolado ali. Nome de servidor agora vem do
