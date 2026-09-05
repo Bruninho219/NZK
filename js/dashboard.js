@@ -824,15 +824,21 @@ const app = {
     },
 
 
-    renderYoutubeLimiteHint() {
-        const el = document.getElementById('youtubeLimiteHint');
-        if (!el) return;
-        if (this.SEM_LIMITE_YOUTUBE.includes(this.selectedGuild)) {
-            el.innerHTML = '💡 Aceita <b>@handle</b>, URL completa ou ID <b>UCxxxx</b> — sem limite de canais neste servidor. 👑';
-        } else {
-            el.innerHTML = '💡 Aceita <b>@handle</b>, URL completa ou ID <b>UCxxxx</b> — máximo 5 canais por servidor.';
-        }
-    },
+	renderYoutubeLimiteHint() {
+		const el = document.getElementById('youtubeLimiteHint');
+		if (!el) return;
+
+		const plano = this.getPlanoServidor();
+		const limite = plano.youtube;
+
+		if (limite === Infinity) {
+			el.innerHTML =
+				'💡 Aceita <b>@handle</b>, URL completa ou ID <b>UCxxxx</b> — sem limite de canais neste servidor. 👑';
+		} else {
+			el.innerHTML =
+				`💡 Aceita <b>@handle</b>, URL completa ou ID <b>UCxxxx</b> — máximo ${limite} canais por servidor.`;
+		}
+	},
 
     async renderYoutubeMonitores(guildId) {
         const data = await NZKAPI.getYoutubeMonitores(guildId);
@@ -872,11 +878,19 @@ const app = {
         if (!entrada) return this.showToast("Informe o canal do YouTube.", "error");
         if (!discordCh) return this.showToast("Selecione o canal do Discord.", "error");
 
-        // Limite de 5 (exceto servidores na lista SEM_LIMITE_YOUTUBE)
-        if (!this.SEM_LIMITE_YOUTUBE.includes(this.selectedGuild)) {
-            const atual = await NZKAPI.getYoutubeMonitores(this.selectedGuild);
-            if (atual.length >= 5) return this.showToast("Limite de 5 canais atingido.", "error");
-        }
+		const plano = this.getPlanoServidor();
+		const limite = plano.youtube;
+
+		if (limite !== Infinity) {
+			const atual = await NZKAPI.getYoutubeMonitores(this.selectedGuild);
+
+			if (atual.length >= limite) {
+				return this.showToast(
+					`Limite de ${limite} canais atingido.`,
+					"error"
+				);
+			}
+		}
 
         this.showToast("🔄 Resolvendo canal...");
 
