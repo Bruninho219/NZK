@@ -7,9 +7,6 @@ const app = {
     _sortLeaderboard: { col: null, asc: true },
     _leaderboardPage: 1,
 
-    // Servidores que não têm o limite de 3 canais do YouTube (ex: seu próprio servidor)
-    SEM_LIMITE_YOUTUBE: ["602623690206609418"],
-
     // Neutraliza caracteres HTML perigosos antes de inserir qualquer dado
     // vindo do banco (nicknames, nomes de cargo/canal, etc.) via innerHTML —
     // esses dados são controlados pelo usuário do Discord e não são confiáveis.
@@ -375,7 +372,7 @@ const app = {
         const guildDataFallback = {
             "602623690206609418": { name: "Nazarick", icon: "img/nazarick.gif" },
             "1044253947751309372": { name: "Serv Baharuth", icon: "img/baharuth.png" },
-            "1089351461588176908": { name: "Serv Teocracia Slane", icon: "img/slane2.png" },
+            "1089351461588176908": { name: "Serv Teocracia Slane", icon: "img/slane.png" },
             "100000000": { name: "Test Server", icon: "🧪" }
         };
 
@@ -971,8 +968,19 @@ const app = {
         if (!username) return this.showToast("Informe o nome de usuário da Twitch.", "error");
         if (!discordCh) return this.showToast("Selecione o canal do Discord.", "error");
 
-        const atual = await NZKAPI.getTwitchMonitores(this.selectedGuild);
-        if (atual.length >= 5) return this.showToast("Limite de 5 canais atingido.", "error");
+		const plano = this.getPlanoServidor();
+		const limite = plano.twitch;
+
+		if (limite !== Infinity) {
+			const atual = await NZKAPI.getTwitchMonitores(this.selectedGuild);
+
+			if (atual.length >= limite) {
+				return this.showToast(
+					`Limite de ${limite} canais atingido.`,
+					"error"
+				);
+			}
+		}
 
         const res = await NZKAPI.salvarTwitchMonitor({
             guild_id: this.selectedGuild,
