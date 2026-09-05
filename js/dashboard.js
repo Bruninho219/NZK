@@ -34,7 +34,98 @@ const app = {
     },
 
 	async abrirConfiguracoesGlobais() {
-		this.showToast("⚙️ Configurações Globais — em construção!");
+		if (!this._souDono) {
+			return this.showToast(
+				"❌ Você não tem permissão para acessar esta área.",
+				"error"
+			);
+		}
+
+		document.getElementById('selector').style.display = 'none';
+		document.getElementById('editor').style.display = 'none';
+		document.getElementById('globalConfig').style.display = 'block';
+
+		this.renderConfiguracoesGlobais();
+	},
+	
+	async fecharConfiguracoesGlobais() {
+		document.getElementById('globalConfig').style.display = 'none';
+		document.getElementById('editor').style.display = 'none';
+		document.getElementById('selector').style.display = 'block';
+
+		window.scrollTo({
+			top: 0,
+			behavior: 'instant'
+		});
+	},
+
+	async renderConfiguracoesGlobais() {
+		const container = document.getElementById('globalServerList');
+
+		if (!container) return;
+
+		const servidores = this._servidoresDisponiveis || [];
+
+		if (!servidores.length) {
+			container.innerHTML = `
+				<p style="color:var(--text-muted);">
+					Nenhum servidor disponível.
+				</p>
+			`;
+			return;
+		}
+
+		container.innerHTML = servidores.map(srv => {
+
+			const nome = this.escapeHtml(srv.name);
+			const id = this.escapeHtml(srv.id);
+			const tipo = srv.tipo || 'comum';
+
+			let badge = '';
+
+			if (tipo === 'adm') {
+				badge = `
+					<span class="server-type-badge server-type-adm">
+						👑 ADM
+					</span>
+				`;
+			} else if (tipo === 'premium') {
+				badge = `
+					<span class="server-type-badge server-type-premium">
+						💎 PREMIUM
+					</span>
+				`;
+			} else {
+				badge = `
+					<span class="server-type-badge server-type-comum">
+						🌐 COMUM
+					</span>
+				`;
+			}
+
+			return `
+				<div class="global-server-row">
+
+					<div class="global-server-info">
+						<strong>${nome}</strong>
+
+						<div style="
+							margin-top:4px;
+							font-size:11px;
+							color:var(--text-muted);
+						">
+							${id}
+						</div>
+					</div>
+
+					<div>
+						${badge}
+					</div>
+
+				</div>
+			`;
+
+		}).join('');
 	},
 
     async iniciarModoSuporte() {
