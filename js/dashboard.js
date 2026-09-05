@@ -1512,7 +1512,13 @@ row.innerHTML = `
         const container = document.getElementById('servidorXpGrafico');
         if (!container) return;
 
-        const data = await NZKAPI.getXpHistoricoServidor(guildId);
+        const plano = this.getPlanoServidor(guildId);
+		const dias = plano.historicoDias;
+
+		const data = await NZKAPI.getXpHistoricoServidor(
+			guildId,
+			dias
+		);
 
         if (!data.length) {
             container.innerHTML = '<p style="color:var(--text-muted); text-align:center; padding:20px;">Ainda sem histórico — o snapshot roda 1x por dia, à meia-noite.</p>';
@@ -1602,7 +1608,21 @@ row.innerHTML = `
         const lvl = document.getElementById('lvl').value;
         const sel = document.getElementById('roleSelect');
         if (!lvl || isNaN(lvl)) return this.showToast("Insira um nível válido.", "error");
+		
+		const plano = this.getPlanoServidor();
+		const limite = plano.patentes;
 
+		if (limite !== Infinity) {
+			const atuais = await NZKAPI.getPatentes(this.selectedGuild);
+
+			if (atuais.length >= limite) {
+				return this.showToast(
+					`Limite de ${limite} patentes atingido.`,
+					"error"
+				);
+			}
+		}
+		
         const res = await NZKAPI.salvarPatente({
             guild_id: this.selectedGuild,
             level_required: parseInt(lvl),
@@ -1677,7 +1697,21 @@ row.innerHTML = `
 
         if (!nome) return this.showToast("Informe o nome da conquista.", "error");
         if (!criterioValor || parseInt(criterioValor) <= 0) return this.showToast("Informe um valor de critério válido.", "error");
+		
+		const plano = this.getPlanoServidor();
+		const limite = plano.conquistas;
 
+		if (limite !== Infinity) {
+			const atuais = await NZKAPI.getConquistas(this.selectedGuild);
+
+			if (atuais.length >= limite) {
+				return this.showToast(
+					`Limite de ${limite} conquistas atingido.`,
+					"error"
+				);
+			}
+		}
+		
         const res = await NZKAPI.salvarConquista({
             guild_id: this.selectedGuild,
             emoji,
@@ -1723,15 +1757,32 @@ row.innerHTML = `
 
         document.getElementById('historicoGrafico').innerHTML = '<p style="color:var(--text-muted); text-align:center; padding:40px;">Carregando...</p>';
         document.getElementById('historicoTabela').innerHTML = '';
+		
+		const plano = this.getPlanoServidor();
+		const dias = plano.historicoDias;
 
-        const data = await NZKAPI.getHistorico(this.selectedGuild, userId);
+		const data = await NZKAPI.getHistorico(
+			this.selectedGuild,
+			userId,
+			dias
+		);
 
-        if (!data.length) {
-            document.getElementById('historicoGrafico').innerHTML = '<p style="color:var(--text-muted); text-align:center; padding:40px;">Nenhum histórico encontrado nos últimos 30 dias.<br><small>O snapshot roda todo dia à meia-noite.</small></p>';
-            return;
-        }
+		const periodoTexto = dias === Infinity
+			? 'no histórico disponível'
+			: `nos últimos ${dias} dias`;
 
-        // --- GRÁFICO ---
+		if (!data.length) {
+			document.getElementById('historicoGrafico').innerHTML =
+				`<p style="color:var(--text-muted); text-align:center; padding:40px;">
+					Nenhum histórico encontrado ${periodoTexto}.
+					<br>
+					<small>O snapshot roda todo dia à meia-noite.</small>
+				</p>`;
+
+			return;
+		}
+
+		// --- GRÁFICO ---
         const labels = data.map(r => r.registrado_em.slice(0, 10));
         const valores = data.map(r => r.xp_total);
 

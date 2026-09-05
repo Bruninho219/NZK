@@ -592,40 +592,64 @@ var NZKAPI = {
         }
     },
 
-    async getHistorico(guildId, userId) {
-        try {
-            const limite = new Date();
-            limite.setDate(limite.getDate() - 30);
-            const { data, error } = await sb.from('xp_historico')
-                .select('xp_total, registrado_em')
-                .eq('guild_id', guildId)
-                .eq('user_id', userId)
-                .gte('registrado_em', limite.toISOString())
-                .order('registrado_em', { ascending: true });
-            if (error) throw error;
-            return data || [];
-        } catch (err) {
-            console.error("Erro ao buscar historico:", err);
-            return [];
-        }
-    },
+	async getHistorico(guildId, userId, dias = 30) {
+		try {
+			let query = sb
+				.from('xp_historico')
+				.select('xp_total, registrado_em')
+				.eq('guild_id', guildId)
+				.eq('user_id', userId);
 
-    async getXpHistoricoServidor(guildId, dias = 30) {
-        try {
-            const limite = new Date();
-            limite.setDate(limite.getDate() - dias);
-            const { data, error } = await sb.from('servidor_xp_historico')
-                .select('xp_total, registrado_em')
-                .eq('guild_id', guildId)
-                .gte('registrado_em', limite.toISOString().slice(0, 10))
-                .order('registrado_em', { ascending: true });
-            if (error) throw error;
-            return data || [];
-        } catch (err) {
-            console.error("Erro ao buscar historico de XP do servidor:", err);
-            return [];
-        }
-    },
+			if (dias !== null && dias !== Infinity) {
+				const limite = new Date();
+				limite.setDate(limite.getDate() - dias);
+
+				query = query.gte(
+					'registrado_em',
+					limite.toISOString()
+				);
+			}
+
+			const { data, error } = await query
+				.order('registrado_em', { ascending: true });
+
+			if (error) throw error;
+
+			return data || [];
+		} catch (err) {
+			console.error("Erro ao buscar historico:", err);
+			return [];
+		}
+	},
+
+	async getXpHistoricoServidor(guildId, dias = 30) {
+		try {
+			let query = sb
+				.from('servidor_xp_historico')
+				.select('xp_total, registrado_em')
+				.eq('guild_id', guildId);
+
+			if (dias !== null && dias !== Infinity) {
+				const limite = new Date();
+				limite.setDate(limite.getDate() - dias);
+
+				query = query.gte(
+					'registrado_em',
+					limite.toISOString().slice(0, 10)
+				);
+			}
+
+			const { data, error } = await query
+				.order('registrado_em', { ascending: true });
+
+			if (error) throw error;
+
+			return data || [];
+		} catch (err) {
+			console.error("Erro ao buscar historico de XP do servidor:", err);
+			return [];
+		}
+	},
 
 	async getPlanosConfig() {
 		try {
