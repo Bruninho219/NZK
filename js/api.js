@@ -524,27 +524,37 @@ var NZKAPI = {
         }
     },
 
-    async deletarTwitchMonitor(id) {
-        try {
-            const { error } = await sb.from('twitch_monitores').delete().eq('id', id);
-            if (error) throw error;
-            return { success: true };
-        } catch (err) {
-            console.error("Erro ao deletar monitor Twitch:", err);
-            return { success: false };
-        }
-    },
+	async deletarTwitchMonitor(guildId, id) {
+		try {
+			const { error } = await sb
+				.from('twitch_monitores')
+				.delete()
+				.eq('guild_id', guildId)
+				.eq('id', id);
 
-    async toggleTwitchMonitor(id, ativo) {
-        try {
-            const { error } = await sb.from('twitch_monitores').update({ ativo }).eq('id', id);
-            if (error) throw error;
-            return { success: true };
-        } catch (err) {
-            console.error("Erro ao toggle monitor Twitch:", err);
-            return { success: false };
-        }
-    },
+			if (error) throw error;
+			return { success: true };
+		} catch (err) {
+			console.error("Erro ao deletar monitor Twitch:", err);
+			return { success: false };
+		}
+	},
+
+	async toggleTwitchMonitor(guildId, id, ativo) {
+		try {
+			const { error } = await sb
+				.from('twitch_monitores')
+				.update({ ativo })
+				.eq('guild_id', guildId)
+				.eq('id', id);
+
+			if (error) throw error;
+			return { success: true };
+		} catch (err) {
+			console.error("Erro ao toggle monitor Twitch:", err);
+			return { success: false };
+		}
+	},
 
     async getYoutubeMonitores(guildId) {
         try {
