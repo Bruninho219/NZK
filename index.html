@@ -298,9 +298,12 @@
                     </div>
                     <button onclick="app.handleAdicionarCargoEntrada()">+ Adicionar</button>
                 </div>
-                <span style="font-size: 11px; color: var(--text-muted); margin-bottom: 15px; display:block;">
-                    💡 Até 10 cargos — cada um atribuído automaticamente a quem entra no servidor.
-                </span>
+				<span
+					id="cargosEntradaLimiteHint"
+					style="font-size: 11px; color:var(--text-muted); margin-bottom: 15px; display:block;"
+				>
+					💡 Cargos atribuídos automaticamente a quem entra no servidor.
+				</span>
 
                 <div class="table-wrapper" style="max-height: 260px;">
                     <table>

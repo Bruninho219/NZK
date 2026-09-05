@@ -1114,6 +1114,22 @@ const app = {
 		}
 	},
 
+	renderCargosEntradaLimiteHint() {
+		const el = document.getElementById('cargosEntradaLimiteHint');
+		if (!el) return;
+
+		const plano = this.getPlanoServidor();
+		const limite = plano.cargosEntrada;
+
+		if (limite === Infinity) {
+			el.innerHTML =
+				'💡 Cargos atribuídos automaticamente a quem entra no servidor — sem limite neste servidor. 👑';
+		} else {
+			el.innerHTML =
+				`💡 Até ${limite} cargos — cada um atribuído automaticamente a quem entra no servidor.`;
+		}
+	},
+
 	async handleRemoverCargoEntrada(roleId) {
 		this.cargosEntradaAtuais = Array.isArray(this.cargosEntradaAtuais)
 			? [...this.cargosEntradaAtuais].map(String)
