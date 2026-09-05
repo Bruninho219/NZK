@@ -427,59 +427,80 @@ class GeneralCommands(commands.Cog):
 
 
 
-    @commands.hybrid_command(name="nhistorico", description="Histórico de XP em tabela (30 dias)")
+    @commands.hybrid_command(
+        name="nhistorico",
+        description="Histórico de XP conforme o plano do servidor"
+    )
     async def nhistorico(self, ctx, target: discord.Member = None):
-        """Exibe o historico de XP dos ultimos 30 dias em tabela"""
         target = target or ctx.author
+
         gid = str(ctx.guild.id)
         uid = str(target.id)
 
         try:
-            from datetime import timedelta
-            limite = (datetime.now(timezone.utc) - timedelta(days=30)).isoformat()
-
-            res = self.supabase.table("xp_historico")\
-                .select("xp_total, registrado_em")\
-                .eq("guild_id", gid)\
-                .eq("user_id", uid)\
-                .gte("registrado_em", limite)\
-                .order("registrado_em", desc=False)\
-                .execute()
+            res = self.supabase.rpc(
+                "get_xp_historico_limitado",
+                {
+                    "p_guild_id": gid,
+                    "p_user_id": uid
+                }
+            ).execute()
 
             if not res.data:
-                return await ctx.send(f"Nenhum historico encontrado para {target.display_name} nos ultimos 30 dias.")
+                return await ctx.send(
+                    f"Nenhum histórico encontrado para {target.display_name}."
+                )
 
             linhas = []
+
             for i, row in enumerate(res.data):
-                data = row['registrado_em'][:10]
-                xp = row['xp_total']
+                data = row["registrado_em"][:10]
+                xp = row["xp_total"]
+
                 if i == 0:
                     diff = ""
                 else:
-                    anterior = res.data[i - 1]['xp_total']
+                    anterior = res.data[i - 1]["xp_total"]
                     delta = xp - anterior
                     diff = f" `(+{delta})`" if delta >= 0 else f" `({delta})`"
-                linhas.append(f"`{data}` -- **{xp} XP**{diff}")
 
-            chunks = [linhas[i:i+10] for i in range(0, len(linhas), 10)]
+                linhas.append(
+                    f"`{data}` -- **{xp} XP**{diff}"
+                )
 
-            separador = "\n"
+            chunks = [
+                linhas[i:i + 10]
+                for i in range(0, len(linhas), 10)
+            ]
+
             embed = discord.Embed(
-                title=f"Historico de XP -- {target.display_name}",
-                description=separador.join(chunks[0]),
+                title=f"Histórico de XP -- {target.display_name}",
+                description="\n".join(chunks[0]),
                 color=0x5865f2
             )
-            embed.set_thumbnail(url=target.display_avatar.url)
 
-            for i, chunk in enumerate(chunks[1:], start=2):
-                embed.add_field(name="\u200b", value=separador.join(chunk), inline=False)
+            embed.set_thumbnail(
+                url=target.display_avatar.url
+            )
 
-            embed.set_footer(text=f"Ultimos 30 dias - {len(res.data)} registros")
+            for chunk in chunks[1:]:
+                embed.add_field(
+                    name="\u200b",
+                    value="\n".join(chunk),
+                    inline=False
+                )
+
+            embed.set_footer(
+                text=f"{len(res.data)} registros"
+            )
+
             await ctx.send(embed=embed)
 
         except Exception as e:
             log_erro("nHistorico", e)
-            await ctx.send("Erro ao buscar historico.")
+            await ctx.send(
+                "Erro ao buscar histórico."
+            )
 
     @commands.hybrid_command(name="nhistorico2", description="Histórico de XP em gráfico (30 dias)")
     async def nhistorico2(self, ctx, target: discord.Member = None):
