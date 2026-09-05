@@ -145,9 +145,21 @@
             <div id="suporteListaAtiva" style="font-size:12px; color:var(--text-muted);"></div>
         </div>
 
-        <div id="selector">
-            <h1>✨ Meus Servidores Ativos</h1>
-            <div class="server-grid" id="serverList">
+		<div id="selector">
+			<div style="display:flex; align-items:center; justify-content:space-between; gap:15px; flex-wrap:wrap; margin-bottom:30px;">
+				<h1 style="margin:0;">✨ Meus Servidores Ativos</h1>
+
+				<button
+					id="btnGlobalConfig"
+					class="secondary"
+					style="display:none; margin:0;"
+					onclick="app.abrirConfiguracoesGlobais()"
+				>
+					⚙️ Configurações Globais
+				</button>
+			</div>
+
+			<div class="server-grid" id="serverList">
                 <div class="server-card"><p>Carregando servidores do banco...</p></div>
             </div>
         </div>

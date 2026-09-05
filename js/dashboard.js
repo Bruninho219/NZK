@@ -40,14 +40,26 @@ const app = {
         const painel = document.getElementById('suporteModoPanel');
         if (!painel) return;
         try {
-            this._souDono = await NZKAPI.souDono();
-            if (!this._souDono) return;
-            painel.style.display = 'block';
-            this.renderSuporteAtivo();
+			this._souDono = await NZKAPI.souDono();
+
+			if (!this._souDono) return;
+
+			painel.style.display = 'block';
+
+			const btnGlobalConfig = document.getElementById('btnGlobalConfig');
+			if (btnGlobalConfig) {
+				btnGlobalConfig.style.display = 'inline-flex';
+			}
+
+			this.renderSuporteAtivo();
         } catch (err) {
             console.error("Erro ao checar modo suporte:", err);
         }
     },
+	
+	async abrirConfiguracoesGlobais() {
+		this.showToast("⚙️ Configurações Globais — em construção!");
+	},
 
     async renderSuporteAtivo() {
         const el = document.getElementById('suporteListaAtiva');
