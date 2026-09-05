@@ -118,10 +118,27 @@ const app = {
 						</div>
 					</div>
 
-					<div>
+					<div style="display:flex; align-items:center; gap:12px;">
 						${badge}
-					</div>
 
+						<select
+							class="global-server-tipo-select"
+							data-guild-id="${id}"
+							style="min-width:140px;"
+						>
+							<option value="comum" ${tipo === 'comum' ? 'selected' : ''}>
+								🌐 Comum
+							</option>
+
+							<option value="premium" ${tipo === 'premium' ? 'selected' : ''}>
+								💎 Premium
+							</option>
+
+							<option value="adm" ${tipo === 'adm' ? 'selected' : ''}>
+								👑 ADM
+							</option>
+						</select>
+					</div>
 				</div>
 			`;
 
