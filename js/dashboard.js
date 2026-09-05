@@ -219,24 +219,18 @@ const app = {
                 : null;
 			const tipo = srv.tipo || 'comum';
 
+			const tipo = srv.tipo || 'comum';
+
 			let badgeTipo = '';
 
 			if (tipo === 'adm') {
 				badgeTipo = '<div class="server-type-badge server-type-adm">👑 ADM</div>';
-			}
-			else
-			{
-				if (tipo === 'premium')
-				{
+			} else if (tipo === 'premium') {
 				badgeTipo = '<div class="server-type-badge server-type-premium">💎 PREMIUM</div>';
-				}
-				else
-				{
-					if(tipo === 'comum')
-						badgeTipo = '<div class="server-type-badge server-type-comum">🌐</div>';
-					else
-						badgeTipo = '<div class="server-type-badge server-type-comum">➖</div>';
-				}
+			} else if (tipo === 'comum') {
+				badgeTipo = '<div class="server-type-badge server-type-comum">🌐</div>';
+			} else {
+				badgeTipo = '<div class="server-type-badge server-type-comum">➖</div>';
 			}
 
             // Só o "id" (sempre um snowflake numérico) vai pro onclick — o
