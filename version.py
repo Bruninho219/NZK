@@ -1,4 +1,4 @@
-VERSION = "0.10.13.9"
+VERSION = "0.10.13.10"
 BOT_NAME = "NZK"
 DESCRIPTION = "Leia mais em www.nzk.app.br"
 AUTHOR = "bruninho219"

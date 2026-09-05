@@ -625,5 +625,23 @@ var NZKAPI = {
             console.error("Erro ao buscar historico de XP do servidor:", err);
             return [];
         }
-    }
+    },
+	async salvarTipoServidor(guildId, tipo) {
+		try {
+			const { error } = await sb
+				.from('servidores')
+				.update({ tipo })
+				.eq('guild_id', guildId);
+
+			if (error) throw error;
+
+			return { success: true };
+		} catch (err) {
+			console.error("Erro ao salvar tipo do servidor:", err);
+			return {
+				success: false,
+				error: err
+			};
+		}
+	}
 };

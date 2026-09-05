@@ -122,8 +122,8 @@ const app = {
 						${badge}
 
 						<select
+							id="tipo-${id}"
 							class="global-server-tipo-select"
-							data-guild-id="${id}"
 							style="min-width:140px;"
 						>
 							<option value="comum" ${tipo === 'comum' ? 'selected' : ''}>
@@ -138,11 +138,54 @@ const app = {
 								👑 ADM
 							</option>
 						</select>
+
+						<button
+							class="success"
+							style="width:auto; margin:0;"
+							onclick="app.salvarTipoServidor('${id}')"
+						>
+							Salvar
+						</button>
 					</div>
 				</div>
 			`;
 
 		}).join('');
+	},
+	
+	async salvarTipoServidor(guildId) {
+		if (!this._souDono) {
+			return this.showToast(
+				"❌ Você não tem permissão para alterar esta configuração.",
+				"error"
+			);
+		}
+
+		const select = document.getElementById(`tipo-${guildId}`);
+
+		if (!select) return;
+
+		const tipo = select.value;
+
+		const res = await NZKAPI.salvarTipoServidor(guildId, tipo);
+
+		if (!res.success) {
+			return this.showToast(
+				"❌ Erro ao salvar classificação do servidor.",
+				"error"
+			);
+		}
+
+		const servidor = (this._servidoresDisponiveis || [])
+			.find(s => s.id === guildId);
+
+		if (servidor) {
+			servidor.tipo = tipo;
+		}
+
+		this.showToast("✅ Classificação atualizada!");
+
+		this.renderConfiguracoesGlobais();
 	},
 
     async iniciarModoSuporte() {
