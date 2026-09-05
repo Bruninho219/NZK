@@ -350,8 +350,13 @@ class GeneralCommands(commands.Cog):
 
         try:
             res_cfg = self.supabase.table("servidor_configs")\
-                .select("canal_avisos_id, cargo_top1_id, status_texto, tipo_atividade")\
+                .select("canal_avisos_id, cargo_top1_id")\
                 .eq("guild_id", gid)\
+                .execute()
+
+            res_bot = self.supabase.table("bot_config")\
+                .select("status_texto, tipo_atividade")\
+                .eq("id", 1)\
                 .execute()
 
             res_pat = self.supabase.table("patentes")\
