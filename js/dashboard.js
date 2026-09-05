@@ -525,6 +525,7 @@ const app = {
         statusSection.style.display = guildId === "602623690206609418" ? "block" : "none";
 
         this.renderYoutubeLimiteHint();
+		this.renderTwitchLimiteHint();
 
         this.showLoading('patenteBody');
         this.showLoading('leaderboardBody');
