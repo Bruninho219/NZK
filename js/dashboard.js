@@ -1480,11 +1480,13 @@ row.innerHTML = `
         if (!lvl) return this.showToast("Informe o nível.", "error");
 
         try {
-            const { error } = await sb.from('patentes').update({
-                level_required: parseInt(lvl),
-                role_id: roleId,
-                role_name: roleName
-            }).eq('id', id);
+			const { error } = await sb
+				.from('patentes')
+				.update({
+					...
+				})
+				.eq('guild_id', this.selectedGuild)
+				.eq('id', id);
 
             if (error) throw error;
             this.showToast("✅ Patente atualizada!");
