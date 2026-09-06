@@ -1759,7 +1759,163 @@ row.innerHTML = `
 			);
 		}
 
-		console.log("Perfil selecionado:", usuario);
+		const rankingOrdenado = [...(this._lastLeaderboard || [])]
+			.sort((a, b) => {
+				if (b.level !== a.level) return b.level - a.level;
+				return b.xp - a.xp;
+			});
+
+		const posicao = rankingOrdenado.findIndex(
+			u => String(u.user_id) === String(userId)
+		) + 1;
+
+		const xpNecessario = (parseInt(usuario.level) * 100) + 75;
+		const xpAtual = parseInt(usuario.xp || 0);
+		const porcentagem = Math.min(
+			Math.max((xpAtual / xpNecessario) * 100, 0),
+			100
+		).toFixed(0);
+
+		const conquistas = (this._conquistasUsuario || [])
+			.filter(c => String(c.user_id) === String(userId));
+
+		const overlay = document.createElement('div');
+
+		overlay.style.cssText = `
+			position:fixed;
+			inset:0;
+			background:rgba(0,0,0,0.70);
+			display:flex;
+			align-items:center;
+			justify-content:center;
+			z-index:9999;
+			padding:20px;
+		`;
+
+		overlay.innerHTML = `
+			<div style="
+				background:var(--sidebar);
+				border-radius:18px;
+				padding:26px;
+				width:100%;
+				max-width:520px;
+				box-shadow:0 20px 60px rgba(0,0,0,0.45);
+			">
+				<div style="
+					display:flex;
+					justify-content:space-between;
+					align-items:flex-start;
+					gap:16px;
+					margin-bottom:20px;
+				">
+					<div>
+						<div style="font-size:21px; font-weight:800;">
+							${this.escapeHtml(usuario.username || 'Desconhecido')}
+						</div>
+
+						<div style="
+							margin-top:5px;
+							font-size:12px;
+							color:var(--text-muted);
+						">
+							${this.idCopiavel(usuario.user_id)}
+						</div>
+					</div>
+
+					<button
+						type="button"
+						class="secondary"
+						style="width:auto; margin:0;"
+						id="fecharPerfilUsuario"
+					>
+						✕
+					</button>
+				</div>
+
+				<div style="
+					display:grid;
+					grid-template-columns:repeat(2, 1fr);
+					gap:12px;
+					margin-bottom:18px;
+				">
+					<div class="field">
+						<label>POSIÇÃO</label>
+						<div style="font-size:20px; font-weight:800;">
+							#${posicao}
+						</div>
+					</div>
+
+					<div class="field">
+						<label>NÍVEL</label>
+						<div style="font-size:20px; font-weight:800;">
+							${usuario.level}
+						</div>
+					</div>
+
+					<div class="field">
+						<label>MENSAGENS</label>
+						<div style="font-size:18px; font-weight:700;">
+							${usuario.msg_count || 0}
+						</div>
+					</div>
+
+					<div class="field">
+						<label>VOZ</label>
+						<div style="font-size:18px; font-weight:700;">
+							${this.formatarVoz(usuario.voice_minutes || 0)}
+						</div>
+					</div>
+
+					<div class="field">
+						<label>REAÇÕES</label>
+						<div style="font-size:18px; font-weight:700;">
+							${usuario.reacoes || 0}
+						</div>
+					</div>
+
+					<div class="field">
+						<label>CONQUISTAS</label>
+						<div style="font-size:18px; font-weight:700;">
+							${conquistas.length}
+						</div>
+					</div>
+				</div>
+
+				<div style="margin-top:8px;">
+					<div style="
+						display:flex;
+						justify-content:space-between;
+						gap:10px;
+						font-size:12px;
+						color:var(--text-muted);
+						margin-bottom:6px;
+					">
+						<span>XP atual</span>
+						<span>${xpAtual} / ${xpNecessario} XP</span>
+					</div>
+
+					<div class="xp-bar-container">
+						<div
+							class="xp-bar-fill"
+							style="
+								width:${porcentagem}%;
+								background:var(--accent);
+							"
+						></div>
+					</div>
+				</div>
+			</div>
+		`;
+
+		document.body.appendChild(overlay);
+
+		const fechar = () => overlay.remove();
+
+		overlay.querySelector('#fecharPerfilUsuario').onclick = fechar;
+
+		overlay.onclick = (e) => {
+			if (e.target === overlay) fechar();
+		};
 	},
 	
     renderLeaderboardPagination(totalItens, totalPaginas) {
