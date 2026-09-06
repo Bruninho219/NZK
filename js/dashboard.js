@@ -1751,13 +1751,18 @@ row.innerHTML = `
 	async abrirPerfilUsuario(userId) {
 		const usuario = (this._lastLeaderboard || [])
 			.find(u => String(u.user_id) === String(userId));
-
+		
 		if (!usuario) {
 			return this.showToast(
 				"Não foi possível localizar esse usuário.",
 				"error"
 			);
 		}
+
+		const conquistasDetalhes = await NZKAPI.getConquistasDoUsuario(
+			this.selectedGuild,
+			userId
+		);
 
 		const rankingOrdenado = [...(this._lastLeaderboard || [])]
 			.sort((a, b) => {
@@ -1872,12 +1877,57 @@ row.innerHTML = `
 						</div>
 					</div>
 
-					<div class="field">
-						<label>CONQUISTAS</label>
-						<div style="font-size:18px; font-weight:700;">
-							${conquistas}
-						</div>
+				<div class="field">
+					<label>CONQUISTAS</label>
+
+					<div style="font-size:18px; font-weight:700; margin-bottom:8px;">
+						${conquistas}
 					</div>
+
+					${
+						conquistasDetalhes.length
+							? `
+								<div style="
+									display:flex;
+									flex-direction:column;
+									gap:6px;
+								">
+									${conquistasDetalhes.map(item => `
+										<div style="
+											font-size:12px;
+											line-height:1.35;
+										">
+											<strong>
+												${this.escapeHtml(item.conquistas?.emoji || '🏆')}
+												${this.escapeHtml(item.conquistas?.nome || 'Conquista')}
+											</strong>
+
+											${
+												item.conquistas?.descricao
+													? `
+														<div style="
+															color:var(--text-muted);
+															margin-top:2px;
+														">
+															${this.escapeHtml(item.conquistas.descricao)}
+														</div>
+													`
+													: ''
+											}
+										</div>
+									`).join('')}
+								</div>
+							`
+							: `
+								<div style="
+									font-size:12px;
+									color:var(--text-muted);
+								">
+									Nenhuma conquista desbloqueada.
+								</div>
+							`
+					}
+				</div>
 				</div>
 
 				<div style="margin-top:8px;">
