@@ -442,7 +442,34 @@ var NZKAPI = {
             return {};
         }
     },
+	
+	async getConquistasDoUsuario(guildId, userId) {
+		try {
+			const { data, error } = await sb
+				.from('conquistas_usuario')
+				.select(`
+					conquista_id,
+					obtida_em,
+					conquistas (
+						id,
+						nome,
+						descricao,
+						emoji
+					)
+				`)
+				.eq('guild_id', guildId)
+				.eq('user_id', userId)
+				.order('obtida_em', { ascending: false });
 
+			if (error) throw error;
+
+			return data || [];
+		} catch (err) {
+			console.error("Erro ao buscar conquistas do usuário:", err);
+			return [];
+		}
+	},
+	
     async getConquistasContagem(guildId) {
         // Retorna quantos usuários já desbloquearam cada conquista —
         // usado na aba de gerenciamento (admin), pra saber o alcance de cada uma.
