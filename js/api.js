@@ -616,27 +616,37 @@ var NZKAPI = {
         }
     },
 
-    async deletarYoutubeMonitor(id) {
-        try {
-            const { error } = await sb.from('youtube_monitores').delete().eq('id', id);
-            if (error) throw error;
-            return { success: true };
-        } catch (err) {
-            console.error("Erro ao deletar monitor YouTube:", err);
-            return { success: false };
-        }
-    },
+	async deletarYoutubeMonitor(guildId, id) {
+		try {
+			const { error } = await sb
+				.from('youtube_monitores')
+				.delete()
+				.eq('guild_id', guildId)
+				.eq('id', id);
 
-    async toggleYoutubeMonitor(id, ativo) {
-        try {
-            const { error } = await sb.from('youtube_monitores').update({ ativo }).eq('id', id);
-            if (error) throw error;
-            return { success: true };
-        } catch (err) {
-            console.error("Erro ao toggle monitor YouTube:", err);
-            return { success: false };
-        }
-    },
+			if (error) throw error;
+			return { success: true };
+		} catch (err) {
+			console.error("Erro ao deletar monitor YouTube:", err);
+			return { success: false };
+		}
+	},
+
+	async toggleYoutubeMonitor(guildId, id, ativo) {
+		try {
+			const { error } = await sb
+				.from('youtube_monitores')
+				.update({ ativo })
+				.eq('guild_id', guildId)
+				.eq('id', id);
+
+			if (error) throw error;
+			return { success: true };
+		} catch (err) {
+			console.error("Erro ao toggle monitor YouTube:", err);
+			return { success: false };
+		}
+	},
 
 	async getHistorico(guildId, userId) {
 		try {

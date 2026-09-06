@@ -971,7 +971,11 @@ const app = {
     },
 
     async toggleYoutube(id, ativo) {
-        const res = await NZKAPI.toggleYoutubeMonitor(id, ativo);
+        const res = await NZKAPI.toggleYoutubeMonitor(
+			this.selectedGuild,
+			id,
+			ativo
+		);
         if (res.success) {
             this.showToast(ativo ? "▶️ Monitor ativado!" : "⏸️ Monitor pausado!");
             this.renderYoutubeMonitores(this.selectedGuild);
@@ -980,7 +984,10 @@ const app = {
 
     async deletarYoutube(id) {
         if (!(await this.confirmar("Remover este canal monitorado?", "Remover"))) return;
-        const res = await NZKAPI.deletarYoutubeMonitor(id);
+			const res = await NZKAPI.deletarYoutubeMonitor(
+		this.selectedGuild,
+		id
+	);
         if (res.success) {
             this.showToast("🗑️ Monitor removido.");
             this.renderYoutubeMonitores(this.selectedGuild);
