@@ -1311,7 +1311,9 @@ const app = {
 
 		// Atualiza a tabela imediatamente
 		this.renderCargosEntradaTable();
-
+		this._usoPlano.cargosEntrada = this.cargosEntradaAtuais.length;
+		this.renderUsoPlano(this.selectedGuild);
+		
 		// Limpa o select
 		sel.value = "";
 
@@ -1335,6 +1337,9 @@ const app = {
 			// Se falhar no banco, desfaz a alteração local
 			this.cargosEntradaAtuais = anterior;
 			this.renderCargosEntradaTable();
+			
+			this._usoPlano.cargosEntrada = this.cargosEntradaAtuais.length;
+			this.renderUsoPlano(this.selectedGuild);
 
 			this.showToast(
 				"❌ Erro ao salvar o cargo automático.",
@@ -1380,6 +1385,8 @@ const app = {
 
 		// Atualiza a tabela imediatamente
 		this.renderCargosEntradaTable();
+		this._usoPlano.cargosEntrada = this.cargosEntradaAtuais.length;
+		this.renderUsoPlano(this.selectedGuild);
 
 		const canal = document.getElementById('boasVindasChannel')?.value || "";
 
@@ -1401,7 +1408,9 @@ const app = {
 			// Se falhar no banco, restaura a lista anterior
 			this.cargosEntradaAtuais = anterior;
 			this.renderCargosEntradaTable();
-
+			this._usoPlano.cargosEntrada = this.cargosEntradaAtuais.length;
+			this.renderUsoPlano(this.selectedGuild);
+			
 			this.showToast(
 				"❌ Erro ao remover o cargo automático.",
 				"error"
