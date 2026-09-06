@@ -744,6 +744,8 @@ const app = {
             if (sel) { const cur = sel.value; sel.innerHTML = opts; if (cur) sel.value = cur; }
         });
         await this.loadSavedConfigs(guildId);
+		this._usoPlano.cargosEntrada = this.cargosEntradaAtuais?.length || 0;
+		this.renderUsoPlano(guildId);
         await this.renderYoutubeMonitores(guildId);
         await this.renderAuditLog(guildId);
         await this.renderTwitchMonitores(guildId);
