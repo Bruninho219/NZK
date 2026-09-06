@@ -714,6 +714,9 @@ const app = {
             NZKAPI.getLeaderboard(guildId),
             NZKAPI.getCanais(guildId),
             NZKAPI.getConquistasUsuarios(guildId)
+			NZKAPI.getConquistas(guildId),
+			NZKAPI.getTwitchMonitores(guildId),
+			NZKAPI.getYoutubeMonitores(guildId)
         ]);
 
         this.renderRoles(data[0]);
@@ -722,6 +725,12 @@ const app = {
         this._leaderboardPage = 1;
         this._lastLeaderboard = data[2];
         this._conquistasUsuario = data[4];
+		this._usoPlano = {
+			patentes: data[1]?.length || 0,
+			conquistas: data[5]?.length || 0,
+			twitch: data[6]?.length || 0,
+			youtube: data[7]?.length || 0
+		};
         this.renderLeaderboard(data[2]);
         this.renderEstatisticas(data[2]);
         this.renderHistoricoSelect(data[2]);
