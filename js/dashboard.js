@@ -205,6 +205,94 @@ const app = {
 		return this.PLANOS?.[tipo] || this.PLANOS?.comum || {};
 	},
 	
+	renderUsoPlano(guildId = this.selectedGuild) {
+		const el = document.getElementById('usoPlanoResumo');
+		if (!el) return;
+
+		const plano = this.getPlanoServidor(guildId);
+		const tipo = this.getTipoServidor(guildId);
+		const uso = this._usoPlano || {};
+
+		const formatarLimite = (valor) => {
+			return Number.isFinite(valor) ? valor : '∞';
+		};
+
+		const historico = Number.isFinite(plano.historicoDias)
+			? `${plano.historicoDias} dias`
+			: 'Ilimitado';
+
+		el.style.display = 'block';
+
+		el.innerHTML = `
+			<div style="
+				display:flex;
+				justify-content:space-between;
+				align-items:center;
+				gap:12px;
+				margin-bottom:12px;
+			">
+				<strong>Uso do plano</strong>
+
+				<span class="server-type-badge ${
+					tipo === 'adm'
+						? 'server-type-adm'
+						: tipo === 'premium'
+							? 'server-type-premium'
+							: 'server-type-comum'
+				}">
+					${tipo.toUpperCase()}
+				</span>
+			</div>
+
+			<div style="
+				display:grid;
+				grid-template-columns:repeat(auto-fit, minmax(150px, 1fr));
+				gap:10px;
+			">
+				<div>
+					<strong>Patentes</strong><br>
+					<span style="color:var(--text-muted);">
+						${uso.patentes || 0} / ${formatarLimite(plano.patentes)}
+					</span>
+				</div>
+
+				<div>
+					<strong>Conquistas</strong><br>
+					<span style="color:var(--text-muted);">
+						${uso.conquistas || 0} / ${formatarLimite(plano.conquistas)}
+					</span>
+				</div>
+
+				<div>
+					<strong>Twitch</strong><br>
+					<span style="color:var(--text-muted);">
+						${uso.twitch || 0} / ${formatarLimite(plano.twitch)}
+					</span>
+				</div>
+
+				<div>
+					<strong>YouTube</strong><br>
+					<span style="color:var(--text-muted);">
+						${uso.youtube || 0} / ${formatarLimite(plano.youtube)}
+					</span>
+				</div>
+
+				<div>
+					<strong>Cargos de entrada</strong><br>
+					<span style="color:var(--text-muted);">
+						${uso.cargosEntrada || 0} / ${formatarLimite(plano.cargosEntrada)}
+					</span>
+				</div>
+
+				<div>
+					<strong>Histórico</strong><br>
+					<span style="color:var(--text-muted);">
+						${historico}
+					</span>
+				</div>
+			</div>
+		`;
+	},
 	async salvarTipoServidor(guildId) {
 		if (!this._souDono) {
 			return this.showToast(
