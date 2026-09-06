@@ -1241,15 +1241,14 @@ const app = {
 			this.selectedGuild,
 			id
 		);
-			if (res.success) {
-				this.showToast("🗑️ Monitor removido.");
+		if (res.success) {
+			this.showToast("🗑️ Monitor removido.");
 
-				await this.renderTwitchMonitores(this.selectedGuild);
+			await this.renderTwitchMonitores(this.selectedGuild);
 
-				const atuais = await NZKAPI.getTwitchMonitores(this.selectedGuild);
-				this._usoPlano.twitch = atuais.length;
-				this.renderUsoPlano(this.selectedGuild);
-			}
+			const atuais = await NZKAPI.getTwitchMonitores(this.selectedGuild);
+			this._usoPlano.twitch = atuais.length;
+			this.renderUsoPlano(this.selectedGuild);
         }
     },
 
