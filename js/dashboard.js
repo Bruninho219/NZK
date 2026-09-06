@@ -1711,7 +1711,26 @@ row.innerHTML = `
             return `
                 <tr class="${topClass}">
                     <td>${i + 1}</td>
-                    <td><b>${this.escapeHtml(u.username || 'Desconhecido')}</b></td>
+					<td>
+						<button
+							type="button"
+							class="btn-link-user"
+							onclick="app.abrirPerfilUsuario('${this.escapeHtml(u.user_id)}')"
+							style="
+								background:none;
+								border:none;
+								padding:0;
+								margin:0;
+								color:inherit;
+								font:inherit;
+								font-weight:700;
+								cursor:pointer;
+								text-align:left;
+							"
+						>
+							${this.escapeHtml(u.username || 'Desconhecido')}
+						</button>
+					</td>
                     <td>Lvl ${u.level}</td>
                     <td>
                         <span style="font-size: 11px; color: var(--text-muted);">${xpAtual} / ${xpNecessario} XP (${porcentagem}%)</span>
@@ -1729,6 +1748,20 @@ row.innerHTML = `
         this.renderLeaderboardPagination(filtrados.length, totalPaginas);
     },
 
+	async abrirPerfilUsuario(userId) {
+		const usuario = (this._lastLeaderboard || [])
+			.find(u => String(u.user_id) === String(userId));
+
+		if (!usuario) {
+			return this.showToast(
+				"Não foi possível localizar esse usuário.",
+				"error"
+			);
+		}
+
+		console.log("Perfil selecionado:", usuario);
+	},
+	
     renderLeaderboardPagination(totalItens, totalPaginas) {
         const el = document.getElementById('leaderboardPagination');
         if (!el) return;
