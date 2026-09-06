@@ -1117,10 +1117,15 @@ const app = {
         });
 
         if (res.success) {
-            this.showToast("▶️ Canal do YouTube adicionado!");
-            document.getElementById('youtubeChannelId').value = '';
-            document.getElementById('youtubeChannelName').value = '';
-            this.renderYoutubeMonitores(this.selectedGuild);
+			this.showToast("▶️ Canal do YouTube adicionado!");
+			document.getElementById('youtubeChannelId').value = '';
+			document.getElementById('youtubeChannelName').value = '';
+
+			await this.renderYoutubeMonitores(this.selectedGuild);
+
+			const atuais = await NZKAPI.getYoutubeMonitores(this.selectedGuild);
+			this._usoPlano.youtube = atuais.length;
+			this.renderUsoPlano(this.selectedGuild);
         } else {
             this.showToast("❌ Erro ao adicionar.", "error");
         }
@@ -1141,13 +1146,17 @@ const app = {
     async deletarYoutube(id) {
         if (!(await this.confirmar("Remover este canal monitorado?", "Remover"))) return;
 			const res = await NZKAPI.deletarYoutubeMonitor(
-		this.selectedGuild,
-		id
-	);
-        if (res.success) {
-            this.showToast("🗑️ Monitor removido.");
-            this.renderYoutubeMonitores(this.selectedGuild);
-        }
+			this.selectedGuild, id
+		);
+		if (res.success) {
+			this.showToast("🗑️ Monitor removido.");
+
+			await this.renderYoutubeMonitores(this.selectedGuild);
+
+			const atuais = await NZKAPI.getYoutubeMonitores(this.selectedGuild);
+			this._usoPlano.youtube = atuais.length;
+			this.renderUsoPlano(this.selectedGuild);
+		}
     },
 
     async renderTwitchMonitores(guildId) {
