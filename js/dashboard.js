@@ -264,21 +264,68 @@ const app = {
         }
     },
 
-    async renderSuporteAtivo() {
-        const el = document.getElementById('suporteListaAtiva');
-        if (!el) return;
-        const ativos = await NZKAPI.getSuporteAtivo();
-        if (!ativos.length) {
-            el.innerHTML = 'Nenhum acesso de suporte ativo no momento.';
-            return;
-        }
-        el.innerHTML = ativos.map(a => `
-            <div style="display:flex; justify-content:space-between; align-items:center; padding:6px 0; border-top:1px solid rgba(255,255,255,0.08);">
-                <span>${this.idCopiavel(a.guild_id)} <span style="opacity:0.7;">— ativo desde ${new Date(a.ativado_em).toLocaleString('pt-BR')}</span></span>
-                <button class="btn-table-action danger" onclick="app.handleDesativarSuporte('${this.escapeHtml(a.guild_id)}')">Desativar</button>
-            </div>
-        `).join('');
-    },
+	async renderSuporteAtivo() {
+		const el = document.getElementById('suporteListaAtiva');
+		if (!el) return;
+
+		const ativos = await NZKAPI.getSuporteAtivo();
+
+		if (!ativos.length) {
+			el.innerHTML = `
+				<div style="opacity:0.7; padding:8px 0;">
+					Nenhum acesso de suporte ativo no momento.
+				</div>
+			`;
+			return;
+		}
+
+		el.innerHTML = ativos.map(a => {
+			const ativadoEm = new Date(a.ativado_em).toLocaleString('pt-BR');
+
+			return `
+				<div style="
+					display:flex;
+					justify-content:space-between;
+					align-items:center;
+					gap:12px;
+					padding:10px 0;
+					border-top:1px solid rgba(255,255,255,0.08);
+				">
+					<div>
+						<div style="display:flex; align-items:center; gap:8px;">
+							<strong>${this.idCopiavel(a.guild_id)}</strong>
+
+							<span style="
+								font-size:0.75rem;
+								padding:2px 7px;
+								border-radius:999px;
+								background:rgba(34,197,94,0.15);
+								color:#4ade80;
+								font-weight:600;
+							">
+								● SUPORTE ATIVO
+							</span>
+						</div>
+
+						<div style="opacity:0.7; font-size:0.85rem; margin-top:4px;">
+							Ativado em ${ativadoEm}
+						</div>
+
+						<div style="opacity:0.55; font-size:0.8rem;">
+							Ativado por: ${this.idCopiavel(a.ativado_por)}
+						</div>
+					</div>
+
+					<button
+						class="btn-table-action danger"
+						onclick="app.handleDesativarSuporte('${this.escapeHtml(a.guild_id)}')"
+					>
+						Desativar
+					</button>
+				</div>
+			`;
+		}).join('');
+	},
 
     async handleAtivarSuporte() {
         const input = document.getElementById('suporteGuildIdInput');

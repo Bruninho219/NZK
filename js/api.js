@@ -68,7 +68,7 @@ var NZKAPI = {
     async getSuporteAtivo() {
         try {
             const { data, error } = await sb.from('suporte_acesso')
-                .select('guild_id, ativado_em')
+                .select('guild_id, ativado_em, ativado_por')
                 .order('ativado_em', { ascending: false });
             if (error) throw error;
             return data || [];
