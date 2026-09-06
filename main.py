@@ -40,6 +40,7 @@ class MoraxBot(commands.Bot):
         self.atualizar_status_db.start()
         self.snapshot_xp_diario.start()
         self.limpar_servidores_removidos.start()
+        self.verificar_assinaturas_expiradas.start()
 
         modulos = ['cogs.leveling', 'cogs.commands', 'cogs.sync', 'cogs.youtube', 'cogs.twitch']
         for modulo in modulos:
@@ -278,7 +279,26 @@ class MoraxBot(commands.Bot):
 
         except Exception as e:
             log_erro("limpar_servidores_removidos", e)
+    
+    @tasks.loop(time=datetime.time(hour=0, minute=20))
+    async def verificar_assinaturas_expiradas(self):
+        """Expira assinaturas vencidas e atualiza o tipo dos servidores."""
+        try:
+            res = self.supabase.rpc(
+                "expirar_assinaturas_vencidas"
+            ).execute()
 
+            total = res.data or 0
+
+            if total > 0:
+                log_info(
+                    "verificar_assinaturas_expiradas",
+                    f"{total} assinatura(s) expirada(s)."
+                )
+
+        except Exception as e:
+            log_erro("verificar_assinaturas_expiradas", e)
+    
     @atualizar_status_db.before_loop
     async def before_status_loop(self):
         await self.wait_until_ready()
@@ -289,6 +309,10 @@ class MoraxBot(commands.Bot):
 
     @limpar_servidores_removidos.before_loop
     async def before_limpar_loop(self):
+        await self.wait_until_ready()
+
+    @verificar_assinaturas_expiradas.before_loop
+    async def before_assinaturas_loop(self):
         await self.wait_until_ready()
 
 bot = MoraxBot()
