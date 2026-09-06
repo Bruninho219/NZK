@@ -239,7 +239,13 @@ const app = {
 						: tipo === 'premium'
 							? 'server-type-premium'
 							: 'server-type-comum'
-				}">
+				}" style="
+					${tipo === 'comum'
+						? 'border:1px solid rgba(255,255,255,0.12); background:rgba(255,255,255,0.04); padding:4px 9px; border-radius:999px;'
+						: ''}
+				">
+					${tipo.toUpperCase()}
+				</span>
 					${tipo.toUpperCase()}
 				</span>
 			</div>
