@@ -2016,6 +2016,81 @@ row.innerHTML = `
 					</div>
 				`;
 
+				const canvas = document.createElement('canvas');
+
+				canvas.style.width = '100%';
+				canvas.style.marginTop = '16px';
+				canvas.style.maxHeight = '180px';
+
+				historicoEl.appendChild(canvas);
+
+				const labels = data.map(r =>
+					r.registrado_em.slice(5, 10)
+				);
+
+				const valores = data.map(r =>
+					r.xp_total
+				);
+
+				new Chart(canvas, {
+					type: 'line',
+
+					data: {
+						labels,
+
+						datasets: [{
+							label: 'XP total',
+							data: valores,
+							borderColor: '#5865f2',
+							backgroundColor: 'rgba(88, 101, 242, 0.12)',
+							borderWidth: 2,
+							pointRadius: 2,
+							fill: true,
+							tension: 0.3
+						}]
+					},
+
+					options: {
+						responsive: true,
+						maintainAspectRatio: false,
+
+						plugins: {
+							legend: {
+								display: false
+							}
+						},
+
+						scales: {
+							x: {
+								ticks: {
+									color: '#b5bac1',
+									font: {
+										size: 10
+									},
+									maxTicksLimit: 6
+								},
+
+								grid: {
+									color: 'rgba(255,255,255,0.04)'
+								}
+							},
+
+							y: {
+								ticks: {
+									color: '#b5bac1',
+									font: {
+										size: 10
+									}
+								},
+
+								grid: {
+									color: 'rgba(255,255,255,0.04)'
+								}
+							}
+						}
+					}
+				});
+
 				btnHistorico.textContent = '📈 Ver histórico';
 				btnHistorico.disabled = false;
 				return;
@@ -2052,7 +2127,7 @@ row.innerHTML = `
 						gap:10px;
 					">
 						<div class="field">
-							<label>XP REGISTRADO</label>
+							<label>XP TOTAL</label>
 							<div style="font-size:18px; font-weight:700;">
 								${ultimo.xp_total} XP
 							</div>
