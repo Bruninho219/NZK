@@ -1210,9 +1210,14 @@ const app = {
         });
 
         if (res.success) {
-            this.showToast("💜 Canal da Twitch adicionado!");
-            document.getElementById('twitchUsername').value = '';
-            this.renderTwitchMonitores(this.selectedGuild);
+			this.showToast("💜 Canal da Twitch adicionado!");
+			document.getElementById('twitchUsername').value = '';
+
+			await this.renderTwitchMonitores(this.selectedGuild);
+
+			const atuais = await NZKAPI.getTwitchMonitores(this.selectedGuild);
+			this._usoPlano.twitch = atuais.length;
+			this.renderUsoPlano(this.selectedGuild);
         } else {
             this.showToast("❌ Erro ao adicionar.", "error");
         }
@@ -1236,9 +1241,15 @@ const app = {
 			this.selectedGuild,
 			id
 		);
-				if (res.success) {
-            this.showToast("🗑️ Monitor removido.");
-            this.renderTwitchMonitores(this.selectedGuild);
+			if (res.success) {
+				this.showToast("🗑️ Monitor removido.");
+
+				await this.renderTwitchMonitores(this.selectedGuild);
+
+				const atuais = await NZKAPI.getTwitchMonitores(this.selectedGuild);
+				this._usoPlano.twitch = atuais.length;
+				this.renderUsoPlano(this.selectedGuild);
+			}
         }
     },
 
