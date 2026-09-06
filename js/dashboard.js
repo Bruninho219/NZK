@@ -1780,7 +1780,9 @@ row.innerHTML = `
 			Math.max((xpAtual / xpNecessario) * 100, 0),
 			100
 		).toFixed(0);
-
+		
+		
+		
 		const conquistas = (this._conquistasUsuario && this._conquistasUsuario[userId]) || 0;
 
 		const overlay = document.createElement('div');
@@ -1953,6 +1955,24 @@ row.innerHTML = `
 						></div>
 					</div>
 				</div>
+				<div style="margin-top:18px;">
+					<button
+						type="button"
+						class="secondary"
+						id="btnHistoricoPerfil"
+						style="width:100%; margin:0;"
+					>
+						📈 Ver histórico
+					</button>
+
+					<div
+						id="historicoPerfil"
+						style="
+							display:none;
+							margin-top:14px;
+						"
+					></div>
+				</div>
 			</div>
 		`;
 
@@ -1961,6 +1981,100 @@ row.innerHTML = `
 		const fechar = () => overlay.remove();
 
 		overlay.querySelector('#fecharPerfilUsuario').onclick = fechar;
+
+		const btnHistorico = overlay.querySelector('#btnHistoricoPerfil');
+		const historicoEl = overlay.querySelector('#historicoPerfil');
+
+		btnHistorico.onclick = async () => {
+			btnHistorico.disabled = true;
+			btnHistorico.textContent = 'Carregando...';
+
+			const data = await NZKAPI.getHistorico(
+				this.selectedGuild,
+				userId
+			);
+
+			const plano = this.getPlanoServidor();
+			const dias = plano.historicoDias;
+
+			const periodoTexto = dias === Infinity
+				? 'Histórico disponível'
+				: `Últimos ${dias} dias`;
+
+			historicoEl.style.display = 'block';
+
+			if (!data.length) {
+				historicoEl.innerHTML = `
+					<div style="
+						color:var(--text-muted);
+						text-align:center;
+						padding:16px 0;
+						font-size:13px;
+					">
+						Nenhum histórico encontrado.<br>
+						<small>${periodoTexto}</small>
+					</div>
+				`;
+
+				btnHistorico.textContent = '📈 Ver histórico';
+				btnHistorico.disabled = false;
+				return;
+			}
+
+			const ultimo = data[data.length - 1];
+			const primeiro = data[0];
+			const diferenca = ultimo.xp_total - primeiro.xp_total;
+
+			historicoEl.innerHTML = `
+				<div style="
+					border-top:1px solid rgba(255,255,255,0.08);
+					padding-top:14px;
+				">
+					<div style="
+						display:flex;
+						justify-content:space-between;
+						gap:12px;
+						margin-bottom:10px;
+					">
+						<strong>Histórico de XP</strong>
+
+						<span style="
+							color:var(--text-muted);
+							font-size:12px;
+						">
+							${periodoTexto}
+						</span>
+					</div>
+
+					<div style="
+						display:grid;
+						grid-template-columns:repeat(2,1fr);
+						gap:10px;
+					">
+						<div class="field">
+							<label>XP REGISTRADO</label>
+							<div style="font-size:18px; font-weight:700;">
+								${ultimo.xp_total} XP
+							</div>
+						</div>
+
+						<div class="field">
+							<label>VARIAÇÃO</label>
+							<div style="
+								font-size:18px;
+								font-weight:700;
+								color:${diferenca >= 0 ? 'var(--success)' : 'var(--danger)'};
+							">
+								${diferenca >= 0 ? '+' : ''}${diferenca} XP
+							</div>
+						</div>
+					</div>
+				</div>
+			`;
+
+			btnHistorico.textContent = '📈 Atualizar histórico';
+			btnHistorico.disabled = false;
+		};
 
 		overlay.onclick = (e) => {
 			if (e.target === overlay) fechar();
