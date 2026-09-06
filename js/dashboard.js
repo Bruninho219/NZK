@@ -246,8 +246,6 @@ const app = {
 				">
 					${tipo.toUpperCase()}
 				</span>
-					${tipo.toUpperCase()}
-				</span>
 			</div>
 
 			<div style="
