@@ -1976,7 +1976,11 @@ row.innerHTML = `
             document.getElementById('conquistaNome').value = "";
             document.getElementById('conquistaDescricao').value = "";
             document.getElementById('conquistaCriterioValor').value = "";
-            this.renderConquistasTable(this.selectedGuild);
+			await this.renderConquistasTable(this.selectedGuild);
+
+			const atuais = await NZKAPI.getConquistas(this.selectedGuild);
+			this._usoPlano.conquistas = atuais.length;
+			this.renderUsoPlano(this.selectedGuild);
         } else {
             this.showToast("❌ Erro ao adicionar conquista.", "error");
         }
@@ -1987,7 +1991,11 @@ row.innerHTML = `
         const res = await NZKAPI.deletarConquista(this.selectedGuild, id);
         if (res.success) {
             this.showToast("🗑️ Conquista removida.");
-            this.renderConquistasTable(this.selectedGuild);
+            await this.renderConquistasTable(this.selectedGuild);
+
+			const atuais = await NZKAPI.getConquistas(this.selectedGuild);
+			this._usoPlano.conquistas = atuais.length;
+			this.renderUsoPlano(this.selectedGuild);
         } else {
             this.showToast("❌ Erro ao excluir conquista.", "error");
         }
