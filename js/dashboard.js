@@ -713,7 +713,7 @@ const app = {
             NZKAPI.getPatentes(guildId),
             NZKAPI.getLeaderboard(guildId),
             NZKAPI.getCanais(guildId),
-            NZKAPI.getConquistasUsuarios(guildId)
+            NZKAPI.getConquistasUsuarios(guildId),
 			NZKAPI.getConquistas(guildId),
 			NZKAPI.getTwitchMonitores(guildId),
 			NZKAPI.getYoutubeMonitores(guildId)
