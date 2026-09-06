@@ -1776,8 +1776,7 @@ row.innerHTML = `
 			100
 		).toFixed(0);
 
-		const conquistas = (this._conquistasUsuario || [])
-			.filter(c => String(c.user_id) === String(userId));
+		const conquistas = (this._conquistasUsuario && this._conquistasUsuario[userId]) || 0;
 
 		const overlay = document.createElement('div');
 
@@ -1876,7 +1875,7 @@ row.innerHTML = `
 					<div class="field">
 						<label>CONQUISTAS</label>
 						<div style="font-size:18px; font-weight:700;">
-							${conquistas.length}
+							${conquistas}
 						</div>
 					</div>
 				</div>
