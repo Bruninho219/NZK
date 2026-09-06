@@ -432,6 +432,8 @@ const app = {
 
 	async renderServerList(servidores) {
 		const list = document.getElementById('serverList');
+		const suportesAtivos = await NZKAPI.getSuporteAtivo();
+		const guildsEmSuporte = new Set(suportesAtivos.map(s => s.guild_id));
 
         // Fallback só pra servidores que ainda não passaram por !nSync depois
         // dessa atualização — nome/ícone agora vêm de verdade do Discord
@@ -471,6 +473,7 @@ const app = {
 
         list.innerHTML = servidores.map(srv => {
             const id = srv.id;
+			const emSuporte = guildsEmSuporte.has(id);
             const nome = nomeDe(srv);
             const icone = iconeDe(srv);
             const removido = srv.removido_em;
@@ -507,6 +510,9 @@ const app = {
                     </div>
 						<h3>${this.escapeHtml(nome)}</h3>
 						${badgeTipo}<br>
+						${emSuporte
+							? '<div class="server-type-badge" style="background:rgba(34,197,94,0.15); color:#4ade80;">🔧 SUPORTE</div><br>'
+							: ''}
 						${this.idCopiavel(id)}
 						${removido ? `<div class="server-removido-badge">⚠️ Bot removido há ${diasRemovido}d</div>` : ''}
 					</div>
