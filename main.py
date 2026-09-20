@@ -5,6 +5,7 @@ from discord.ext import commands, tasks
 from supabase import create_client
 from dotenv import load_dotenv
 import config
+import version
 from logger import log_info, log_erro, log_aviso
 
 load_dotenv()
@@ -35,12 +36,14 @@ class MoraxBot(commands.Bot):
         )
         self.supabase = supabase_client
         self._ultimo_status_aplicado = None  # (tipo_id, texto) — evita relogar/reaplicar à toa
+        self._iniciado_em = datetime.datetime.now(datetime.timezone.utc)
 
     async def setup_hook(self):
         self.atualizar_status_db.start()
         self.snapshot_xp_diario.start()
         self.limpar_servidores_removidos.start()
         self.verificar_assinaturas_expiradas.start()
+        self.atualizar_bot_status.start()
 
         modulos = ['cogs.leveling', 'cogs.commands', 'cogs.sync', 'cogs.youtube', 'cogs.twitch']
         for modulo in modulos:
@@ -58,7 +61,29 @@ class MoraxBot(commands.Bot):
             log_info("setup_hook", f"🔄 {len(sincronizados)} slash commands sincronizados!")
         except Exception as e:
             log_erro("tree.sync", e)
+    
+    @tasks.loop(minutes=10)
+    async def atualizar_bot_status(self):
+        """Atualiza o heartbeat público usado pela página /status."""
+        try:
+            agora = datetime.datetime.now(datetime.timezone.utc)
 
+            latencia_ms = None
+
+            if self.is_ready():
+                latencia_ms = round(self.latency * 1000)
+
+            self.supabase.table("bot_status").update({
+                "servidores": len(self.guilds),
+                "versao": version.VERSION,
+                "latencia_ms": latencia_ms,
+                "iniciado_em": self._iniciado_em.isoformat(),
+                "atualizado_em": agora.isoformat()
+            }).eq("id", 1).execute()
+
+        except Exception as e:
+            log_erro("atualizar_bot_status", e)
+    
     @tasks.loop(time=HORARIOS_STATUS)
     async def atualizar_status_db(self):
         try:
@@ -313,6 +338,10 @@ class MoraxBot(commands.Bot):
 
     @verificar_assinaturas_expiradas.before_loop
     async def before_assinaturas_loop(self):
+        await self.wait_until_ready()
+
+    @atualizar_bot_status.before_loop
+    async def before_bot_status_loop(self):
         await self.wait_until_ready()
 
 bot = MoraxBot()
