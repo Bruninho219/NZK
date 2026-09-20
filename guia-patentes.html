@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guia de Patentes | NZK</title>
+    <meta name="description" content="Aprenda como funcionam as patentes do NZK e como associar níveis a cargos automáticos do Discord.">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔥</text></svg>">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8816082473901477" crossorigin="anonymous"></script>
+    <style>
+        .guide-page{max-width:860px;margin:0 auto;padding:50px 24px 80px;line-height:1.75}
+        .guide-page h1{font-size:32px;margin:0 0 12px}.guide-page h2{font-size:21px;color:var(--accent);margin-top:42px;margin-bottom:12px;border-bottom:1px solid rgba(255,255,255,.08);padding-bottom:8px}.guide-page h3{font-size:16px;margin-top:24px;margin-bottom:8px}
+        .guide-page p,.guide-page li{color:var(--text-muted);font-size:14.5px}.guide-page a{color:var(--accent);text-decoration:none}.guide-page a:hover{text-decoration:underline}
+        .guide-back{display:inline-block;margin-bottom:26px;color:var(--text-muted)!important;font-size:13px}.guide-intro{font-size:16px!important;max-width:760px}
+        .guide-card{background:var(--card);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:20px;margin:22px 0}.guide-example{background:#1e1f22;border-left:3px solid var(--accent);padding:16px 18px;border-radius:8px;color:var(--text-muted);font-size:13.5px}
+        .guide-footer{text-align:center;margin-top:54px;padding-top:22px;border-top:1px solid rgba(255,255,255,.08);font-size:12px;color:var(--text-muted)}.guide-footer a{color:var(--text-muted);margin:0 6px}
+    </style>
+</head>
+<body>
+<main class="guide-page">
+    <a class="guide-back" href="/ajuda.html">← Voltar para a Central de Ajuda</a>
+    <h1>🎖️ Guia de Patentes do NZK</h1>
+    <p class="guide-intro">As patentes ligam o sistema de níveis do NZK aos cargos do Discord. O administrador escolhe um nível necessário e associa esse nível a um cargo existente no servidor.</p>
+
+    <h2>O que é uma patente</h2>
+    <p>Uma patente é uma regra simples: quando determinado nível é alcançado, um cargo do Discord passa a representar aquela etapa da progressão. Isso permite criar hierarquias visuais, recompensas por atividade e caminhos de progressão próprios para cada comunidade.</p>
+    <div class="guide-example">Exemplo: nível 5 → Recruta, nível 15 → Veterano, nível 30 → Elite.</div>
+
+    <h2>Como criar uma patente</h2>
+    <p>No painel, o administrador informa o nível necessário e escolhe um cargo do Discord entre os cargos sincronizados. Depois de salvar, a patente passa a fazer parte da configuração daquele servidor.</p>
+    <p>Se um cargo recém-criado ainda não aparecer, a sincronização do servidor deve ser atualizada para que o NZK tenha acesso às informações mais recentes.</p>
+
+    <h2>Relação entre XP, nível e cargo</h2>
+    <p>As patentes não geram XP por conta própria. Elas usam o nível que o membro já conquistou através do sistema de progressão. Portanto, primeiro o usuário acumula XP; depois, ao atingir o nível configurado, a patente correspondente pode ser aplicada.</p>
+    <p>Essa separação facilita ajustes no sistema. O administrador pode alterar valores de XP sem precisar recriar toda a estrutura de cargos.</p>
+
+    <h2>Organizando uma progressão</h2>
+    <p>Uma boa sequência de patentes deve ser fácil de entender. Em vez de criar muitos cargos em intervalos muito pequenos, vale pensar em etapas que representem marcos reais de participação.</p>
+    <div class="guide-card">
+        <h3>Exemplo de progressão</h3>
+        <p>Nível 5 — Iniciante</p>
+        <p>Nível 15 — Membro</p>
+        <p>Nível 30 — Veterano</p>
+        <p>Nível 50 — Elite</p>
+    </div>
+
+    <h2>Limites por plano</h2>
+    <p>A quantidade máxima de patentes pode variar conforme o tipo de plano do servidor. O painel mostra o plano atual e também o consumo do limite disponível, permitindo acompanhar quantas patentes já foram cadastradas.</p>
+
+    <h2>Permissões do Discord</h2>
+    <p>Para que a atribuição automática funcione corretamente, o bot precisa ter permissão para gerenciar os cargos envolvidos. A hierarquia de cargos do Discord também importa: um bot não consegue atribuir cargos posicionados acima do próprio cargo dele.</p>
+    <p>Se uma patente estiver configurada corretamente no painel mas o cargo não for aplicado, a primeira verificação deve ser a posição dos cargos e as permissões concedidas ao NZK.</p>
+
+    <h2>Alterações e manutenção</h2>
+    <p>Patentes podem ser editadas ou removidas pelo painel. Quando a estrutura de cargos do servidor muda, vale conferir se as associações continuam apontando para os cargos desejados.</p>
+    <p>O NZK também possui ferramentas administrativas destinadas a corrigir situações de dessincronização de cargos quando necessário.</p>
+
+    <h2>Patentes e identidade do servidor</h2>
+    <p>O sistema funciona melhor quando os nomes dos cargos combinam com o tema da comunidade. Um servidor de jogos pode usar divisões competitivas; um servidor de estudo pode usar níveis acadêmicos; uma comunidade temática pode criar uma hierarquia completamente própria.</p>
+    <p>Assim, a patente deixa de ser apenas um número e passa a funcionar como uma recompensa visual pelo tempo e pela participação do membro.</p>
+
+    <h2>Patentes não são o cargo TOP 1</h2>
+    <p>O cargo de TOP 1 é um recurso separado. Patentes são associadas a níveis específicos, enquanto o cargo TOP 1 acompanha exclusivamente quem ocupa a primeira posição do ranking naquele momento.</p>
+
+    <h2>Antes de criar muitas patentes</h2>
+    <p>É melhor começar com poucos marcos e observar como a progressão acontece no servidor. Depois, se houver espaço entre os níveis ou interesse da comunidade, novas etapas podem ser adicionadas sem alterar o funcionamento básico do ranking.</p>
+
+    <div class="guide-footer">
+        <a href="/ajuda.html">Ajuda</a> ·
+        <a href="/guia-xp.html">Guia de XP</a> ·
+        <a href="/funcionalidades.html">Funcionalidades</a> ·
+        <a href="/privacidade.html">Privacidade</a> ·
+        <a href="/termos.html">Termos</a>
+    </div>
+</main>
+</body>
+</html>
