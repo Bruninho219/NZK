@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Ajuda | NZK</title>
+
+    <meta
+        name="description"
+        content="Central de ajuda do NZK. Encontre guias sobre XP, ranking, patentes, conquistas, integrações, histórico e administração do bot."
+    >
+
+    <link rel="stylesheet" href="css/style.css">
+
+    <style>
+        .help-page {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 40px 20px 70px;
+        }
+
+        .help-hero {
+            text-align: center;
+            margin-bottom: 36px;
+        }
+
+        .help-hero h1 {
+            margin-bottom: 10px;
+        }
+
+        .help-hero p {
+            color: var(--text-muted);
+            max-width: 700px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        .help-search {
+            margin: 28px auto 0;
+            max-width: 640px;
+        }
+
+        .help-search input {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 14px 16px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.10);
+            background: var(--sidebar);
+            color: var(--text-main);
+            font-size: 15px;
+        }
+
+        .help-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 18px;
+        }
+
+        .help-card {
+            background: var(--sidebar);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 16px;
+            padding: 20px;
+        }
+
+        .help-card h2 {
+            margin-top: 0;
+            margin-bottom: 14px;
+            font-size: 18px;
+        }
+
+        .help-card a {
+            display: block;
+            padding: 8px 0;
+            color: var(--text-main);
+            text-decoration: none;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .help-card a:last-child {
+            border-bottom: none;
+        }
+
+        .help-card a:hover {
+            color: var(--accent);
+        }
+
+        .help-footer {
+            margin-top: 40px;
+            padding: 24px;
+            text-align: center;
+            border-radius: 16px;
+            background: var(--sidebar);
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .help-footer p {
+            color: var(--text-muted);
+            margin-bottom: 14px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <main class="help-page">
+
+        <section class="help-hero">
+            <h1>Central de Ajuda NZK</h1>
+
+            <p>
+                Encontre guias sobre configuração, sistema de níveis,
+                ranking, conquistas, integrações e administração do bot.
+            </p>
+
+            <div class="help-search">
+                <input
+                    type="search"
+                    id="helpSearch"
+                    placeholder="Pesquisar na ajuda..."
+                >
+            </div>
+        </section>
+
+        <section class="help-grid" id="helpGrid">
+
+            <article class="help-card">
+                <h2>🚀 Primeiros passos</h2>
+
+                <a href="/guias/primeiros-passos.html">
+                    Como adicionar o NZK ao servidor
+                </a>
+
+                <a href="/guias/painel.html">
+                    Como acessar o painel
+                </a>
+
+                <a href="/guias/sincronizacao.html">
+                    Como sincronizar cargos e canais
+                </a>
+            </article>
+
+            <article class="help-card">
+                <h2>📈 Sistema de níveis</h2>
+
+                <a href="/guias/xp.html">
+                    Como funciona o XP
+                </a>
+
+                <a href="/guias/ranking.html">
+                    Como funciona o ranking
+                </a>
+
+                <a href="/guias/patentes.html">
+                    Como funcionam as patentes
+                </a>
+
+                <a href="/guias/conquistas.html">
+                    Como funcionam as conquistas
+                </a>
+
+                <a href="/guias/historico.html">
+                    Histórico de XP
+                </a>
+            </article>
+
+            <article class="help-card">
+                <h2>⚙️ Configurações do servidor</h2>
+
+                <a href="/guias/level-up.html">
+                    Mensagem de level up
+                </a>
+
+                <a href="/guias/booster.html">
+                    Bônus de booster
+                </a>
+
+                <a href="/guias/admin-xp.html">
+                    Bônus de administrador
+                </a>
+
+                <a href="/guias/top1.html">
+                    Cargo do TOP 1
+                </a>
+
+                <a href="/guias/cargos-entrada.html">
+                    Cargos automáticos de entrada
+                </a>
+
+                <a href="/guias/boas-vindas.html">
+                    Mensagem de boas-vindas
+                </a>
+            </article>
+
+            <article class="help-card">
+                <h2>🔗 Integrações</h2>
+
+                <a href="/guias/twitch.html">
+                    Notificações da Twitch
+                </a>
+
+                <a href="/guias/youtube.html">
+                    Notificações do YouTube
+                </a>
+            </article>
+
+            <article class="help-card">
+                <h2>🛠 Administração</h2>
+
+                <a href="/guias/editar-usuario.html">
+                    Editar nível e XP
+                </a>
+
+                <a href="/guias/reset-usuario.html">
+                    Resetar um usuário
+                </a>
+
+                <a href="/guias/reset-servidor.html">
+                    Resetar o servidor
+                </a>
+
+                <a href="/guias/auditoria.html">
+                    Logs de auditoria
+                </a>
+            </article>
+
+            <article class="help-card">
+                <h2>💎 Planos</h2>
+
+                <a href="/guias/planos.html">
+                    Diferenças entre Comum e Premium
+                </a>
+
+                <a href="/guias/limites.html">
+                    Limites de cada plano
+                </a>
+            </article>
+
+        </section>
+
+        <section class="help-footer">
+            <h2>Não encontrou o que precisava?</h2>
+
+            <p>
+                Consulte as dúvidas frequentes ou entre em contato com o suporte.
+            </p>
+
+            <a href="/suporte.html">
+                Entrar em contato
+            </a>
+        </section>
+
+    </main>
+
+    <script>
+        const searchInput = document.getElementById('helpSearch');
+        const cards = document.querySelectorAll('.help-card');
+
+        searchInput.addEventListener('input', () => {
+            const termo = searchInput.value
+                .toLowerCase()
+                .trim();
+
+            cards.forEach(card => {
+                const texto = card.innerText.toLowerCase();
+
+                card.style.display =
+                    texto.includes(termo)
+                        ? ''
+                        : 'none';
+            });
+        });
+    </script>
+
+</body>
+</html>
