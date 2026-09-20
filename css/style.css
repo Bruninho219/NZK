@@ -587,3 +587,221 @@ code {
     text-overflow: ellipsis;
     white-space: nowrap;
 }
+
+/* ============================================
+   CENTRAL DE AJUDA
+   ============================================ */
+.help-page {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 20px 20px 70px;
+}
+
+.help-topbar {
+    margin-bottom: 18px;
+}
+
+.help-back,
+.help-return,
+.help-site-footer a {
+    color: var(--text-muted);
+    text-decoration: none;
+}
+
+.help-back:hover,
+.help-return:hover,
+.help-site-footer a:hover {
+    color: var(--accent);
+}
+
+.help-hero {
+    text-align: center;
+    margin-bottom: 36px;
+}
+
+.help-icon {
+    font-size: 42px;
+    margin-bottom: 8px;
+}
+
+.help-hero h1 {
+    margin: 0 0 10px;
+    font-size: 30px;
+}
+
+.help-hero p {
+    color: var(--text-muted);
+    max-width: 700px;
+    margin: 0 auto;
+    line-height: 1.7;
+}
+
+.help-search {
+    margin: 28px auto 0;
+    max-width: 640px;
+}
+
+.help-search input {
+    width: 100%;
+    padding: 14px 16px;
+    border-radius: 12px;
+}
+
+.help-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 18px;
+}
+
+.help-card {
+    background: var(--sidebar);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 16px;
+    padding: 20px;
+    transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.help-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(88,101,242,0.45);
+}
+
+.help-card h2 {
+    margin: 0 0 14px;
+    font-size: 18px;
+}
+
+.help-card a {
+    display: block;
+    padding: 8px 0;
+    color: var(--text-main);
+    text-decoration: none;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.help-card a:last-child {
+    border-bottom: none;
+}
+
+.help-card a:hover {
+    color: var(--accent);
+}
+
+.help-content {
+    margin-top: 50px;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+}
+
+.help-article {
+    background: var(--sidebar);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 16px;
+    padding: 26px;
+    scroll-margin-top: 24px;
+}
+
+.help-article:target {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 1px rgba(88,101,242,0.15);
+}
+
+.help-article h2 {
+    margin: 0 0 14px;
+}
+
+.help-article h3 {
+    margin: 22px 0 8px;
+    font-size: 16px;
+}
+
+.help-article p {
+    margin: 10px 0;
+    color: var(--text-muted);
+    line-height: 1.7;
+}
+
+.help-return {
+    display: inline-block;
+    margin-top: 12px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.help-no-results {
+    margin-top: 30px;
+    padding: 22px;
+    text-align: center;
+    color: var(--text-muted);
+    background: var(--sidebar);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 14px;
+}
+
+.help-footer {
+    margin-top: 40px;
+    padding: 28px;
+    text-align: center;
+    border-radius: 16px;
+    background: var(--sidebar);
+    border: 1px solid rgba(255,255,255,0.08);
+}
+
+.help-footer h2 {
+    margin-top: 0;
+}
+
+.help-footer p {
+    color: var(--text-muted);
+    margin-bottom: 18px;
+}
+
+.help-cta {
+    display: inline-block;
+    background: var(--accent);
+    color: white;
+    padding: 11px 18px;
+    border-radius: 8px;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.help-cta:hover {
+    background: var(--accent-hover);
+}
+
+.help-site-footer {
+    margin-top: 28px;
+    text-align: center;
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+.help-site-footer span {
+    margin: 0 8px;
+}
+
+@media (max-width: 640px) {
+    .help-page {
+        padding: 12px 0 50px;
+    }
+
+    .help-hero h1 {
+        font-size: 24px;
+    }
+
+    .help-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .help-card,
+    .help-article,
+    .help-footer {
+        padding: 18px;
+    }
+
+    .help-site-footer {
+        line-height: 2;
+    }
+}

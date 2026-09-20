@@ -3,115 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>Ajuda | NZK</title>
-
-    <meta
-        name="description"
-        content="Central de ajuda do NZK. Encontre guias sobre XP, ranking, patentes, conquistas, integrações, histórico e administração do bot."
-    >
-
+    <meta name="description" content="Central de ajuda do NZK. Encontre guias sobre XP, ranking, patentes, conquistas, integrações, histórico e administração do bot.">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔥</text></svg>">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
-
-    <style>
-        .help-page {
-            max-width: 1100px;
-            margin: 0 auto;
-            padding: 40px 20px 70px;
-        }
-
-        .help-hero {
-            text-align: center;
-            margin-bottom: 36px;
-        }
-
-        .help-hero h1 {
-            margin-bottom: 10px;
-        }
-
-        .help-hero p {
-            color: var(--text-muted);
-            max-width: 700px;
-            margin: 0 auto;
-            line-height: 1.6;
-        }
-
-        .help-search {
-            margin: 28px auto 0;
-            max-width: 640px;
-        }
-
-        .help-search input {
-            width: 100%;
-            box-sizing: border-box;
-            padding: 14px 16px;
-            border-radius: 12px;
-            border: 1px solid rgba(255,255,255,0.10);
-            background: var(--sidebar);
-            color: var(--text-main);
-            font-size: 15px;
-        }
-
-        .help-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-            gap: 18px;
-        }
-
-        .help-card {
-            background: var(--sidebar);
-            border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 16px;
-            padding: 20px;
-        }
-
-        .help-card h2 {
-            margin-top: 0;
-            margin-bottom: 14px;
-            font-size: 18px;
-        }
-
-        .help-card a {
-            display: block;
-            padding: 8px 0;
-            color: var(--text-main);
-            text-decoration: none;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-        }
-
-        .help-card a:last-child {
-            border-bottom: none;
-        }
-
-        .help-card a:hover {
-            color: var(--accent);
-        }
-
-        .help-footer {
-            margin-top: 40px;
-            padding: 24px;
-            text-align: center;
-            border-radius: 16px;
-            background: var(--sidebar);
-            border: 1px solid rgba(255,255,255,0.08);
-        }
-
-        .help-footer p {
-            color: var(--text-muted);
-            margin-bottom: 14px;
-        }
-    </style>
 </head>
-
 <body>
-
-    <main class="help-page">
+    <main class="help-page" id="topo">
+        <nav class="help-topbar" aria-label="Navegação da ajuda">
+            <a href="/" class="help-back">← Voltar ao NZK</a>
+        </nav>
 
         <section class="help-hero">
+            <div class="help-icon">🔥</div>
             <h1>Central de Ajuda NZK</h1>
-
             <p>
-                Encontre guias sobre configuração, sistema de níveis,
+                Encontre orientações sobre configuração, sistema de níveis,
                 ranking, conquistas, integrações e administração do bot.
             </p>
 
@@ -120,159 +28,276 @@
                     type="search"
                     id="helpSearch"
                     placeholder="Pesquisar na ajuda..."
+                    autocomplete="off"
+                    aria-label="Pesquisar na central de ajuda"
                 >
             </div>
         </section>
 
-        <section class="help-grid" id="helpGrid">
-
+        <section class="help-grid" id="helpGrid" aria-label="Categorias da central de ajuda">
             <article class="help-card">
                 <h2>🚀 Primeiros passos</h2>
-
-                <a href="/guias/primeiros-passos.html">
-                    Como adicionar o NZK ao servidor
-                </a>
-
-                <a href="/guias/painel.html">
-                    Como acessar o painel
-                </a>
-
-                <a href="/guias/sincronizacao.html">
-                    Como sincronizar cargos e canais
-                </a>
+                <a href="#primeiros-passos">Como adicionar o NZK ao servidor</a>
+                <a href="#painel">Como acessar o painel</a>
+                <a href="#sincronizacao">Como sincronizar cargos e canais</a>
             </article>
 
             <article class="help-card">
                 <h2>📈 Sistema de níveis</h2>
-
-                <a href="/guias/xp.html">
-                    Como funciona o XP
-                </a>
-
-                <a href="/guias/ranking.html">
-                    Como funciona o ranking
-                </a>
-
-                <a href="/guias/patentes.html">
-                    Como funcionam as patentes
-                </a>
-
-                <a href="/guias/conquistas.html">
-                    Como funcionam as conquistas
-                </a>
-
-                <a href="/guias/historico.html">
-                    Histórico de XP
-                </a>
+                <a href="#xp">Como funciona o XP</a>
+                <a href="#ranking">Como funciona o ranking</a>
+                <a href="#patentes">Como funcionam as patentes</a>
+                <a href="#conquistas">Como funcionam as conquistas</a>
+                <a href="#historico">Histórico de XP</a>
             </article>
 
             <article class="help-card">
                 <h2>⚙️ Configurações do servidor</h2>
-
-                <a href="/guias/level-up.html">
-                    Mensagem de level up
-                </a>
-
-                <a href="/guias/booster.html">
-                    Bônus de booster
-                </a>
-
-                <a href="/guias/admin-xp.html">
-                    Bônus de administrador
-                </a>
-
-                <a href="/guias/top1.html">
-                    Cargo do TOP 1
-                </a>
-
-                <a href="/guias/cargos-entrada.html">
-                    Cargos automáticos de entrada
-                </a>
-
-                <a href="/guias/boas-vindas.html">
-                    Mensagem de boas-vindas
-                </a>
+                <a href="#level-up">Mensagem de level up</a>
+                <a href="#booster">Bônus de booster</a>
+                <a href="#admin-xp">Bônus de administrador</a>
+                <a href="#top1">Cargo do TOP 1</a>
+                <a href="#cargos-entrada">Cargos automáticos de entrada</a>
+                <a href="#boas-vindas">Mensagem de boas-vindas</a>
             </article>
 
             <article class="help-card">
                 <h2>🔗 Integrações</h2>
-
-                <a href="/guias/twitch.html">
-                    Notificações da Twitch
-                </a>
-
-                <a href="/guias/youtube.html">
-                    Notificações do YouTube
-                </a>
+                <a href="#twitch">Notificações da Twitch</a>
+                <a href="#youtube">Notificações do YouTube</a>
             </article>
 
             <article class="help-card">
                 <h2>🛠 Administração</h2>
-
-                <a href="/guias/editar-usuario.html">
-                    Editar nível e XP
-                </a>
-
-                <a href="/guias/reset-usuario.html">
-                    Resetar um usuário
-                </a>
-
-                <a href="/guias/reset-servidor.html">
-                    Resetar o servidor
-                </a>
-
-                <a href="/guias/auditoria.html">
-                    Logs de auditoria
-                </a>
+                <a href="#editar-usuario">Editar nível e XP</a>
+                <a href="#reset-usuario">Resetar um usuário</a>
+                <a href="#reset-servidor">Resetar o servidor</a>
+                <a href="#auditoria">Logs de auditoria</a>
             </article>
 
             <article class="help-card">
                 <h2>💎 Planos</h2>
+                <a href="#planos">Diferenças entre os planos</a>
+                <a href="#limites">Limites de cada plano</a>
+            </article>
+        </section>
 
-                <a href="/guias/planos.html">
-                    Diferenças entre Comum e Premium
-                </a>
+        <div id="helpNoResults" class="help-no-results" hidden>
+            Nenhum tópico encontrado para essa pesquisa.
+        </div>
 
-                <a href="/guias/limites.html">
-                    Limites de cada plano
-                </a>
+        <section class="help-content" id="helpContent">
+            <article class="help-article" id="primeiros-passos">
+                <h2>🚀 Como adicionar o NZK ao servidor</h2>
+                <p>Para começar, adicione o NZK ao seu servidor utilizando o convite oficial do bot.</p>
+                <p>Depois de autorizar o bot, ele passa a aparecer entre os membros do servidor e poderá utilizar os recursos permitidos pelas permissões concedidas.</p>
+                <p>Após a instalação, é recomendado realizar a sincronização para que cargos, canais e demais informações do Discord estejam disponíveis no painel administrativo.</p>
+                <a class="help-return" href="#topo">↑ Voltar ao início</a>
             </article>
 
+            <article class="help-article" id="painel">
+                <h2>🖥️ Como acessar o painel</h2>
+                <p>O painel administrativo do NZK utiliza autenticação pelo Discord.</p>
+                <p>Depois de entrar com sua conta, são exibidos os servidores disponíveis para administração.</p>
+                <p>Ao selecionar um servidor, você poderá configurar XP, patentes, mensagens, integrações, conquistas e outros recursos oferecidos pelo bot.</p>
+                <a class="help-return" href="#topo">↑ Voltar ao início</a>
+            </article>
+
+            <article class="help-article" id="sincronizacao">
+                <h2>🔄 Sincronização de cargos e canais</h2>
+                <p>O NZK mantém informações sobre canais e cargos do servidor para utilizá-los nas configurações do painel.</p>
+                <p>Caso um cargo ou canal recém-criado ainda não apareça, realize uma nova sincronização do servidor para atualizar os dados disponíveis.</p>
+                <a class="help-return" href="#topo">↑ Voltar ao início</a>
+            </article>
+
+            <article class="help-article" id="xp">
+                <h2>⭐ Como funciona o XP</h2>
+                <p>Cada servidor pode configurar a quantidade de XP concedida por mensagens, reações e participação em canais de voz.</p>
+                <h3>XP por mensagem</h3>
+                <p>Uma quantidade de XP pode ser concedida quando o usuário envia uma mensagem válida.</p>
+                <h3>XP por reação</h3>
+                <p>O servidor também pode conceder XP por reações, utilizando um cooldown separado para reduzir abuso.</p>
+                <h3>XP por voz</h3>
+                <p>O NZK pode conceder XP com base no número de minutos que o usuário permanece em canais de voz.</p>
+                <h3>Cooldowns</h3>
+                <p>Os administradores podem definir um intervalo mínimo entre ações que concedem XP, reduzindo o ganho artificial por spam.</p>
+                <a class="help-return" href="#topo">↑ Voltar ao início</a>
+            </article>
+
+            <article class="help-article" id="ranking">
+                <h2>🏆 Como funciona o ranking</h2>
+                <p>O ranking organiza os membros de acordo com sua progressão no sistema de níveis do servidor.</p>
+                <p>O painel exibe nível, XP, mensagens, tempo em voz e outras informações relacionadas à atividade dos membros.</p>
+                <p>Ao selecionar um usuário no ranking, é possível visualizar seu perfil individual, suas conquistas e o histórico de XP disponível.</p>
+                <a class="help-return" href="#topo">↑ Voltar ao início</a>
+            </article>
+
+            <article class="help-article" id="patentes">
+                <h2>🎖️ Como funcionam as patentes</h2>
+                <p>As patentes associam níveis do NZK a cargos do Discord.</p>
+                <p>Quando um membro alcança o nível configurado, o bot pode atribuir automaticamente o cargo correspondente.</p>
+                <a class="help-return" href="#topo">↑ Voltar ao início</a>
+            </article>
+
+            <article class="help-article" id="conquistas">
+                <h2>🏅 Como funcionam as conquistas</h2>
+                <p>Os administradores podem criar conquistas relacionadas à participação dos membros no servidor.</p>
+                <p>Cada conquista possui nome, descrição, emoji e um critério. Depois de desbloqueada, ela aparece no perfil individual do usuário.</p>
+                <a class="help-return" href="#topo">↑ Voltar ao início</a>
+            </article>
+
+            <article class="help-article" id="historico">
+                <h2>📈 Histórico de XP</h2>
+                <p>O NZK registra snapshots periódicos da progressão de XP para permitir o acompanhamento da evolução ao longo do tempo.</p>
+                <p>O painel pode mostrar tanto o histórico individual quanto o crescimento geral de XP do servidor.</p>
+                <p>A quantidade de dias disponível no histórico depende do plano utilizado pelo servidor.</p>
+                <a class="help-return" href="#topo">↑ Voltar ao início</a>
+            </article>
+
+            <article class="help-article" id="level-up">
+                <h2>⬆️ Mensagem de level up</h2>
+                <p>É possível definir uma mensagem personalizada para avisar quando um membro alcança um novo nível.</p>
+                <p>A mensagem pode utilizar variáveis como usuário, nível alcançado e nome do servidor.</p>
+                <a class="help-return" href="#topo">↑ Voltar ao início</a>
+            </article>
+
+            <article class="help-article" id="booster">
+                <h2>🚀 Bônus de booster</h2>
+                <p>O servidor pode conceder um percentual adicional de XP para membros que possuem status de booster.</p>
+                <p>Também é possível configurar uma recompensa de XP quando um membro impulsiona o servidor, além de uma mensagem personalizada para o anúncio.</p>
+                <a class="help-return" href="#topo">↑ Voltar ao início</a>
+            </article>
+
+            <article class="help-article" id="admin-xp">
+                <h2>🔧 Bônus de administrador</h2>
+                <p>Administradores podem receber um percentual adicional de XP, caso o recurso esteja configurado no servidor.</p>
+                <p>Quando um membro possui mais de um bônus, o servidor pode definir se eles serão somados ou se apenas o maior será usado.</p>
+                <a class="help-return" href="#topo">↑ Voltar ao início</a>
+            </article>
+
+            <article class="help-article" id="top1">
+                <h2>👑 Cargo do TOP 1</h2>
+                <p>O administrador pode selecionar um cargo especial destinado ao membro que ocupa a primeira posição do ranking do servidor.</p>
+                <a class="help-return" href="#topo">↑ Voltar ao início</a>
+            </article>
+
+            <article class="help-article" id="cargos-entrada">
+                <h2>🎭 Cargos automáticos de entrada</h2>
+                <p>O NZK pode atribuir automaticamente cargos configurados quando um novo membro entra no servidor.</p>
+                <p>A quantidade de cargos automáticos disponível pode variar conforme o plano utilizado.</p>
+                <a class="help-return" href="#topo">↑ Voltar ao início</a>
+            </article>
+
+            <article class="help-article" id="boas-vindas">
+                <h2>👋 Mensagem de boas-vindas</h2>
+                <p>É possível selecionar um canal de boas-vindas e definir uma mensagem personalizada para novos membros.</p>
+                <p>Variáveis podem inserir automaticamente o usuário, o nome do servidor e a quantidade atual de membros.</p>
+                <a class="help-return" href="#topo">↑ Voltar ao início</a>
+            </article>
+
+            <article class="help-article" id="twitch">
+                <h2>💜 Notificações da Twitch</h2>
+                <p>O NZK pode monitorar canais da Twitch e enviar notificações para um canal escolhido do Discord.</p>
+                <p>O número máximo de canais monitorados depende do plano utilizado pelo servidor.</p>
+                <a class="help-return" href="#topo">↑ Voltar ao início</a>
+            </article>
+
+            <article class="help-article" id="youtube">
+                <h2>▶️ Notificações do YouTube</h2>
+                <p>O NZK também pode monitorar canais do YouTube e publicar notificações em um canal escolhido do Discord.</p>
+                <p>O painel aceita diferentes formas de identificar o canal, como handle, URL completa ou ID, conforme o recurso disponível.</p>
+                <a class="help-return" href="#topo">↑ Voltar ao início</a>
+            </article>
+
+            <article class="help-article" id="editar-usuario">
+                <h2>✏️ Editar nível e XP</h2>
+                <p>Administradores autorizados podem ajustar manualmente o nível e o XP de um membro pelo painel administrativo.</p>
+                <p>Essas ações são destinadas à correção ou administração do sistema e ficam registradas no log de auditoria.</p>
+                <a class="help-return" href="#topo">↑ Voltar ao início</a>
+            </article>
+
+            <article class="help-article" id="reset-usuario">
+                <h2>🗑️ Resetar um usuário</h2>
+                <p>O painel permite zerar a progressão de um membro específico.</p>
+                <p>Como essa operação altera permanentemente os dados de progressão, o painel solicita confirmação antes de executá-la.</p>
+                <a class="help-return" href="#topo">↑ Voltar ao início</a>
+            </article>
+
+            <article class="help-article" id="reset-servidor">
+                <h2>💥 Resetar o servidor</h2>
+                <p>Também existe a opção de zerar a progressão de todos os membros do servidor.</p>
+                <p>Por ser uma ação de grande impacto, são solicitadas confirmações adicionais antes da execução.</p>
+                <a class="help-return" href="#topo">↑ Voltar ao início</a>
+            </article>
+
+            <article class="help-article" id="auditoria">
+                <h2>📜 Logs de auditoria</h2>
+                <p>O NZK registra ações administrativas importantes realizadas pelo painel.</p>
+                <p>O log ajuda a identificar quem realizou uma alteração, qual ação foi executada e qual usuário foi afetado.</p>
+                <a class="help-return" href="#topo">↑ Voltar ao início</a>
+            </article>
+
+            <article class="help-article" id="planos">
+                <h2>💎 Planos do NZK</h2>
+                <p>Os servidores podem possuir diferentes classificações e limites de uso.</p>
+                <p>Os recursos principais permanecem integrados ao mesmo painel, enquanto alguns limites de quantidade e período de histórico podem variar conforme o plano.</p>
+                <a class="help-return" href="#topo">↑ Voltar ao início</a>
+            </article>
+
+            <article class="help-article" id="limites">
+                <h2>📋 Limites dos planos</h2>
+                <p>Os limites podem afetar recursos como patentes, conquistas, canais monitorados da Twitch e YouTube, cargos automáticos e período de histórico.</p>
+                <p>O painel mostra o plano atual do servidor e o consumo de cada recurso para facilitar o acompanhamento.</p>
+                <a class="help-return" href="#topo">↑ Voltar ao início</a>
+            </article>
         </section>
 
         <section class="help-footer">
             <h2>Não encontrou o que precisava?</h2>
-
-            <p>
-                Consulte as dúvidas frequentes ou entre em contato com o suporte.
-            </p>
-
-            <a href="/suporte.html">
-                Entrar em contato
-            </a>
+            <p>Você também pode adicionar o NZK ao seu servidor e conhecer os recursos diretamente pelo painel.</p>
+            <a class="help-cta" href="/invite">Adicionar o NZK ao Discord</a>
         </section>
 
+        <footer class="help-site-footer">
+            <a href="/funcionalidades.html">Funcionalidades</a>
+            <span>·</span>
+            <a href="/novidades.html">Novidades</a>
+            <span>·</span>
+            <a href="/privacidade.html">Política de Privacidade</a>
+            <span>·</span>
+            <a href="/termos.html">Termos de Serviço</a>
+        </footer>
     </main>
 
     <script>
         const searchInput = document.getElementById('helpSearch');
-        const cards = document.querySelectorAll('.help-card');
+        const cards = [...document.querySelectorAll('.help-card')];
+        const articles = [...document.querySelectorAll('.help-article')];
+        const noResults = document.getElementById('helpNoResults');
+
+        const normalizar = (texto) => texto
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .toLowerCase();
 
         searchInput.addEventListener('input', () => {
-            const termo = searchInput.value
-                .toLowerCase()
-                .trim();
+            const termo = normalizar(searchInput.value.trim());
+            let encontrados = 0;
 
             cards.forEach(card => {
-                const texto = card.innerText.toLowerCase();
-
-                card.style.display =
-                    texto.includes(termo)
-                        ? ''
-                        : 'none';
+                const exibir = !termo || normalizar(card.innerText).includes(termo);
+                card.style.display = exibir ? '' : 'none';
+                if (exibir && termo) encontrados++;
             });
+
+            articles.forEach(article => {
+                const exibir = !termo || normalizar(article.innerText).includes(termo);
+                article.style.display = exibir ? '' : 'none';
+                if (exibir && termo) encontrados++;
+            });
+
+            noResults.hidden = !termo || encontrados > 0;
         });
     </script>
-
 </body>
 </html>
