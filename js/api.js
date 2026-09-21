@@ -53,6 +53,29 @@ var NZKAPI = {
 		}
 	},
 	
+	async getStatusCanalAvisos(guildId) {
+		try {
+			const { data, error } = await sb
+				.from('servidor_configs')
+				.select('canal_avisos_id')
+				.eq('guild_id', guildId)
+				.maybeSingle();
+
+			if (error) throw error;
+
+			return {
+				configurado: !!data?.canal_avisos_id
+			};
+
+		} catch (err) {
+			console.error('Erro ao verificar canal de avisos:', err);
+
+			return {
+				configurado: false
+			};
+		}
+	},
+
     async getAuditLog(guildId) {
         try {
             const { data, error } = await sb.from('audit_log')

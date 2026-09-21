@@ -51,24 +51,38 @@ const app = {
 	async atualizarOnboarding() {
 		if (!this.selectedGuild) return;
 
-		const statusSync =
-			await NZKAPI.getStatusSincronizacao(this.selectedGuild);
+		const [
+			statusSync,
+			statusCanalAvisos
+		] = await Promise.all([
+			NZKAPI.getStatusSincronizacao(this.selectedGuild),
+			NZKAPI.getStatusCanalAvisos(this.selectedGuild)
+		]);
 
-		const itemSync =
-			document.getElementById('onboarding-sync');
+		const atualizarItem = (id, concluido) => {
+			const item = document.getElementById(id);
+			if (!item) return;
 
-		if (!itemSync) return;
+			const check = item.querySelector('.onboarding-check');
 
-		const check =
-			itemSync.querySelector('.onboarding-check');
+			if (concluido) {
+				check.textContent = '✅';
+				item.classList.add('onboarding-complete');
+			} else {
+				check.textContent = '⬜';
+				item.classList.remove('onboarding-complete');
+			}
+		};
 
-		if (statusSync.sincronizado) {
-			check.textContent = '✅';
-			itemSync.classList.add('onboarding-complete');
-		} else {
-			check.textContent = '⬜';
-			itemSync.classList.remove('onboarding-complete');
-		}
+		atualizarItem(
+			'onboarding-sync',
+			statusSync.sincronizado
+		);
+
+		atualizarItem(
+			'onboarding-canal-avisos',
+			statusCanalAvisos.configurado
+		);
 	},
 
 	async abrirConfiguracoesGlobais() {
