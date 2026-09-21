@@ -695,8 +695,8 @@ const app = {
                 <div class="server-card ${removido ? 'server-card-removido' : ''}" onclick="app.loadConfig('${id}')">
                     <div class="icon-wrapper">
                         ${icone.includes('/')
-                            ? `<img src="${icone}${icone.includes('?') ? '&' : '?'}t=${Date.now()}" class="server-icon-img">`
-                            : `<span class="server-icon">${icone}</span>`}
+							? `<img src="${icone}" class="server-icon-img">`
+							: `<span class="server-icon">${icone}</span>`}
                     </div>
 						<h3>${this.escapeHtml(nome)}</h3>
 						${badgeTipo}<br>
