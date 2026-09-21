@@ -18,6 +18,41 @@ var NZKAPI = {
 		}
 	},
 
+	async getStatusSincronizacao(guildId) {
+		try {
+			const [
+				{ data: cargos, error: erroCargos },
+				{ data: canais, error: erroCanais }
+			] = await Promise.all([
+				sb.from('servidor_cargos')
+					.select('role_id')
+					.eq('guild_id', guildId)
+					.limit(1),
+
+				sb.from('servidor_canais')
+					.select('channel_id')
+					.eq('guild_id', guildId)
+					.limit(1)
+			]);
+
+			if (erroCargos) throw erroCargos;
+			if (erroCanais) throw erroCanais;
+
+			return {
+				sincronizado:
+					(cargos && cargos.length > 0) ||
+					(canais && canais.length > 0)
+			};
+
+		} catch (err) {
+			console.error('Erro ao verificar sincronização:', err);
+
+			return {
+				sincronizado: false
+			};
+		}
+	},
+	
     async getAuditLog(guildId) {
         try {
             const { data, error } = await sb.from('audit_log')
