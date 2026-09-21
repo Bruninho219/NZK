@@ -103,6 +103,31 @@ var NZKAPI = {
 		}
 	},
 
+	async getStatusBoasVindas(guildId) {
+		try {
+			const { data, error } = await sb
+				.from('servidor_configs')
+				.select('canal_boas_vindas_id, boas_vindas_mensagem')
+				.eq('guild_id', guildId)
+				.maybeSingle();
+
+			if (error) throw error;
+
+			return {
+				configurado:
+					!!data?.canal_boas_vindas_id &&
+					!!data?.boas_vindas_mensagem
+			};
+
+		} catch (err) {
+			console.error('Erro ao verificar boas-vindas:', err);
+
+			return {
+				configurado: false
+			};
+		}
+	},
+
     async getAuditLog(guildId) {
         try {
             const { data, error } = await sb.from('audit_log')
