@@ -23,11 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <a href="/ajuda.html" style="color:var(--text-muted);">Ajuda</a>
             &nbsp;·&nbsp;
 
-            <a href="/novidades.html"
-               style="color:var(--text-muted);"
-               data-nzk-version>
-                VersãoNZK
-            </a>
+			<a href="/novidades.html" style="color:var(--text-muted);">VersãoNZK</a>
         </div>
     `;
 });
