@@ -1361,13 +1361,22 @@ const app = {
         }
     },
 
-    async handleSalvarBoasVindasCanal() {
-        const canal = document.getElementById('boasVindasChannel').value;
-        const cargos = this.cargosEntradaAtuais || [];
-        const res   = await NZKAPI.salvarBoasVindasCanal(this.selectedGuild, canal, cargos);
-        if (res.success) this.showToast("👋 Canal e cargo de boas-vindas salvos!");
-        else this.showToast("❌ Erro ao salvar.", "error");
-    },
+    async handleSalvarBoasVindasMensagem() {
+		const msg = document.getElementById('boasVindasMensagem').value;
+		const res = await NZKAPI.salvarBoasVindasMensagem(this.selectedGuild, msg);
+
+		if (res.success) {
+			this.showToast(
+				msg
+					? "👋 Mensagem de boas-vindas salva!"
+					: "👋 Mensagem removida!"
+			);
+
+			await this.atualizarOnboarding();
+		} else {
+			this.showToast("❌ Erro ao salvar.", "error");
+		}
+	},
 
     async handleSalvarBoasVindasMensagem() {
         const msg = document.getElementById('boasVindasMensagem').value;
@@ -1431,6 +1440,7 @@ const app = {
 			}
 
 			this.showToast("✅ Cargo automático adicionado!");
+			await this.atualizarOnboarding();
 		} catch (err) {
 			console.error("Erro ao adicionar cargo automático:", err);
 
@@ -1502,6 +1512,7 @@ const app = {
 			}
 
 			this.showToast("🗑️ Cargo automático removido.");
+			await this.atualizarOnboarding();
 		} catch (err) {
 			console.error("Erro ao remover cargo automático:", err);
 
@@ -1574,14 +1585,25 @@ const app = {
         else this.showToast("❌ Erro ao salvar.", "error");
     },
 
-    async handleSalvarXpConfig() {
-        const xpMensagem   = document.getElementById('xpMensagem').value;
-        const xpReacao     = document.getElementById('xpReacao').value;
-        const xpVozMinuto  = document.getElementById('xpVozMinuto').value;
-        const res = await NZKAPI.salvarXpConfig(this.selectedGuild, xpMensagem, xpReacao, xpVozMinuto);
-        if (res.success) this.showToast("⭐ Configuração de XP salva!");
-        else this.showToast("❌ Erro ao salvar.", "error");
-    },
+	async handleSalvarXpConfig() {
+		const xpMensagem  = document.getElementById('xpMensagem').value;
+		const xpReacao    = document.getElementById('xpReacao').value;
+		const xpVozMinuto = document.getElementById('xpVozMinuto').value;
+
+		const res = await NZKAPI.salvarXpConfig(
+			this.selectedGuild,
+			xpMensagem,
+			xpReacao,
+			xpVozMinuto
+		);
+
+		if (res.success) {
+			this.showToast("⭐ Configuração de XP salva!");
+			await this.atualizarOnboarding();
+		} else {
+			this.showToast("❌ Erro ao salvar.", "error");
+		}
+	},
 
     async handleSalvarCooldowns() {
         const cooldownMensagem = document.getElementById('cooldownMensagem').value;
@@ -2366,12 +2388,24 @@ row.innerHTML = `
         this.renderLeaderboard(sorted);
     },
 
-    async handleSaveChannel() {
-        if (!(await this.confirmar("Confirmar alteração do canal de avisos?", "Confirmar"))) return;
-        const res = await NZKAPI.salvarConfigCanal(this.selectedGuild, document.getElementById('channelSelect').value);
-        if (res.success) this.showToast("✅ Canal de avisos salvo!");
-        else this.showToast("❌ Erro ao salvar canal.", "error");
-    },
+	async handleSaveChannel() {
+		if (!(await this.confirmar(
+			"Confirmar alteração do canal de avisos?",
+			"Confirmar"
+		))) return;
+
+		const res = await NZKAPI.salvarConfigCanal(
+			this.selectedGuild,
+			document.getElementById('channelSelect').value
+		);
+
+		if (res.success) {
+			this.showToast("✅ Canal de avisos salvo!");
+			await this.atualizarOnboarding();
+		} else {
+			this.showToast("❌ Erro ao salvar canal.", "error");
+		}
+	},
 
     async handleSaveTop1() {
         if (!(await this.confirmar("Confirmar alteração do cargo Top 1?", "Confirmar"))) return;
@@ -2406,24 +2440,35 @@ row.innerHTML = `
             role_name: sel.options[sel.selectedIndex].getAttribute('data-name')
         });
 
-        if (res.success) {
-            this.showToast("🛡️ Patente adicionada!");
-            document.getElementById('lvl').value = "";
-            this.fetchAndRender(this.selectedGuild);
-        } else {
-            this.showToast("❌ Erro ao adicionar patente.", "error");
-        }
+		if (res.success) {
+			this.showToast("🛡️ Patente adicionada!");
+			document.getElementById('lvl').value = "";
+
+			await this.fetchAndRender(this.selectedGuild);
+			await this.atualizarOnboarding();
+		} else {
+			this.showToast("❌ Erro ao adicionar patente.", "error");
+		}
     },
 
-    async handleDelete(id) {
-        if (await this.confirmar("Deseja realmente excluir esta patente?", "Excluir")) {
-            const res = await NZKAPI.deletarPatente(this.selectedGuild, id);
-            if (res.success) {
-                this.showToast("🗑️ Patente removida.");
-                this.fetchAndRender(this.selectedGuild);
-            }
-        }
-    },
+	async handleDelete(id) {
+		if (await this.confirmar(
+			"Deseja realmente excluir esta patente?",
+			"Excluir"
+		)) {
+			const res = await NZKAPI.deletarPatente(
+				this.selectedGuild,
+				id
+			);
+
+			if (res.success) {
+				this.showToast("🗑️ Patente removida.");
+
+				await this.fetchAndRender(this.selectedGuild);
+				await this.atualizarOnboarding();
+			}
+		}
+	},
 
     async renderConquistasTable(guildId) {
         const body = document.getElementById('conquistasBody');
