@@ -60,7 +60,8 @@ const app = {
 			NZKAPI.getStatusSincronizacao(this.selectedGuild),
 			NZKAPI.getStatusCanalAvisos(this.selectedGuild),
 			NZKAPI.getStatusXpConfig(this.selectedGuild),
-			NZKAPI.getStatusBoasVindas(this.selectedGuild)
+			NZKAPI.getStatusBoasVindas(this.selectedGuild),
+			NZKAPI.getStatusPatente(this.selectedGuild)
 		]);
 
 		const atualizarItem = (id, concluido) => {

@@ -128,6 +128,29 @@ var NZKAPI = {
 		}
 	},
 
+	async getStatusPatente(guildId) {
+		try {
+			const { data, error } = await sb
+				.from('patentes')
+				.select('id')
+				.eq('guild_id', guildId)
+				.limit(1);
+
+			if (error) throw error;
+
+			return {
+				configurado: !!(data && data.length > 0)
+			};
+
+		} catch (err) {
+			console.error('Erro ao verificar patentes:', err);
+
+			return {
+				configurado: false
+			};
+		}
+	},
+
     async getAuditLog(guildId) {
         try {
             const { data, error } = await sb.from('audit_log')
