@@ -54,11 +54,9 @@ const app = {
 		const [
 			statusSync,
 			statusCanalAvisos,
-			statusXp
+			statusXp,
+			statusBoasVindas
 		] = await Promise.all([
-			NZKAPI.getStatusSincronizacao(this.selectedGuild),
-			NZKAPI.getStatusCanalAvisos(this.selectedGuild),
-			NZKAPI.getStatusXpConfig(this.selectedGuild),
 			NZKAPI.getStatusSincronizacao(this.selectedGuild),
 			NZKAPI.getStatusCanalAvisos(this.selectedGuild),
 			NZKAPI.getStatusXpConfig(this.selectedGuild),
@@ -94,7 +92,7 @@ const app = {
 			'onboarding-xp',
 			statusXp.configurado
 		);
-		
+
 		atualizarItem(
 			'onboarding-boas-vindas',
 			statusBoasVindas.configurado
