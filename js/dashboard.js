@@ -48,6 +48,29 @@ const app = {
 		this.iniciarModoSuporte();
 	},
 
+	async atualizarOnboarding() {
+		if (!this.selectedGuild) return;
+
+		const statusSync =
+			await NZKAPI.getStatusSincronizacao(this.selectedGuild);
+
+		const itemSync =
+			document.getElementById('onboarding-sync');
+
+		if (!itemSync) return;
+
+		const check =
+			itemSync.querySelector('.onboarding-check');
+
+		if (statusSync.sincronizado) {
+			check.textContent = '✅';
+			itemSync.classList.add('onboarding-complete');
+		} else {
+			check.textContent = '⬜';
+			itemSync.classList.remove('onboarding-complete');
+		}
+	},
+
 	async abrirConfiguracoesGlobais() {
 		if (!this._souDono) {
 			return this.showToast(

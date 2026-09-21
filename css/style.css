@@ -909,3 +909,11 @@ code {
         grid-template-columns: 1fr;
     }
 }
+
+.onboarding-item.onboarding-complete {
+    opacity: 0.65;
+}
+
+.onboarding-item.onboarding-complete strong {
+    color: var(--success);
+}
