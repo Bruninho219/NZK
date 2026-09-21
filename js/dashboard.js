@@ -21,6 +21,15 @@ const app = {
     },
 
 	async init() {
+		const onboardingOculto =
+			localStorage.getItem('nzk_onboarding_oculto') === 'true';
+
+		const onboardingCard =
+			document.getElementById('onboardingCard');
+
+		if (onboardingCard && onboardingOculto) {
+			onboardingCard.style.display = 'none';
+		}
 		try {
 			const servidores = await NZKAPI.getServidoresAtivos();
 
@@ -145,7 +154,20 @@ const app = {
 			barra.style.width = `${(concluidos / total) * 100}%`;
 		}
 	},
-	
+
+	toggleOnboarding() {
+		const card = document.getElementById('onboardingCard');
+
+		if (!card) return;
+
+		card.style.display = 'none';
+
+		localStorage.setItem(
+			'nzk_onboarding_oculto',
+			'true'
+		);
+	},
+
 	async abrirConfiguracoesGlobais() {
 		if (!this._souDono) {
 			return this.showToast(
@@ -1756,9 +1778,9 @@ const app = {
             `<option value="${this.escapeHtml(o.value)}" ${o.value === roleIdAtual ? 'selected' : ''}>${this.escapeHtml(o.text)}</option>`
         ).join('');
 
-row.innerHTML = `
-            <td colspan="4" style="padding: 10px 20px;">
-                <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+		row.innerHTML = `
+			<td colspan="4" style="padding: 10px 20px;">
+				<div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
 					<div style="display: flex; flex-direction: column;">
 						<label style="font-size: 11px;">NÍVEL</label>
 						<input type="number" id="edit-lvl-${id}" value="${levelAtual}" style="width: 80px; margin-top: 4px;">
@@ -1768,13 +1790,13 @@ row.innerHTML = `
 						<label style="font-size: 11px;">CARGO</label>
 						<select id="edit-role-${id}" style="width: 100%; margin-top: 4px;">${opcoesRoles}</select>
 					</div>
-                </div>
-            </td>
-            <td style="display:flex; gap:8px; padding-top:22px;">
-                <button class="btn-table-action success" onclick="app.handleSaveEdit('${id}')">✅ Salvar</button>
-                <button class="btn-table-action secondary" onclick="app.fetchAndRender(app.selectedGuild)">✖ Cancelar</button>
-            </td>
-        `;
+				</div>
+			</td>
+			<td style="display:flex; gap:8px; padding-top:22px;">
+				<button class="btn-table-action success" onclick="app.handleSaveEdit('${id}')">✅ Salvar</button>
+				<button class="btn-table-action secondary" onclick="app.fetchAndRender(app.selectedGuild)">✖ Cancelar</button>
+			</td>
+		`;
     },
 
     async handleSaveEdit(id) {
