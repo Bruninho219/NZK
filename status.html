@@ -38,6 +38,10 @@
             .status-hero h1 { font-size:24px; }
         }
     </style>
+
+    <script src="/js/config.js"></script>
+    <script src="/js/footer.js"></script>
+    <script src="/js/site-info.js"></script>
 </head>
 <body>
     <main class="status-page">
@@ -103,7 +107,6 @@
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="js/config.js"></script>
     <script>
         const HEARTBEAT_MAX_MINUTES = 20;
 
@@ -191,5 +194,6 @@
         carregarStatus();
         setInterval(carregarStatus, 60 * 1000);
     </script>
+    <div data-nzk-footer></div>
 </body>
 </html>
