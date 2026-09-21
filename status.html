@@ -142,10 +142,10 @@
             const description = document.getElementById('statusDescription');
 
             try {
-                const sb = window.supabase.createClient(
-                    window.NZK_CONFIG.SUPABASE_URL,
-                    window.NZK_CONFIG.SUPABASE_ANON_KEY
-                );
+				const sb = window.supabase.createClient(
+					CONFIG.URL,
+					CONFIG.KEY
+				);
 
                 const { data, error } = await sb
                     .from('bot_status')
