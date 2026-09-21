@@ -111,6 +111,39 @@ const app = {
 			'onboarding-cargos-entrada',
 			statusCargosEntrada.configurado
 		);
+
+		const estados = [
+			statusSync.sincronizado,
+			statusCanalAvisos.configurado,
+			statusXp.configurado,
+			statusBoasVindas.configurado,
+			statusPatente.configurado,
+			statusCargosEntrada.configurado
+		];
+
+		const concluidos = estados.filter(Boolean).length;
+		const total = estados.length;
+
+		const contadorConcluidos =
+			document.getElementById('onboardingCompleted');
+
+		const contadorTotal =
+			document.getElementById('onboardingTotal');
+
+		const barra =
+			document.getElementById('onboardingProgressBar');
+
+		if (contadorConcluidos) {
+			contadorConcluidos.textContent = concluidos;
+		}
+
+		if (contadorTotal) {
+			contadorTotal.textContent = total;
+		}
+
+		if (barra) {
+			barra.style.width = `${(concluidos / total) * 100}%`;
+		}
 	},
 	
 	async abrirConfiguracoesGlobais() {
