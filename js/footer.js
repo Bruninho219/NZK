@@ -15,6 +15,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 <a href="/ajuda.html" style="color:var(--text-muted);">Ajuda</a>
                 &nbsp;·&nbsp;
                 <a href="/novidades.html" style="color:var(--text-muted);" data-nzk-version>Versão NZK</a>
+				&nbsp;·&nbsp;
+                <a href="/comandos.html" style="color:var(--text-muted);">Comandos</a>
             </div>
         `;
         footer.querySelectorAll('[data-nzk-version]').forEach(function (el) {

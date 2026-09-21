@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Comandos | NZK</title>
+    <meta name="description" content="Lista de comandos do NZK para Discord, com uso, parâmetros, permissões e exemplos para usuários e administradores.">
+
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔥</text></svg>">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8816082473901477" crossorigin="anonymous"></script>
+
+    <script src="/js/config.js"></script>
+    <script src="/js/footer.js"></script>
+    <script src="/js/site-info.js"></script>
+
+    <style>
+        .commands-page {
+            max-width: 980px;
+            margin: 0 auto;
+            padding: 50px 24px 80px;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 28px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 13px;
+        }
+
+        .back-link:hover {
+            color: var(--text-main);
+        }
+
+        .commands-hero {
+            text-align: center;
+            margin-bottom: 36px;
+        }
+
+        .commands-hero .emoji {
+            font-size: 46px;
+            margin-bottom: 10px;
+        }
+
+        .commands-hero h1 {
+            margin: 0 0 10px;
+            font-size: 32px;
+        }
+
+        .commands-hero p {
+            max-width: 700px;
+            margin: 0 auto;
+            color: var(--text-muted);
+            line-height: 1.65;
+            font-size: 14.5px;
+        }
+
+        .command-note {
+            margin: 26px 0;
+            padding: 18px 20px;
+            border: 1px solid rgba(88,101,242,.35);
+            background: rgba(88,101,242,.08);
+            border-radius: 14px;
+            color: var(--text-muted);
+            font-size: 13.5px;
+            line-height: 1.6;
+        }
+
+        .command-note code {
+            color: var(--text-main);
+        }
+
+        .commands-tools {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 30px;
+        }
+
+        .commands-search {
+            flex: 1;
+            min-width: 230px;
+            padding: 11px 13px;
+            border: 1px solid rgba(255,255,255,.10);
+            background: var(--card);
+            color: var(--text-main);
+            border-radius: 9px;
+            outline: none;
+        }
+
+        .commands-search:focus {
+            border-color: var(--accent);
+        }
+
+        .filter-btn {
+            border: 1px solid rgba(255,255,255,.10);
+            background: var(--card);
+            color: var(--text-muted);
+            padding: 10px 14px;
+            border-radius: 9px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 12px;
+        }
+
+        .filter-btn.active,
+        .filter-btn:hover {
+            color: white;
+            border-color: var(--accent);
+            background: rgba(88,101,242,.18);
+        }
+
+        .commands-section {
+            margin-top: 40px;
+        }
+
+        .commands-section h2 {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            margin: 0 0 8px;
+            font-size: 20px;
+        }
+
+        .commands-section > p {
+            color: var(--text-muted);
+            font-size: 13px;
+            margin: 0 0 18px;
+        }
+
+        .command-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+            gap: 14px;
+        }
+
+        .command-card {
+            background: var(--card);
+            border: 1px solid rgba(255,255,255,.06);
+            border-radius: 14px;
+            padding: 18px;
+            transition: border-color .15s ease, transform .15s ease;
+        }
+
+        .command-card:hover {
+            border-color: rgba(88,101,242,.55);
+            transform: translateY(-1px);
+        }
+
+        .command-card.hidden {
+            display: none;
+        }
+
+        .command-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+
+        .command-name {
+            font-size: 15px;
+            font-weight: 800;
+            color: var(--text-main);
+        }
+
+        .command-name code {
+            color: var(--accent);
+            background: #1e1f22;
+            padding: 4px 7px;
+            border-radius: 6px;
+        }
+
+        .badge {
+            flex-shrink: 0;
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: .4px;
+            padding: 5px 7px;
+            border-radius: 20px;
+        }
+
+        .badge.user {
+            background: rgba(35,165,89,.14);
+            color: #57f287;
+        }
+
+        .badge.admin {
+            background: rgba(237,66,69,.13);
+            color: #ed4245;
+        }
+
+        .command-description {
+            color: var(--text-muted);
+            font-size: 13px;
+            line-height: 1.55;
+            margin-bottom: 14px;
+        }
+
+        .command-meta {
+            border-top: 1px solid rgba(255,255,255,.06);
+            padding-top: 12px;
+            display: grid;
+            gap: 7px;
+            font-size: 12px;
+        }
+
+        .command-meta strong {
+            color: var(--text-main);
+        }
+
+        .command-meta code {
+            color: var(--text-muted);
+            background: #1e1f22;
+            padding: 2px 6px;
+            border-radius: 5px;
+            overflow-wrap: anywhere;
+        }
+
+        .empty-search {
+            display: none;
+            padding: 35px 20px;
+            text-align: center;
+            color: var(--text-muted);
+            background: var(--card);
+            border-radius: 14px;
+            margin-top: 20px;
+        }
+
+        .commands-bottom {
+            margin-top: 48px;
+            padding: 26px;
+            text-align: center;
+            background: var(--card);
+            border-radius: 16px;
+        }
+
+        .commands-bottom h2 {
+            margin: 0 0 8px;
+            font-size: 19px;
+        }
+
+        .commands-bottom p {
+            color: var(--text-muted);
+            font-size: 13px;
+            margin: 0 0 16px;
+        }
+
+        .commands-bottom a {
+            display: inline-block;
+            color: white;
+            background: var(--accent);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 800;
+            padding: 11px 17px;
+            border-radius: 8px;
+        }
+
+        @media (max-width: 640px) {
+            .commands-page {
+                padding: 32px 14px 60px;
+            }
+
+            .commands-hero h1 {
+                font-size: 26px;
+            }
+
+            .commands-tools {
+                flex-direction: column;
+            }
+
+            .commands-search {
+                width: 100%;
+                box-sizing: border-box;
+            }
+
+            .filter-btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+<main class="commands-page">
+    <a class="back-link" href="/">← Voltar ao NZK</a>
+
+    <section class="commands-hero">
+        <div class="emoji">⌨️</div>
+        <h1>Comandos do NZK</h1>
+        <p>
+            Consulte os comandos disponíveis no Discord, seus parâmetros e quem pode utilizá-los.
+            O NZK usa comandos híbridos: a maioria pode ser executada tanto como slash command quanto pelo prefixo tradicional.
+        </p>
+    </section>
+
+    <div class="command-note">
+        <strong>Como usar:</strong>
+        prefira o formato slash, por exemplo <code>/nrank</code>.
+        O formato tradicional também continua disponível, como <code>!nRank</code>.
+        Parâmetros entre <code>[colchetes]</code> são opcionais.
+    </div>
+
+    <div class="commands-tools">
+        <input
+            id="commandSearch"
+            class="commands-search"
+            type="search"
+            placeholder="Pesquisar comando ou função..."
+            autocomplete="off"
+            aria-label="Pesquisar comandos"
+        >
+        <button class="filter-btn active" data-filter="all">Todos</button>
+        <button class="filter-btn" data-filter="user">Usuário</button>
+        <button class="filter-btn" data-filter="admin">Administrador</button>
+    </div>
+
+    <section class="commands-section" data-section="user">
+        <h2>👤 Comandos de usuário</h2>
+        <p>Podem ser usados pelos membros do servidor.</p>
+
+        <div class="command-grid">
+
+            <article class="command-card" data-type="user" data-search="nrank rank nível xp posição ranking usuário membro">
+                <div class="command-head">
+                    <div class="command-name"><code>/nrank</code></div>
+                    <span class="badge user">Usuário</span>
+                </div>
+                <div class="command-description">Mostra nível, XP, posição no ranking, mensagens, tempo em voz e reações do membro.</div>
+                <div class="command-meta">
+                    <div><strong>Slash:</strong> <code>/nrank [target]</code></div>
+                    <div><strong>Prefixo:</strong> <code>!nRank [@usuário]</code></div>
+                    <div><strong>Exemplo:</strong> <code>/nrank @Bruno</code></div>
+                </div>
+            </article>
+
+            <article class="command-card" data-type="user" data-search="ntop top top 5 ranking servidor posições">
+                <div class="command-head">
+                    <div class="command-name"><code>/ntop</code></div>
+                    <span class="badge user">Usuário</span>
+                </div>
+                <div class="command-description">Exibe os cinco membros mais bem colocados no ranking do servidor.</div>
+                <div class="command-meta">
+                    <div><strong>Slash:</strong> <code>/ntop</code></div>
+                    <div><strong>Prefixo:</strong> <code>!nTop</code></div>
+                </div>
+            </article>
+
+            <article class="command-card" data-type="user" data-search="nconquistas conquistas medalhas desbloqueadas usuário membro">
+                <div class="command-head">
+                    <div class="command-name"><code>/nconquistas</code></div>
+                    <span class="badge user">Usuário</span>
+                </div>
+                <div class="command-description">Lista as conquistas já desbloqueadas pelo próprio usuário ou por outro membro.</div>
+                <div class="command-meta">
+                    <div><strong>Slash:</strong> <code>/nconquistas [target]</code></div>
+                    <div><strong>Prefixo:</strong> <code>!nConquistas [@usuário]</code></div>
+                </div>
+            </article>
+
+            <article class="command-card" data-type="user" data-search="nhistorico histórico xp tabela registros evolução">
+                <div class="command-head">
+                    <div class="command-name"><code>/nhistorico</code></div>
+                    <span class="badge user">Usuário</span>
+                </div>
+                <div class="command-description">Mostra o histórico de XP do usuário em formato de tabela, respeitando o período disponível no plano do servidor.</div>
+                <div class="command-meta">
+                    <div><strong>Slash:</strong> <code>/nhistorico [target]</code></div>
+                    <div><strong>Prefixo:</strong> <code>!nHistorico [@usuário]</code></div>
+                </div>
+            </article>
+
+            <article class="command-card" data-type="user" data-search="nhistorico2 histórico gráfico xp 30 dias evolução">
+                <div class="command-head">
+                    <div class="command-name"><code>/nhistorico2</code></div>
+                    <span class="badge user">Usuário</span>
+                </div>
+                <div class="command-description">Gera um gráfico com o histórico de XP registrado nos últimos 30 dias.</div>
+                <div class="command-meta">
+                    <div><strong>Slash:</strong> <code>/nhistorico2 [target]</code></div>
+                    <div><strong>Prefixo:</strong> <code>!nHistorico2 [@usuário]</code></div>
+                </div>
+            </article>
+
+            <article class="command-card" data-type="user" data-search="nping ping latência gateway">
+                <div class="command-head">
+                    <div class="command-name"><code>/nping</code></div>
+                    <span class="badge user">Usuário</span>
+                </div>
+                <div class="command-description">Mostra a latência atual da conexão do bot com o Discord.</div>
+                <div class="command-meta">
+                    <div><strong>Slash:</strong> <code>/nping</code></div>
+                    <div><strong>Prefixo:</strong> <code>!nPing</code></div>
+                </div>
+            </article>
+
+            <article class="command-card" data-type="user" data-search="nping2 ping2 latência real ida volta gateway resposta">
+                <div class="command-head">
+                    <div class="command-name"><code>/nping2</code></div>
+                    <span class="badge user">Usuário</span>
+                </div>
+                <div class="command-description">Mede o tempo de resposta de uma mensagem e também informa a latência do gateway.</div>
+                <div class="command-meta">
+                    <div><strong>Slash:</strong> <code>/nping2</code></div>
+                    <div><strong>Prefixo:</strong> <code>!nPing2</code></div>
+                </div>
+            </article>
+
+            <article class="command-card" data-type="user" data-search="ninfo informações versão bot versão latência autor">
+                <div class="command-head">
+                    <div class="command-name"><code>/ninfo</code></div>
+                    <span class="badge user">Usuário</span>
+                </div>
+                <div class="command-description">Exibe informações gerais do NZK, incluindo versão, latência e autoria.</div>
+                <div class="command-meta">
+                    <div><strong>Slash:</strong> <code>/ninfo</code></div>
+                    <div><strong>Prefixo:</strong> <code>!nInfo</code></div>
+                </div>
+            </article>
+
+            <article class="command-card" data-type="user" data-search="nhelp ajuda help comandos lista">
+                <div class="command-head">
+                    <div class="command-name"><code>/nhelp</code></div>
+                    <span class="badge user">Usuário</span>
+                </div>
+                <div class="command-description">Exibe dentro do Discord um resumo dos principais comandos disponíveis.</div>
+                <div class="command-meta">
+                    <div><strong>Slash:</strong> <code>/nhelp</code></div>
+                    <div><strong>Prefixo:</strong> <code>!nHelp</code></div>
+                </div>
+            </article>
+
+        </div>
+    </section>
+
+    <section class="commands-section" data-section="admin">
+        <h2>🔧 Comandos administrativos</h2>
+        <p>Exigem permissão administrativa no servidor ou acesso de proprietário do bot.</p>
+
+        <div class="command-grid">
+
+            <article class="command-card" data-type="admin" data-search="nadmin painel administrativo configurações canal avisos top1 patentes status">
+                <div class="command-head">
+                    <div class="command-name"><code>/nadmin</code></div>
+                    <span class="badge admin">Admin</span>
+                </div>
+                <div class="command-description">Mostra um resumo das configurações administrativas do servidor.</div>
+                <div class="command-meta">
+                    <div><strong>Slash:</strong> <code>/nadmin</code></div>
+                    <div><strong>Prefixo:</strong> <code>!nAdmin</code></div>
+                </div>
+            </article>
+
+            <article class="command-card" data-type="admin" data-search="nbonus bônus xp booster admin percentual">
+                <div class="command-head">
+                    <div class="command-name"><code>/nbonus</code></div>
+                    <span class="badge admin">Admin</span>
+                </div>
+                <div class="command-description">Consulta ou altera o bônus percentual de XP para boosters e administradores.</div>
+                <div class="command-meta">
+                    <div><strong>Slash:</strong> <code>/nbonus [tipo] [valor]</code></div>
+                    <div><strong>Prefixo:</strong> <code>!nBonus booster 10</code></div>
+                    <div><strong>Tipos:</strong> <code>booster</code> ou <code>admin</code></div>
+                </div>
+            </article>
+
+            <article class="command-card" data-type="admin" data-search="nbonusstack bônus stack somar maior admin booster">
+                <div class="command-head">
+                    <div class="command-name"><code>/nbonusstack</code></div>
+                    <span class="badge admin">Admin</span>
+                </div>
+                <div class="command-description">Define se os bônus de administrador e booster serão somados ou se apenas o maior será aplicado.</div>
+                <div class="command-meta">
+                    <div><strong>Slash:</strong> <code>/nbonusstack valor</code></div>
+                    <div><strong>Prefixo:</strong> <code>!nBonusStack sim</code></div>
+                    <div><strong>Valores:</strong> <code>sim</code> ou <code>nao</code></div>
+                </div>
+            </article>
+
+            <article class="command-card" data-type="admin" data-search="nreset reset nível xp usuário todos servidor zerar">
+                <div class="command-head">
+                    <div class="command-name"><code>/nreset</code></div>
+                    <span class="badge admin">Admin</span>
+                </div>
+                <div class="command-description">Reseta a progressão de um membro ou, sem usuário informado, de todo o servidor.</div>
+                <div class="command-meta">
+                    <div><strong>Slash:</strong> <code>/nreset [target]</code></div>
+                    <div><strong>Prefixo:</strong> <code>!nReset [@usuário]</code></div>
+                    <div><strong>Atenção:</strong> sem usuário, o reset total exige confirmação.</div>
+                </div>
+            </article>
+
+            <article class="command-card" data-type="admin" data-search="nsetxp set xp definir manual usuário">
+                <div class="command-head">
+                    <div class="command-name"><code>/nsetxp</code></div>
+                    <span class="badge admin">Admin</span>
+                </div>
+                <div class="command-description">Define manualmente o XP atual de um membro.</div>
+                <div class="command-meta">
+                    <div><strong>Slash:</strong> <code>/nsetxp target valor</code></div>
+                    <div><strong>Prefixo:</strong> <code>!nSetXP @usuário 500</code></div>
+                </div>
+            </article>
+
+            <article class="command-card" data-type="admin" data-search="nsetlevel set level nível definir manual usuário xp zerado">
+                <div class="command-head">
+                    <div class="command-name"><code>/nsetlevel</code></div>
+                    <span class="badge admin">Admin</span>
+                </div>
+                <div class="command-description">Define manualmente o nível de um membro. Ao alterar o nível, o XP atual é zerado.</div>
+                <div class="command-meta">
+                    <div><strong>Slash:</strong> <code>/nsetlevel target valor</code></div>
+                    <div><strong>Prefixo:</strong> <code>!nSetLevel @usuário 5</code></div>
+                </div>
+            </article>
+
+            <article class="command-card" data-type="admin" data-search="nfix fix corrigir cargos patentes membros nível">
+                <div class="command-head">
+                    <div class="command-name"><code>/nfix</code></div>
+                    <span class="badge admin">Admin</span>
+                </div>
+                <div class="command-description">Revisa os membros do servidor e corrige os cargos de patente de acordo com o nível atual.</div>
+                <div class="command-meta">
+                    <div><strong>Slash:</strong> <code>/nfix</code></div>
+                    <div><strong>Prefixo:</strong> <code>!nFix</code></div>
+                </div>
+            </article>
+
+            <article class="command-card" data-type="admin" data-search="nsync sync sincronizar cargos canais admins banco painel">
+                <div class="command-head">
+                    <div class="command-name"><code>/nsync</code></div>
+                    <span class="badge admin">Admin</span>
+                </div>
+                <div class="command-description">Sincroniza cargos, canais e administradores do Discord com os dados usados pelo painel.</div>
+                <div class="command-meta">
+                    <div><strong>Slash:</strong> <code>/nsync</code></div>
+                    <div><strong>Prefixo:</strong> <code>!nSync</code></div>
+                </div>
+            </article>
+
+            <article class="command-card" data-type="admin" data-search="nsync2 sync2 atualizar nomes patentes cargos">
+                <div class="command-head">
+                    <div class="command-name"><code>/nsync2</code></div>
+                    <span class="badge admin">Admin</span>
+                </div>
+                <div class="command-description">Atualiza os nomes de exibição das patentes usando os cargos sincronizados do servidor.</div>
+                <div class="command-meta">
+                    <div><strong>Slash:</strong> <code>/nsync2</code></div>
+                    <div><strong>Prefixo:</strong> <code>!nSync2</code></div>
+                </div>
+            </article>
+
+            <article class="command-card" data-type="admin" data-search="nstatus status global bot presença atividade painel">
+                <div class="command-head">
+                    <div class="command-name"><code>/nstatus</code></div>
+                    <span class="badge admin">Admin</span>
+                </div>
+                <div class="command-description">Aplica imediatamente no Discord o status global configurado para o bot.</div>
+                <div class="command-meta">
+                    <div><strong>Slash:</strong> <code>/nstatus</code></div>
+                    <div><strong>Prefixo:</strong> <code>!nStatus</code></div>
+                </div>
+            </article>
+
+            <article class="command-card" data-type="admin" data-search="setchannel canal avisos anúncios definir canal atual">
+                <div class="command-head">
+                    <div class="command-name"><code>/setchannel</code></div>
+                    <span class="badge admin">Admin</span>
+                </div>
+                <div class="command-description">Define o canal atual como canal de avisos do servidor.</div>
+                <div class="command-meta">
+                    <div><strong>Slash:</strong> <code>/setchannel</code></div>
+                    <div><strong>Prefixo:</strong> <code>!setchannel</code></div>
+                </div>
+            </article>
+
+        </div>
+    </section>
+
+    <div id="emptySearch" class="empty-search">
+        Nenhum comando encontrado com esse filtro.
+    </div>
+
+    <section class="commands-bottom">
+        <h2>Precisa de mais ajuda?</h2>
+        <p>A Central de Ajuda explica os principais recursos do NZK com mais detalhes.</p>
+        <a href="/ajuda.html">Abrir Central de Ajuda</a>
+    </section>
+
+    <div data-nzk-footer></div>
+</main>
+
+<script>
+    const searchInput = document.getElementById('commandSearch');
+    const filterButtons = document.querySelectorAll('.filter-btn');
+    const cards = document.querySelectorAll('.command-card');
+    const sections = document.querySelectorAll('.commands-section');
+    const emptySearch = document.getElementById('emptySearch');
+
+    let activeFilter = 'all';
+
+    function atualizarLista() {
+        const term = searchInput.value.trim().toLowerCase();
+        let visibleCards = 0;
+
+        cards.forEach(card => {
+            const type = card.dataset.type;
+            const text = (card.dataset.search + ' ' + card.innerText).toLowerCase();
+
+            const filterMatch = activeFilter === 'all' || type === activeFilter;
+            const searchMatch = !term || text.includes(term);
+            const visible = filterMatch && searchMatch;
+
+            card.classList.toggle('hidden', !visible);
+
+            if (visible) visibleCards++;
+        });
+
+        sections.forEach(section => {
+            const sectionCards = section.querySelectorAll('.command-card:not(.hidden)');
+            section.style.display = sectionCards.length ? '' : 'none';
+        });
+
+        emptySearch.style.display = visibleCards ? 'none' : 'block';
+    }
+
+    searchInput.addEventListener('input', atualizarLista);
+
+    filterButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            activeFilter = button.dataset.filter;
+
+            filterButtons.forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+
+            atualizarLista();
+        });
+    });
+</script>
+</body>
+</html>
