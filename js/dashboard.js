@@ -728,7 +728,9 @@ const app = {
             console.error("Erro ao carregar dados do servidor:", err);
             this.showToast("❌ Alguns dados podem não ter carregado — veja o console.", "error");
         }
-
+	
+	await this.atualizarOnboarding();
+	
     this.iniciarRealtime(guildId);
     this.iniciarRealtimeAuditLog(guildId);
     },
