@@ -55,7 +55,8 @@ const app = {
 			statusSync,
 			statusCanalAvisos,
 			statusXp,
-			statusBoasVindas
+			statusBoasVindas,
+			statusPatente
 		] = await Promise.all([
 			NZKAPI.getStatusSincronizacao(this.selectedGuild),
 			NZKAPI.getStatusCanalAvisos(this.selectedGuild),
@@ -98,8 +99,13 @@ const app = {
 			'onboarding-boas-vindas',
 			statusBoasVindas.configurado
 		);
-	},
 
+		atualizarItem(
+			'onboarding-patente',
+			statusPatente.configurado
+		);
+	},
+	
 	async abrirConfiguracoesGlobais() {
 		if (!this._souDono) {
 			return this.showToast(
