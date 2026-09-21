@@ -151,6 +151,31 @@ var NZKAPI = {
 		}
 	},
 
+	async getStatusCargosEntrada(guildId) {
+		try {
+			const { data, error } = await sb
+				.from('servidor_configs')
+				.select('cargos_entrada')
+				.eq('guild_id', guildId)
+				.maybeSingle();
+
+			if (error) throw error;
+
+			return {
+				configurado:
+					Array.isArray(data?.cargos_entrada) &&
+					data.cargos_entrada.length > 0
+			};
+
+		} catch (err) {
+			console.error('Erro ao verificar cargos de entrada:', err);
+
+			return {
+				configurado: false
+			};
+		}
+	},
+
     async getAuditLog(guildId) {
         try {
             const { data, error } = await sb.from('audit_log')

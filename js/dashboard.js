@@ -62,7 +62,8 @@ const app = {
 			NZKAPI.getStatusCanalAvisos(this.selectedGuild),
 			NZKAPI.getStatusXpConfig(this.selectedGuild),
 			NZKAPI.getStatusBoasVindas(this.selectedGuild),
-			NZKAPI.getStatusPatente(this.selectedGuild)
+			NZKAPI.getStatusPatente(this.selectedGuild),
+			NZKAPI.getStatusCargosEntrada(this.selectedGuild)
 		]);
 
 		const atualizarItem = (id, concluido) => {
@@ -103,6 +104,11 @@ const app = {
 		atualizarItem(
 			'onboarding-patente',
 			statusPatente.configurado
+		);
+
+		atualizarItem(
+			'onboarding-cargos-entrada',
+			statusCargosEntrada.configurado
 		);
 	},
 	
