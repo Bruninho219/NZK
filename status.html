@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Status | NZK</title>
+    <meta name="description" content="Status público do NZK. Consulte disponibilidade, servidores conectados, latência, versão e última atualização do bot.">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔥</text></svg>">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .status-page { max-width: 900px; margin: 0 auto; padding: 50px 24px 80px; }
+        .status-topbar { margin-bottom: 32px; }
+        .status-back { color: var(--text-muted); text-decoration: none; font-size: 13px; }
+        .status-back:hover { color: var(--text-main); }
+        .status-hero { text-align: center; margin-bottom: 34px; }
+        .status-hero h1 { margin: 0 0 10px; font-size: 30px; }
+        .status-hero p { color: var(--text-muted); margin: 0; }
+        .status-banner { display:flex; align-items:center; gap:14px; padding:18px 20px; border-radius:16px; border:1px solid rgba(255,255,255,0.08); background:var(--card); margin-bottom:22px; }
+        .status-dot { width:12px; height:12px; border-radius:50%; flex-shrink:0; }
+        .status-dot.ok { background:var(--success); box-shadow:0 0 12px rgba(35,165,89,0.55); }
+        .status-dot.down { background:var(--danger); box-shadow:0 0 12px rgba(237,66,69,0.55); }
+        .status-dot.waiting { background:var(--text-muted); }
+        .status-banner strong { display:block; margin-bottom:3px; }
+        .status-banner span { color:var(--text-muted); font-size:13px; }
+        .status-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:14px; }
+        .status-card { background:var(--card); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:18px; }
+        .status-card .label { display:block; font-size:11px; text-transform:uppercase; letter-spacing:.6px; color:var(--text-muted); font-weight:800; margin-bottom:8px; }
+        .status-card .value { font-size:22px; font-weight:800; color:var(--text-main); }
+        .status-card .sub { display:block; color:var(--text-muted); font-size:12px; margin-top:6px; }
+        .status-note { margin-top:22px; color:var(--text-muted); font-size:12.5px; line-height:1.6; text-align:center; }
+        .status-actions { margin-top:30px; display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
+        .status-actions a { text-decoration:none; padding:11px 16px; border-radius:8px; font-size:13px; font-weight:700; }
+        .status-actions .primary { background:var(--accent); color:white; }
+        .status-actions .secondary { background:#4e5058; color:white; }
+        @media (max-width:640px) {
+            .status-page { padding:32px 14px 60px; }
+            .status-hero h1 { font-size:24px; }
+        }
+    </style>
+</head>
+<body>
+    <main class="status-page">
+        <div class="status-topbar">
+            <a class="status-back" href="/">← Voltar ao NZK</a>
+        </div>
+
+        <section class="status-hero">
+            <h1>🔥 Status do NZK</h1>
+            <p>Disponibilidade atual do bot e informações básicas do serviço.</p>
+        </section>
+
+        <section class="status-banner" id="statusBanner">
+            <div class="status-dot waiting" id="statusDot"></div>
+            <div>
+                <strong id="statusTitle">Consultando status...</strong>
+                <span id="statusDescription">Aguarde enquanto verificamos o último heartbeat do bot.</span>
+            </div>
+        </section>
+
+        <section class="status-grid">
+            <article class="status-card">
+                <span class="label">Bot do Discord</span>
+                <span class="value" id="botStatus">—</span>
+                <span class="sub" id="botStatusSub">Verificando...</span>
+            </article>
+            <article class="status-card">
+                <span class="label">Servidores conectados</span>
+                <span class="value" id="serverCount">—</span>
+                <span class="sub">Servidores onde o NZK está presente</span>
+            </article>
+            <article class="status-card">
+                <span class="label">Latência</span>
+                <span class="value" id="latency">—</span>
+                <span class="sub">Latência atual com o Discord</span>
+            </article>
+            <article class="status-card">
+                <span class="label">Versão</span>
+                <span class="value" id="version">—</span>
+                <span class="sub">Versão atualmente em execução</span>
+            </article>
+            <article class="status-card">
+                <span class="label">Tempo online</span>
+                <span class="value" id="uptime">—</span>
+                <span class="sub">Desde a última inicialização do bot</span>
+            </article>
+            <article class="status-card">
+                <span class="label">Última atualização</span>
+                <span class="value" id="lastUpdate">—</span>
+                <span class="sub" id="lastUpdateExact">Heartbeat do serviço</span>
+            </article>
+        </section>
+
+        <p class="status-note">
+            O NZK envia um heartbeat aproximadamente a cada 10 minutos.
+            Se não houver atualização por mais de 20 minutos, esta página considera o bot possivelmente indisponível.
+        </p>
+
+        <div class="status-actions">
+            <a class="primary" href="/invite">Adicionar o NZK</a>
+            <a class="secondary" href="/ajuda.html">Central de Ajuda</a>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/config.js"></script>
+    <script>
+        const HEARTBEAT_MAX_MINUTES = 20;
+
+        function formatRelativeMinutes(minutes) {
+            if (minutes < 1) return 'agora';
+            if (minutes === 1) return 'há 1 min';
+            if (minutes < 60) return `há ${minutes} min`;
+            const hours = Math.floor(minutes / 60);
+            const rest = minutes % 60;
+            if (hours < 24) return rest > 0 ? `há ${hours}h ${rest}min` : `há ${hours}h`;
+            const days = Math.floor(hours / 24);
+            return `há ${days} dia${days !== 1 ? 's' : ''}`;
+        }
+
+        function formatUptime(startDate, nowDate) {
+            const diffMs = Math.max(0, nowDate - startDate);
+            const totalMinutes = Math.floor(diffMs / 60000);
+            const days = Math.floor(totalMinutes / 1440);
+            const hours = Math.floor((totalMinutes % 1440) / 60);
+            const minutes = totalMinutes % 60;
+            if (days > 0) return `${days}d ${hours}h`;
+            if (hours > 0) return `${hours}h ${minutes}min`;
+            return `${minutes}min`;
+        }
+
+        function formatDate(date) {
+            return new Intl.DateTimeFormat('pt-BR', {
+                dateStyle: 'short',
+                timeStyle: 'short'
+            }).format(date);
+        }
+
+        async function carregarStatus() {
+            const dot = document.getElementById('statusDot');
+            const title = document.getElementById('statusTitle');
+            const description = document.getElementById('statusDescription');
+
+            try {
+                const sb = window.supabase.createClient(
+                    window.NZK_CONFIG.SUPABASE_URL,
+                    window.NZK_CONFIG.SUPABASE_ANON_KEY
+                );
+
+                const { data, error } = await sb
+                    .from('bot_status')
+                    .select('servidores, versao, atualizado_em, latencia_ms, iniciado_em')
+                    .eq('id', 1)
+                    .maybeSingle();
+
+                if (error) throw error;
+                if (!data) throw new Error('Status não encontrado.');
+
+                const agora = new Date();
+                const atualizadoEm = new Date(data.atualizado_em);
+                const iniciadoEm = data.iniciado_em ? new Date(data.iniciado_em) : null;
+
+                const diffMinutes = Math.floor((agora - atualizadoEm) / 60000);
+                const online = diffMinutes <= HEARTBEAT_MAX_MINUTES;
+
+                dot.className = `status-dot ${online ? 'ok' : 'down'}`;
+                title.textContent = online ? 'Todos os sistemas operacionais' : 'Possível indisponibilidade detectada';
+                description.textContent = online
+                    ? 'O último heartbeat do bot foi recebido dentro do intervalo esperado.'
+                    : 'O bot não envia um heartbeat há mais de 20 minutos.';
+
+                document.getElementById('botStatus').textContent = online ? 'Operacional' : 'Indisponível';
+                document.getElementById('botStatusSub').textContent = online ? 'Heartbeat recente' : 'Heartbeat atrasado';
+                document.getElementById('serverCount').textContent = data.servidores ?? '—';
+                document.getElementById('latency').textContent = data.latencia_ms != null ? `${data.latencia_ms} ms` : '—';
+                document.getElementById('version').textContent = data.versao || '—';
+                document.getElementById('uptime').textContent = iniciadoEm ? formatUptime(iniciadoEm, agora) : '—';
+                document.getElementById('lastUpdate').textContent = formatRelativeMinutes(Math.max(0, diffMinutes));
+                document.getElementById('lastUpdateExact').textContent = `Atualizado em ${formatDate(atualizadoEm)}`;
+
+            } catch (err) {
+                console.error('Erro ao carregar status do NZK:', err);
+                dot.className = 'status-dot down';
+                title.textContent = 'Não foi possível consultar o status';
+                description.textContent = 'A página não conseguiu acessar os dados públicos de status.';
+                document.getElementById('botStatus').textContent = 'Desconhecido';
+                document.getElementById('botStatusSub').textContent = 'Falha ao consultar';
+            }
+        }
+
+        carregarStatus();
+        setInterval(carregarStatus, 60 * 1000);
+    </script>
+</body>
+</html>
