@@ -56,7 +56,8 @@ const app = {
 			statusCanalAvisos,
 			statusXp,
 			statusBoasVindas,
-			statusPatente
+			statusPatente,
+			statusCargosEntrada
 		] = await Promise.all([
 			NZKAPI.getStatusSincronizacao(this.selectedGuild),
 			NZKAPI.getStatusCanalAvisos(this.selectedGuild),
