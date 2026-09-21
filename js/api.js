@@ -76,6 +76,33 @@ var NZKAPI = {
 		}
 	},
 
+	async getStatusXpConfig(guildId) {
+		try {
+			const { data, error } = await sb
+				.from('servidor_configs')
+				.select('xp_mensagem, xp_reacao, xp_voz_minuto')
+				.eq('guild_id', guildId)
+				.maybeSingle();
+
+			if (error) throw error;
+
+			return {
+				configurado:
+					data !== null &&
+					data.xp_mensagem !== null &&
+					data.xp_reacao !== null &&
+					data.xp_voz_minuto !== null
+			};
+
+		} catch (err) {
+			console.error('Erro ao verificar configuração de XP:', err);
+
+			return {
+				configurado: false
+			};
+		}
+	},
+
     async getAuditLog(guildId) {
         try {
             const { data, error } = await sb.from('audit_log')

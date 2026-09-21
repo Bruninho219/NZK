@@ -53,10 +53,12 @@ const app = {
 
 		const [
 			statusSync,
-			statusCanalAvisos
+			statusCanalAvisos,
+			statusXp
 		] = await Promise.all([
 			NZKAPI.getStatusSincronizacao(this.selectedGuild),
-			NZKAPI.getStatusCanalAvisos(this.selectedGuild)
+			NZKAPI.getStatusCanalAvisos(this.selectedGuild),
+			NZKAPI.getStatusXpConfig(this.selectedGuild)
 		]);
 
 		const atualizarItem = (id, concluido) => {
@@ -82,6 +84,11 @@ const app = {
 		atualizarItem(
 			'onboarding-canal-avisos',
 			statusCanalAvisos.configurado
+		);
+
+		atualizarItem(
+			'onboarding-xp',
+			statusXp.configurado
 		);
 	},
 
