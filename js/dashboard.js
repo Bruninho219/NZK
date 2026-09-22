@@ -27,9 +27,19 @@ const app = {
 		const onboardingCard =
 			document.getElementById('onboardingCard');
 
-		if (onboardingCard && onboardingOculto) {
-			onboardingCard.style.display = 'none';
+		const botaoMostrarOnboarding =
+			document.getElementById('btnMostrarOnboarding');
+
+		if (onboardingOculto) {
+			if (onboardingCard) {
+				onboardingCard.style.display = 'none';
+			}
+
+			if (botaoMostrarOnboarding) {
+				botaoMostrarOnboarding.style.display = '';
+			}
 		}
+
 		try {
 			const servidores = await NZKAPI.getServidoresAtivos();
 
@@ -157,15 +167,35 @@ const app = {
 
 	toggleOnboarding() {
 		const card = document.getElementById('onboardingCard');
+		const botao = document.getElementById('btnMostrarOnboarding');
 
 		if (!card) return;
 
 		card.style.display = 'none';
 
+		if (botao) {
+			botao.style.display = '';
+		}
+
 		localStorage.setItem(
 			'nzk_onboarding_oculto',
 			'true'
 		);
+	},
+
+	mostrarOnboarding() {
+		const card = document.getElementById('onboardingCard');
+		const botao = document.getElementById('btnMostrarOnboarding');
+
+		if (!card) return;
+
+		card.style.display = '';
+
+		if (botao) {
+			botao.style.display = 'none';
+		}
+
+		localStorage.removeItem('nzk_onboarding_oculto');
 	},
 
 	async abrirConfiguracoesGlobais() {
