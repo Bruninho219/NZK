@@ -1,11 +1,33 @@
 .env
 logs/
-__pycache__/
 *.pyc.env
 teste_webhook.py
-*.bat
 requirements.txt
 instalacao.txt
 _github.bat
 *.cmd
 ideias.txt
+
+# Bot Python
+*.py
+cogs/
+__pycache__/
+*.pyc
+
+# Configs e scripts específicos do bot / hospedagem do bot
+discloud.config
+requirements.txt
+requirements.bat
+start2.bat
+instalacao.txt
+
+# Segredos e logs
+.env
+logs/
+
+# Arquivos de projeto locais
+.vscode/
+.git/
+.gitignore
+.bat
+requirements.txt
